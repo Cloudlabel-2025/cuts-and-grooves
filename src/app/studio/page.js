@@ -101,7 +101,7 @@ export default function StudioPage() {
                     margin: 0,
                     letterSpacing: '-0.02em'
                 }}>
-                    {"Cuts & Grooves is a Melbourne based architecture & interior design studio.".split(' ').map((word, i) => (
+                    {"Cuts & Grooves is a India based architecture & interior design studio.".split(' ').map((word, i) => (
                         <span key={i} style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'top', marginRight: '0.25em' }}>{word}</span>
                     ))}
                 </h1>
@@ -119,7 +119,7 @@ export default function StudioPage() {
                     textAlign: 'center',
                     color: '#000'
                 }}>
-                    “Each project reflects the vision and expertise of our Designers, turning ideas into spaces with meaning and beauty.”
+                    “Each project embodies the vision and expertise of our designers — transforming ideas into purposeful, enduring spaces.”
                 </h2>
             </section>
 
@@ -231,7 +231,7 @@ export default function StudioPage() {
                         </div>
                         <div>
                             <p style={{ fontSize: '1.5rem', lineHeight: 1.4, fontWeight: 300, maxWidth: '800px' }}>
-                                We provide a boutique level of service and a hands-on approach. Underpinning all of our work is an understanding of context, client needs and user experience, so that buildings and spaces are meaningful and remain relevant over time.
+                               We deliver a highly personalised service with direct involvement at every stage of the project.Our work is grounded in a deep understanding of context, client priorities, and user experience — ensuring each building is purposeful, enduring, and relevant over time.
                             </p>
                         </div>
                     </div>
@@ -251,7 +251,7 @@ export default function StudioPage() {
                                 },
                                 {
                                     title: "Innovation",
-                                    text: "Telha Clarke welcomes innovation through research and technology to contribute new ideas and challenging theories. We see technology as a tool, we engage with it and it is integral to our work, however we believe human touch must drive creativity. We heavily invest time in research through leading industry seminars, University tutoring and participation in international study tours.",
+                                    text: "Cuts and Grooves embraces innovation as a disciplined pursuit, grounded in research and informed by evolving technology. We challenge conventions, explore new methodologies, and contribute fresh thinking to the built environment.Technology is integral to our process — a powerful tool that sharpens precision and expands possibility. Yet creativity remains human at its core. Insight, intuition, and critical thinking guide every decision we make.",
                                     image: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1200&q=80"
                                 },
                                 {

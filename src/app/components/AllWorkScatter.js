@@ -34,9 +34,9 @@ const scatteredImages = [
 const transitionImage = '/images/All-works-01.jpg';
 
 const visionItems = [
-    { title: 'Design integrity', desc: 'Our design aesthetic is established through a consistent process and a detailed concept brief, which considers client needs, site context, and the future occupiers.' },
-    { title: 'Innovation', desc: 'We welcome innovation through research and technology while believing human touch must drive creativity. Testing limits to discover new solutions.' },
-    { title: 'Enhanced Living', desc: 'Well-being at the forefront — designs that promote positive interaction and encourage enriched experiences. Creating spaces that nurture and inspire.' }
+    { title: 'Design integrity', desc: 'At the core of every structure lies intention.We integrate advanced research and evolving technology with a distinctly human sensibility — because innovation without intuition is incomplete.Our process challenges convention, tests boundaries, and explores possibilities beyond the expected. Each solution is thoughtfully engineered, creatively envisioned, and uncompromising in execution.' },
+    { title: 'Innovation', desc: 'We combine rigorous research, advanced technology, and refined craftsmanship to redefine what’s possible. Yet we believe true innovation is not purely technical — it is human.Every breakthrough we pursue is guided by insight, experience, and an uncompromising pursuit of better solutions. We challenge limits, rethink conventions, and transform complexity into clarity.Because progress is not about change for the sake of it — it is about building smarter, stronger, and ahead of time.' },
+    { title: 'Enhanced Living', desc: 'Well-being is not an afterthought — it is the foundation. We design spaces that elevate everyday life, where light, proportion, material, and flow work in harmony. Every environment is thoughtfully crafted to encourage connection, comfort, and clarity. Our approach goes beyond structure. We create living experiences — spaces that nurture balance, inspire interaction, and enhance the rhythm of modern life.' }
 ];
 
 export default function AllWorkScatter() {

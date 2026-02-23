@@ -46,7 +46,7 @@ export default function ContactPage() {
     }, []);
 
     const locations = [
-        "Queensland", "New South Wales", "South Australia", "Tasmania", "Victoria", "Western Australia", "the rest of the World"
+        "Chennai", "Madurai", "Coimbatore","Trichy", "Salem", "Erode"
     ];
 
     return (
@@ -62,7 +62,7 @@ export default function ContactPage() {
                         lineHeight: 1.2,
                         letterSpacing: '-0.02em'
                     }}>
-                        {"Based in Melbourne but available for your projects in ".split(' ').map((word, i) => (
+                        {"Based in Tamil Nadu but available for your projects in ".split(' ').map((word, i) => (
                             <span key={i} style={{ display: 'inline-block', marginRight: '0.25em' }}>{word}</span>
                         ))}
                         <br />
@@ -93,16 +93,15 @@ export default function ContactPage() {
                     {/* Phone */}
                     <div>
                         <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '20px', opacity: 0.4 }}>Phone</h4>
-                        <a href="tel:+61386725999" className="hover-link" style={{ fontSize: '1.1rem', fontWeight: 500 }}>+61 3 8672 5999</a>
+                        <a href="tel:+91 8015759988" className="hover-link" style={{ fontSize: '1.1rem', fontWeight: 500 }}>+61 3 8672 5999</a>
                     </div>
 
                     {/* Address */}
                     <div>
                         <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '20px', opacity: 0.4 }}>Studio</h4>
                         <p style={{ fontSize: '1.1rem', lineHeight: 1.5, fontWeight: 500 }}>
-                            59 Garden Street<br />
-                            South Yarra Victoria,<br />
-                            Australia 3141
+                            Cumbum,<br />
+                            Theni, Tamil Nadu.
                         </p>
                     </div>
 

@@ -5,20 +5,20 @@ import React, { useRef } from 'react';
 const testimonials = [
     {
         id: 1,
-        quote: "Architecture that speaks volumes. Every corner of our home now tells a story, blending functionality with pure art.",
-        author: "Sarah Jenkins",
+        quote: "Every space unfolds with intention. What once was an empty plot is now a home that reflects our values, our lifestyle, and our story — seamlessly blending art with purpose.",
+        author: "Kavin Kumar",
         role: "Private Client"
     },
     {
         id: 2,
-        quote: "An absolute masterclass in design. The team understood our vision better than we did ourselves.",
-        author: "David Chen",
+        quote: "What impressed us most was not just the design excellence, but the strategic thinking behind every decision. The result is not just a building, but a statement of who we are.",
+        author: "Balaji BM",
         role: "CEO, TechFlow"
     },
     {
         id: 3,
-        quote: "Impeccable attention to detail. From the initial concept to the final reveal, the process was seamless and inspiring.",
-        author: "Elena Rodriguez",
+        quote: "From concept sketches to the final execution, the process was curated, disciplined, and deeply collaborative. The outcome exceeded expectation — refined, timeless, and inspiring.",
+        author: "Ahasi",
         role: "Art Director"
     }
 ];

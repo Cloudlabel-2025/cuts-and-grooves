@@ -207,9 +207,9 @@ export default function HeroSection() {
                 </div>
                 <div className="hero-inner">
                     <h1 className="hero-heading">
-                        <MorphingLine text="Driven by Vision," />
-                        <MorphingLine text="Centered on Craft," />
-                        <MorphingLine text="Embracing Culture" />
+                        <MorphingLine text="Planning with Clarity," />
+                        <MorphingLine text="Building with Discipline," />
+                        <MorphingLine text="Delivering with Pride." />
                     </h1>
                     <p className="hero-subtitle">
                         An Architecture & Interior Design Studio

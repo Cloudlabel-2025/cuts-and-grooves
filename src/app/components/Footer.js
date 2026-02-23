@@ -136,15 +136,15 @@ export default function Footer() {
                             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                                 <span style={metaLabelStyle}>L</span>
                                 <p style={{ fontSize: '0.9rem', fontWeight: '500', lineHeight: '1.5', margin: 0 }}>
-                                    123 Creative Avenue<br />
-                                    Bandra West, Mumbai<br />
-                                    India 400050
+                                    123 Cuts and Grooves.<br />
+                                    Cumbum, Theni.<br />
+                                    Tamilnadu.
                                 </p>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                                 <span style={metaLabelStyle}>P</span>
-                                <a href="tel:+919876543210" style={{ ...linkStyle, fontSize: '0.9rem', fontWeight: '500' }}>
-                                    +91 98765 43210
+                                <a href="tel:+9180157 59988" style={{ ...linkStyle, fontSize: '0.9rem', fontWeight: '500' }}>
+                                    +91 80157 59988
                                 </a>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'flex-start' }}>

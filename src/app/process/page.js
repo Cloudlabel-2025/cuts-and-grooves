@@ -84,27 +84,27 @@ export default function ProcessPage() {
     const initiatives = [
         {
             title: "Sustainability Action Plan",
-            subtitle: "Driven by purpose and guided by values, we turn our commitments into meaningful actions.",
+            subtitle: "Driven by purpose and guided by values, we translate our environmental commitments into clear, measurable actions. From responsible material selection to long-term performance strategies, sustainability is embedded into every phase of our process.",
             image: "https://images.unsplash.com/photo-1464938050520-ef2270bb8ce8?auto=format&fit=crop&w=1200&q=80",
-            description: "We are driven by a belief that Architecture & Design can deepen people’s connection to place, enrich daily life, and preserve the cultural narratives that shape our communities."
+            description: "We believe Architecture & Design can strengthen people’s connection to place, enrich daily life, and preserve the cultural narratives that shape communities. Our Sustainability Action Plan ensures that these principles are not aspirational — but operational."
         },
         {
             title: "Reconciliation Action Plan",
             subtitle: "Building trust, inspiring confidence, delivering excellence.",
             image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
-            description: "Our lasting impact will be thoughtful, context-led buildings that honour their histories and strengthen their neighbourhoods."
+            description: "Our approach is grounded in respect, collaboration, and meaningful engagement. We actively seek to understand the histories and communities connected to the places we build, ensuring our work contributes positively and responsibly to its social and cultural context. Our lasting impact lies in thoughtful, context-led buildings that honour their histories while strengthening the neighbourhoods they serve."
         },
         {
             title: "Quality Management System",
             subtitle: "Precision in every detail of our methodology.",
             image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
-            description: "Each project is unique, responding to multiple factors, the outcome is never a single vision."
+            description: "Each project responds to multiple influences — context, client vision, technical requirements, and user experience. No outcome is shaped by a single perspective. Our Quality Management System ensures disciplined processes, rigorous review, and consistent excellence from concept through completion."
         },
         {
             title: "100% Green Power",
             subtitle: "Committed to a sustainable and connected built world.",
             image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1200&q=80",
-            description: "Thoughtful designs that stand as enduring contributions to the environment."
+            description: "We operate with renewable energy to minimise our environmental footprint and support a more responsible future. Our thoughtful designs stand as enduring contributions — reducing impact while enhancing the environments in which they exist."
         }
     ];
 
@@ -131,7 +131,7 @@ export default function ProcessPage() {
                     maxWidth: '1200px',
                     margin: 0
                 }}>
-                    {"Our projects respond to a collection of influences; contextual response, the client’s brief, our own design aspirations, & user experience.".split(' ').map((word, i) => (
+                    {"Our projects are shaped by a deliberate balance of influences — the character of the site, the clarity of the client’s brief, our architectural vision, and the lived experience of the end user.".split(' ').map((word, i) => (
                         <span key={i} style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'top' }}>
                             <span style={{ display: 'inline-block' }}>{word}&nbsp;</span>
                         </span>
@@ -155,7 +155,7 @@ export default function ProcessPage() {
                         letterSpacing: '-0.01em',
                         color: '#000'
                     }}>
-                        “Each project is unique, responding to multiple factors, the outcome is never a single vision."
+                        “Each element informs the other. Context grounds the design. The brief defines direction. Our aspirations elevate the outcome. User experience ensures purpose."
                     </h2>
                     <p className="narrative-paragraph" style={{
                         fontSize: 'clamp(0.95rem, 1.25vw, 1.35rem)',
@@ -164,7 +164,7 @@ export default function ProcessPage() {
                         fontWeight: 400,
                         color: '#000'
                     }}>
-                        We are driven by a belief that Architecture & Design can deepen people’s connection to place, enrich daily life, and preserve the cultural narratives that shape our communities. Our lasting impact will be thoughtful, context-led buildings that honour their histories, strengthen their neighbourhoods, and stand as enduring contributions to a more connected and meaningful built world.
+                        We believe architecture has the power to strengthen the bond between people and place.Through thoughtful, context-led design, we create buildings that enrich daily life and respect the cultural narratives that shape communities. Our ambition is not simply to construct — but to contribute.To deliver spaces that honour their history, elevate their surroundings, and endure with purpose in a more connected built world.
                     </p>
                 </div>
             </section>
@@ -184,7 +184,7 @@ export default function ProcessPage() {
                     <div style={{ maxWidth: '800px', backgroundColor: 'rgba(0,0,0,0.1)', backdropFilter: 'blur(5px)', padding: '60px', borderRadius: '4px' }}>
                         <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2rem', opacity: 0.8, fontWeight: 600 }}>Environmental Impact</span>
                         <h3 style={{ fontSize: 'clamp(1.5rem, 3vw, 3.5rem)', marginTop: '20px', fontWeight: 300, fontFamily: 'var(--font-heading)' }}>
-                            We commit to a built world that honours its history and preserves our future.
+                            Building with care — for the land, the community, and generations ahead.
                         </h3>
                     </div>
                 </div>
@@ -198,7 +198,7 @@ export default function ProcessPage() {
             >
                 <div style={{ marginBottom: '120px' }}>
                     <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2rem', opacity: 0.4, fontWeight: 600 }}>Our Initiatives</span>
-                    <h3 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 4rem)', marginTop: '24px', fontWeight: 300, fontFamily: 'var(--font-heading)', letterSpacing: '-0.02em' }}>Driven by purpose, guided by values.</h3>
+                    <h3 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 4rem)', marginTop: '24px', fontWeight: 300, fontFamily: 'var(--font-heading)', letterSpacing: '-0.02em' }}>Driven by conviction, proven through action.</h3>
                 </div>
 
                 <div className="initiatives-grid" style={{
