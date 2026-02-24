@@ -6,7 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const MorphingLine = ({ text }) => {
+const MorphingLine = ({ children }) => {
     const lineRef = useRef(null);
     const timelineRef = useRef(null);
 
@@ -56,7 +56,7 @@ const MorphingLine = ({ text }) => {
             onMouseLeave={handleMouseLeave}
             style={{ display: 'block', cursor: 'default' }}
         >
-            {text}
+            {children}
         </span>
     );
 };
@@ -207,9 +207,11 @@ export default function HeroSection() {
                 </div>
                 <div className="hero-inner">
                     <h1 className="hero-heading">
-                        <MorphingLine text="Planning with Clarity," />
-                        <MorphingLine text="Building with Discipline," />
-                        <MorphingLine text="Delivering with Pride." />
+                        <MorphingLine>
+                            <span style={{ color: '#FDEBD0' }}>We Make your </span>Livin&apos; <span style={{ color: '#FDEBD0' }}>Better</span>
+                        </MorphingLine>
+                        {/* <MorphingLine>Building with Discipline,</MorphingLine>
+                        <MorphingLine>Delivering with Pride.</MorphingLine> */}
                     </h1>
                     <p className="hero-subtitle">
                         An Architecture & Interior Design Studio

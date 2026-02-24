@@ -187,6 +187,7 @@ export default function Footer() {
                         <div style={{ flex: '1 1 150px', display: 'flex', justifyContent: 'center' }}>
                             <button
                                 onClick={scrollToTop}
+                                suppressHydrationWarning={true}
                                 style={{ background: 'none', border: 'none', color: '#888888', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '500', padding: 0, transition: 'color 0.3s ease' }}
                                 onMouseEnter={(e) => e.target.style.color = '#000000'}
                                 onMouseLeave={(e) => e.target.style.color = '#888888'}

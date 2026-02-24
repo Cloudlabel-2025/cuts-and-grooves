@@ -4,6 +4,7 @@ import "./globals.css";
 import { useState } from 'react';
 import Navbar from './components/Navbar';
 import Preloader from './components/Preloader';
+import FloatingCTA from './components/FloatingCTA';
 
 import SmoothScroll from './components/SmoothScroll';
 
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
           {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
           <Navbar />
           {children}
+          <FloatingCTA />
         </SmoothScroll>
       </body>
     </html>
