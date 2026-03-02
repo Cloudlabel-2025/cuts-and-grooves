@@ -31,6 +31,15 @@ const scatteredImages = [
     { src: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=600&q=80', x: '75%', y: '95%', w: '14vw', h: '18vh', speed: 0.85, z: 13 },
 ];
 
+const mobileScatteredImages = [
+    { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80', x: '5%', y: '10%', w: '40vw', h: '20vh', speed: 0.15, z: 1 },
+    { src: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=600&q=80', x: '55%', y: '15%', w: '35vw', h: '15vh', speed: 0.2, z: 1 },
+    { src: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80', x: '10%', y: '45%', w: '45vw', h: '20vh', speed: 0.4, z: 5 },
+    { src: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=600&q=80', x: '50%', y: '65%', w: '35vw', h: '25vh', speed: 0.5, z: 5 },
+    { src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80', x: '-10%', y: '30%', w: '50vw', h: '25vh', speed: 1.0, z: 15 },
+    { src: 'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?auto=format&fit=crop&w=800&q=80', x: '60%', y: '75%', w: '45vw', h: '30vh', speed: 0.9, z: 15 },
+];
+
 const transitionImage = '/images/All-works-01.jpg';
 
 const visionItems = [
@@ -66,6 +75,18 @@ export default function AllWorkScatter() {
     const titleRefs = useRef([]);
 
     const [isReady, setIsReady] = useState(false);
+    const [mounted, setMounted] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 1024);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => setIsReady(true), 100);
@@ -105,6 +126,8 @@ export default function AllWorkScatter() {
                     invalidateOnRefresh: true,
                 }
             });
+
+            const isMobile = window.innerWidth < 1024;
 
             // --- PHASE 1: SCATTER PARALLAX & TEXT ZOOM (0 -> 1.0) ---
 
@@ -266,7 +289,7 @@ export default function AllWorkScatter() {
             >
                 {/* 1. Scattered Images Layer */}
                 <div className="absolute inset-0 pointer-events-none">
-                    {scatteredImages.map((img, i) => (
+                    {(mounted && isMobile ? mobileScatteredImages : scatteredImages).map((img, i) => (
                         <div
                             key={i}
                             ref={el => imagesRef.current[i] = el}
@@ -391,9 +414,10 @@ export default function AllWorkScatter() {
                         ref={descRef}
                         style={{
                             position: 'absolute',
-                            top: '55%',
-                            right: '15vw',
-                            width: 'clamp(300px, 30vw, 500px)',
+                            top: mounted && window.innerWidth < 768 ? '65%' : '55%',
+                            right: mounted && window.innerWidth < 768 ? '4vw' : '15vw',
+                            left: mounted && window.innerWidth < 768 ? '4vw' : 'auto',
+                            width: mounted && window.innerWidth < 768 ? 'auto' : 'clamp(300px, 30vw, 500px)',
                             textAlign: 'left'
                         }}
                     >

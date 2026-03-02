@@ -1,12 +1,17 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Footer from '../components/Footer';
 
 export default function ProcessPage() {
     const containerRef = useRef(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         gsap.registerPlugin(ScrollTrigger);
@@ -112,15 +117,8 @@ export default function ProcessPage() {
         <main ref={containerRef} className="process-page bg-white text-black">
             {/* --- HERO SECTION --- */}
             <section
-                className="process-hero"
+                className="process-hero-section"
                 data-nav-theme="light"
-                style={{
-                    minHeight: '100vh',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '160px 4% 120px',
-                    backgroundColor: '#fff'
-                }}
             >
                 <h1 className="reveal-text" style={{
                     fontSize: 'clamp(1.8rem, 3.2vw, 3.2rem)',
@@ -141,9 +139,8 @@ export default function ProcessPage() {
 
             {/* --- NARRATIVE SECTION (TEXT HIGHLIGHT) --- */}
             <section
-                className="process-narrative"
+                className="process-narrative-section"
                 data-nav-theme="light"
-                style={{ padding: '40px 4% 160px', backgroundColor: '#fff' }}
             >
                 <div style={{ maxWidth: '1400px' }}>
                     <h2 className="narrative-paragraph" style={{

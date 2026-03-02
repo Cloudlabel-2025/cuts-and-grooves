@@ -18,6 +18,11 @@ export default function StudioPage() {
     const teamContainerRef = useRef(null);
     const [hoveredIndex, setHoveredIndex] = useState(0);
     const [activeVisionIndex, setActiveVisionIndex] = useState(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         gsap.registerPlugin(ScrollTrigger);
@@ -85,14 +90,8 @@ export default function StudioPage() {
     return (
         <main ref={containerRef} className="studio-page bg-white text-black" data-nav-theme="light">
             {/* --- HERO SECTION --- */}
-            <section className="studio-hero" style={{
-                minHeight: '80vh',
-                display: 'flex',
-                alignItems: 'end',
-                padding: '160px 4% 120px',
-                backgroundColor: '#fff'
-            }}>
-                <h1 style={{
+            <section className="studio-hero-section">
+                <h1 className="studio-hero-title" style={{
                     fontSize: 'clamp(2rem, 3.5vw, 4rem)',
                     fontFamily: 'var(--font-heading)',
                     fontWeight: 300,
@@ -124,8 +123,8 @@ export default function StudioPage() {
             </section>
 
             {/* --- MEET THE TEAM SECTION --- */}
-            <section ref={teamContainerRef} style={{ padding: '0 4% 160px', position: 'relative' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', maxWidth: '1400px', margin: '0 auto' }}>
+            <section ref={teamContainerRef} className="studio-team-section">
+                <div className="studio-team-grid">
 
                     {/* LEFT COLUMN: LIST */}
                     <div>
@@ -139,7 +138,7 @@ export default function StudioPage() {
 
                         <div
                             className="team-list"
-                            onMouseLeave={() => setHoveredIndex(0)} // Default to first member on leave
+                            onMouseLeave={() => setHoveredIndex(0)}
                         >
                             {teamMembers.map((member, i) => (
                                 <div
@@ -157,34 +156,42 @@ export default function StudioPage() {
                                     }}
                                 >
                                     <span style={{
-                                        fontSize: 'clamp(2rem, 3.5vw, 4rem)', // Large architectural scale
+                                        fontSize: 'clamp(2rem, 3.5vw, 4rem)',
                                         fontFamily: 'var(--font-heading)',
                                         fontWeight: hoveredIndex === i ? 500 : 300,
-                                        color: hoveredIndex === i ? '#000000' : '#cccccc', // Explicit black
+                                        color: hoveredIndex === i ? '#000000' : '#cccccc',
                                         lineHeight: 1.1,
                                         letterSpacing: '-0.02em',
                                         transition: 'all 0.2s ease'
                                     }}>
                                         {member.name}
                                     </span>
-                                    {/* Arrow indicator for active item */}
                                     <span style={{
                                         opacity: hoveredIndex === i ? 1 : 0,
                                         transform: hoveredIndex === i ? 'translateX(0)' : 'translateX(-10px)',
                                         transition: 'all 0.3s ease',
                                         fontSize: '1.5rem'
                                     }}>→</span>
+
+                                    <div className="team-image-mobile">
+                                        <div className="team-image-mobile-inner">
+                                            <img src={member.image} alt={member.name} />
+                                        </div>
+                                        <div className="team-role-mobile">
+                                            <span>[ {member.role} ]</span>
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     {/* RIGHT COLUMN: STICKY PREVIEW */}
-                    <div style={{ position: 'relative' }}>
-                        <div style={{ position: 'sticky', top: '100px', height: 'fit-content', width: '50%' }}>
+                    <div className="team-preview-col">
+                        <div className="team-preview-sticky">
                             <div style={{
                                 width: '100%',
-                                aspectRatio: '4/5', // Reduced height from 3/4
+                                aspectRatio: '4/5',
                                 backgroundColor: '#f0f0f0',
                                 marginBottom: '20px',
                                 overflow: 'hidden'
@@ -215,30 +222,29 @@ export default function StudioPage() {
                             </div>
                         </div>
                     </div>
-
                 </div>
             </section>
 
             {/* --- VALUES & VISION SECTION --- */}
-            <section style={{ padding: '0 4% 160px' }}>
-                <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+            <section className="studio-values-section">
+                <div className="studio-container">
 
                     {/* VALUES */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '40px', marginBottom: '120px' }}>
-                        <div style={{ display: 'flex', gap: '20px', opacity: 0.4 }}>
+                    <div className="values-layout-grid">
+                        <div className="section-label-col">
                             <span style={{ fontSize: '0.9rem', letterSpacing: '0.2em' }}>02</span>
                             <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.2em', margin: 0 }}>Our values</h3>
                         </div>
                         <div>
                             <p style={{ fontSize: '1.5rem', lineHeight: 1.4, fontWeight: 300, maxWidth: '800px' }}>
-                               We deliver a highly personalised service with direct involvement at every stage of the project.Our work is grounded in a deep understanding of context, client priorities, and user experience — ensuring each building is purposeful, enduring, and relevant over time.
+                                We deliver a highly personalised service with direct involvement at every stage of the project.Our work is grounded in a deep understanding of context, client priorities, and user experience — ensuring each building is purposeful, enduring, and relevant over time.
                             </p>
                         </div>
                     </div>
 
                     {/* VISION (ACCORDION) */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '40px' }}>
-                        <div style={{ display: 'flex', gap: '20px', opacity: 0.4 }}>
+                    <div className="vision-layout-grid">
+                        <div className="section-label-col">
                             <span style={{ fontSize: '0.9rem', letterSpacing: '0.2em' }}>03</span>
                             <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.2em', margin: 0 }}>Our vision</h3>
                         </div>
@@ -310,10 +316,11 @@ export default function StudioPage() {
                     </div>
 
                 </div>
-            </section>
+            </section >
 
             {/* --- AWARDS SECTION --- */}
-            <section style={{ padding: '0 4% 160px', backgroundColor: '#f9f9f9' }}>
+            < section style={{ padding: '0 4% 160px', backgroundColor: '#f9f9f9' }
+            }>
                 <div style={{ maxWidth: '1400px', margin: '0 auto', paddingTop: '100px' }}>
 
                     {/* Header with Number */}
@@ -323,18 +330,9 @@ export default function StudioPage() {
                     </div>
 
                     {/* Awards Table */}
-                    <div style={{ width: '100%' }}>
+                    <div className="awards-table">
                         {/* Table Header */}
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: '100px 1.2fr 1.2fr 1.5fr',
-                            gap: '20px',
-                            paddingBottom: '20px',
-                            borderBottom: '1px solid rgba(0,0,0,0.1)',
-                            marginBottom: '40px',
-                            fontSize: '0.85rem',
-                            fontWeight: 500
-                        }}>
+                        <div className="awards-header-grid">
                             <div>Year</div>
                             <div>Project</div>
                             <div>Contest</div>
@@ -358,27 +356,14 @@ export default function StudioPage() {
                                 ]
                             }
                         ].map((group, i) => (
-                            <div key={i} style={{
-                                display: 'grid',
-                                gridTemplateColumns: '100px 1fr',
-                                gap: '20px',
-                                paddingBottom: '40px',
-                                marginBottom: '40px',
-                                borderBottom: '1px solid rgba(0,0,0,0.1)'
-                            }}>
-                                <div style={{ fontWeight: 500, fontSize: '1.1rem' }}>{group.year}</div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div key={i} className="awards-row-grid">
+                                <div className="awards-year">{group.year}</div>
+                                <div className="awards-items-col">
                                     {group.items.map((item, j) => (
-                                        <div key={j} style={{
-                                            display: 'grid',
-                                            gridTemplateColumns: '1.2fr 1.2fr 1.5fr',
-                                            gap: '20px',
-                                            fontSize: '1rem',
-                                            fontWeight: 400
-                                        }}>
+                                        <div key={j} className="award-item-grid">
                                             <span>{item.project}</span>
                                             <span>{item.contest}</span>
-                                            <span style={{ opacity: 0.7 }}>{item.distinction}</span>
+                                            <span className="award-distinction">{item.distinction}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -386,10 +371,10 @@ export default function StudioPage() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* --- JOB OFFERS SECTION --- */}
-            <section style={{ padding: '0 4% 160px', backgroundColor: '#f9f9f9', borderTop: '1px solid #eee' }}>
+            < section style={{ padding: '0 4% 160px', backgroundColor: '#f9f9f9', borderTop: '1px solid #eee' }}>
                 <div style={{ maxWidth: '1400px', margin: '0 auto', paddingTop: '100px' }}>
                     <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '80px', opacity: 0.4 }}>Job Offers</h3>
                     <div style={{ paddingBottom: '60px' }}>
@@ -397,24 +382,20 @@ export default function StudioPage() {
                             We are looking for motivated, curious and dedicated talent who want to contribute to our growth while sharing our values.
                         </p>
 
-                        {[
-                            { title: "Graduate Architect", type: "Full-time", location: "Melbourne" },
-                            { title: "Interior Designer", type: "Full-time", location: "Melbourne" }
-                        ].map((job, i) => (
-                            <a key={i} href="mailto:careers@cutsandgrooves.com" style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: '40px 0',
-                                borderTop: '1px solid rgba(0,0,0,0.1)',
-                                textDecoration: 'none',
-                                color: 'inherit',
-                                transition: 'opacity 0.3s'
-                            }} className="hover:opacity-60">
+                        {[{
+                            title: "Graduate Architect",
+                            type: "Full-time",
+                            location: "Melbourne"
+                        }, {
+                            title: "Interior Designer",
+                            type: "Full-time",
+                            location: "Melbourne"
+                        }].map((job, i) => (
+                            <a key={i} href="mailto:careers@cutsandgrooves.com" className="job-offer-card">
                                 <div>
-                                    <span style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', fontWeight: 300, display: 'block', marginBottom: '5px' }}>{job.title}</span>
+                                    <span className="job-title">{job.title}</span>
                                 </div>
-                                <div style={{ display: 'flex', gap: '40px', opacity: 0.6, fontSize: '0.9rem' }}>
+                                <div className="job-meta">
                                     <span>{job.type}</span>
                                     <span>{job.location}</span>
                                 </div>
@@ -423,11 +404,11 @@ export default function StudioPage() {
                         <div style={{ borderTop: '1px solid rgba(0,0,0,0.1)' }} />
                     </div>
                 </div>
-            </section>
+            </section >
 
 
 
             <Footer />
-        </main>
+        </main >
     );
 }

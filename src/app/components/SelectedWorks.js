@@ -74,6 +74,8 @@ export default function SelectedWorks() {
                 gsap.set(title, { opacity: 1, y: 0 });
 
                 // MAIN SCROLL TIMELINE (Linked to card's transit through viewport)
+                const isMobile = window.innerWidth < 1024;
+
                 const tl = gsap.timeline({
                     scrollTrigger: {
                         trigger: card,
@@ -86,13 +88,26 @@ export default function SelectedWorks() {
                 // PHASE 1: EXPAND (0% -> 50% scroll ie. Bottom -> Center)
                 tl.fromTo(
                     inner,
-                    { clipPath: 'inset(25% 30% 25% 30%)', filter: 'brightness(0.6)' },
-                    { clipPath: 'inset(0% 0% 0% 0%)', filter: 'brightness(1)', duration: 1, ease: 'power1.out' }
+                    {
+                        clipPath: isMobile ? 'inset(15% 15% 15% 15%)' : 'inset(25% 30% 25% 30%)',
+                        filter: 'brightness(0.6)'
+                    },
+                    {
+                        clipPath: 'inset(0% 0% 0% 0%)',
+                        filter: 'brightness(1)',
+                        duration: 1,
+                        ease: 'power1.out'
+                    }
                 )
                     // PHASE 2: SHRINK (50% -> 100% scroll ie. Center -> Top)
                     .to(
                         inner,
-                        { clipPath: 'inset(25% 30% 25% 30%)', filter: 'brightness(0.6)', duration: 1, ease: 'power1.in' }
+                        {
+                            clipPath: isMobile ? 'inset(15% 15% 15% 15%)' : 'inset(25% 30% 25% 30%)',
+                            filter: 'brightness(0.6)',
+                            duration: 1,
+                            ease: 'power1.in'
+                        }
                     );
 
                 // TITLE BRACKETS (Independent Fast Animation)

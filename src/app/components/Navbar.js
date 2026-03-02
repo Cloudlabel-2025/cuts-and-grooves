@@ -13,7 +13,11 @@ export default function Navbar() {
     const navRef = useRef(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const [currentTime, setCurrentTime] = useState('');
-    const [isDark, setIsDark] = useState(pathname?.includes('/projects') || pathname?.includes('/process') || pathname?.includes('/studio'));
+    const [isDark, setIsDark] = useState(false);
+
+    useEffect(() => {
+        setIsDark(pathname?.includes('/projects') || pathname?.includes('/process') || pathname?.includes('/studio') || pathname?.includes('/contact'));
+    }, [pathname]);
     const drawerRef = useRef(null);
 
     // Live clock
@@ -91,8 +95,8 @@ export default function Navbar() {
 
                 gsap.fromTo(
                     drawerRef.current,
-                    { xPercent: 100 },
-                    { xPercent: 0, duration: 0.8, ease: 'power4.inOut' }
+                    { x: '100%' },
+                    { x: '0%', duration: 0.8, ease: 'power4.inOut' }
                 );
 
                 gsap.fromTo(
@@ -123,7 +127,7 @@ export default function Navbar() {
                 document.body.style.overflow = '';
 
                 gsap.to(drawerRef.current, {
-                    xPercent: 100,
+                    x: '100%',
                     duration: 0.6,
                     ease: 'power4.inOut',
                 });
@@ -168,6 +172,7 @@ export default function Navbar() {
                     className={`nav-hamburger nav-item ${menuOpen ? 'active' : ''}`}
                     onClick={() => setMenuOpen(!menuOpen)}
                     aria-label="Toggle menu"
+                    suppressHydrationWarning={true}
                 >
                     <span></span>
                     <span></span>

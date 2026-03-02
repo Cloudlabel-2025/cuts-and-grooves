@@ -65,7 +65,7 @@ const HoverChar = ({ char }) => {
                 cursor: 'default',
                 whiteSpace: 'pre', // Preserve whitespace
                 transform: isHovered ? 'translateY(-10px)' : 'translateY(0)',
-                color: isHovered ? '#ffffff' : '#e0e0e0', // Subtle color lift
+                color: '#737373',
             }}
         >
             {char}
@@ -76,10 +76,10 @@ const HoverChar = ({ char }) => {
 export default function Testimonials() {
     return (
         <section
-            data-nav-theme="dark"
+            data-nav-theme="light"
             style={{
-                backgroundColor: '#000000',
-                color: '#ffffff',
+                backgroundColor: '#ffffff',
+                color: '#737373',
                 padding: '120px 4%',
                 position: 'relative',
                 zIndex: 5
@@ -92,8 +92,9 @@ export default function Testimonials() {
                     fontWeight: '300',
                     marginBottom: '80px',
                     letterSpacing: '-0.02em',
-                    borderBottom: '1px solid rgba(255,255,255,0.2)',
-                    paddingBottom: '20px'
+                    borderBottom: '1px solid rgba(0,0,0,0.1)',
+                    paddingBottom: '20px',
+                    color: '#000000'
                 }}>
                     CLIENT PERSPECTIVES
                 </h2>
@@ -118,14 +119,15 @@ export default function Testimonials() {
                                 ))}
                             </p>
 
-                            <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '15px' }}>
+                            <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: '15px' }}>
                                 <h4 style={{
                                     fontFamily: 'var(--font-body)',
                                     fontSize: '1rem',
                                     fontWeight: '600',
                                     textTransform: 'uppercase',
                                     margin: 0,
-                                    letterSpacing: '0.05em'
+                                    letterSpacing: '0.05em',
+                                    color: '#000000'
                                 }}>
                                     {item.author}
                                 </h4>
@@ -133,7 +135,7 @@ export default function Testimonials() {
                                     fontFamily: 'var(--font-body)',
                                     fontSize: '0.85rem',
                                     fontWeight: '400',
-                                    color: '#888888',
+                                    color: '#737373',
                                     display: 'block',
                                     marginTop: '5px'
                                 }}>
