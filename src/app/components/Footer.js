@@ -4,10 +4,14 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-export default function Footer() {
+export default function Footer({ content }) {
     const footerRef = useRef(null);
     const topSectionRef = useRef(null);
     const bottomSectionRef = useRef(null);
+
+    const address = content?.address || "123 Cuts and Grooves.\nCumbum, Theni.\nTamilnadu.";
+    const phone = content?.phone || "+91 80157 59988";
+    const email = content?.email || "hello@cutsandgrooves.com";
 
     useEffect(() => {
         gsap.registerPlugin(ScrollTrigger);
@@ -136,22 +140,20 @@ export default function Footer() {
                         <div className="footer-contact-info" style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '40px', paddingTop: '10px', alignItems: 'flex-start' }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                                 <span style={metaLabelStyle}>L</span>
-                                <p style={{ fontSize: '0.9rem', fontWeight: '500', lineHeight: '1.5', margin: 0 }}>
-                                    123 Cuts and Grooves.<br />
-                                    Cumbum, Theni.<br />
-                                    Tamilnadu.
+                                <p style={{ fontSize: '0.9rem', fontWeight: '500', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-line' }}>
+                                    {address}
                                 </p>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                                 <span style={metaLabelStyle}>P</span>
-                                <a href="tel:+9180157 59988" style={{ ...linkStyle, fontSize: '0.9rem', fontWeight: '500' }}>
-                                    +91 80157 59988
+                                <a href={`tel:${phone}`} style={{ ...linkStyle, fontSize: '0.9rem', fontWeight: '500' }}>
+                                    {phone}
                                 </a>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                                 <span style={metaLabelStyle}>C</span>
-                                <a href="mailto:hello@cutsandgrooves.com" style={{ ...linkStyle, fontSize: '0.9rem', fontWeight: '500' }}>
-                                    hello@cutsandgrooves.com
+                                <a href={`mailto:${email}`} style={{ ...linkStyle, fontSize: '0.9rem', fontWeight: '500' }}>
+                                    {email}
                                 </a>
                             </div>
                         </div>

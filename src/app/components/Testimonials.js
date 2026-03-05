@@ -1,71 +1,19 @@
 'use client';
 
-import React, { useRef } from 'react';
-
-const testimonials = [
-    {
-        id: 1,
-        quote: "Every space unfolds with intention. What once was an empty plot is now a home that reflects our values, our lifestyle, and our story — seamlessly blending art with purpose.",
-        author: "Kavin Kumar",
-        role: "Private Client"
-    },
-    {
-        id: 2,
-        quote: "What impressed us most was not just the design excellence, but the strategic thinking behind every decision. The result is not just a building, but a statement of who we are.",
-        author: "Balaji BM",
-        role: "CEO, TechFlow"
-    },
-    {
-        id: 3,
-        quote: "From concept sketches to the final execution, the process was curated, disciplined, and deeply collaborative. The outcome exceeded expectation — refined, timeless, and inspiring.",
-        author: "Ahasi",
-        role: "Art Director"
-    }
-];
+import React, { useRef, useState } from 'react';
 
 const HoverChar = ({ char }) => {
-    const defaultFont = 'var(--font-heading)';
-    const fonts = [
-        'var(--font-heading)',
-        'var(--font-body)',
-        'Times New Roman',
-        'Courier New',
-        'Georgia',
-        'Verdana',
-        'Impact',
-        'Arial Black'
-    ];
-    const [font, setFont] = React.useState(defaultFont);
-    const [isHovered, setIsHovered] = React.useState(false);
-    const intervalRef = useRef(null);
-
-    const handleMouseEnter = () => {
-        setIsHovered(true);
-        clearInterval(intervalRef.current);
-        intervalRef.current = setInterval(() => {
-            const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
-            setFont(randomFont);
-        }, 200);
-    };
-
-    const handleMouseLeave = () => {
-        setIsHovered(false);
-        clearInterval(intervalRef.current);
-        setFont(defaultFont);
-    };
-
+    const [isHovered, setIsHovered] = useState(false);
     return (
         <span
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             style={{
-                fontFamily: font,
-                transition: 'font-family 0.1s, transform 0.2s ease, opacity 0.2s ease',
+                transition: 'all 0.3s ease',
+                color: isHovered ? '#000000' : 'inherit',
+                fontWeight: isHovered ? '400' : '300',
                 display: 'inline-block',
-                cursor: 'default',
-                whiteSpace: 'pre', // Preserve whitespace
-                transform: isHovered ? 'translateY(-10px)' : 'translateY(0)',
-                color: '#737373',
+                whiteSpace: char === ' ' ? 'pre' : 'normal'
             }}
         >
             {char}
@@ -73,7 +21,29 @@ const HoverChar = ({ char }) => {
     );
 };
 
-export default function Testimonials() {
+export default function Testimonials({ testimonials: dynamicTestimonials, content }) {
+    const heading = content?.heading || "CLIENT PERSPECTIVES";
+    const testimonials = dynamicTestimonials && dynamicTestimonials.length > 0 ? dynamicTestimonials : [
+        {
+            id: 1,
+            quote: "Every space unfolds with intention. What once was an empty plot is now a home that reflects our values, our lifestyle, and our story — seamlessly blending art with purpose.",
+            author: "Kavin Kumar",
+            role: "Private Client"
+        },
+        {
+            id: 2,
+            quote: "What impressed us most was not just the design excellence, but the strategic thinking behind every decision. The result is not just a building, but a statement of who we are.",
+            author: "Balaji BM",
+            role: "CEO, TechFlow"
+        },
+        {
+            id: 3,
+            quote: "From concept sketches to the final execution, the process was curated, disciplined, and deeply collaborative. The outcome exceeded expectation — refined, timeless, and inspiring.",
+            author: "Ahasi",
+            role: "Art Director"
+        }
+    ];
+
     return (
         <section
             data-nav-theme="light"
@@ -86,26 +56,39 @@ export default function Testimonials() {
             }}
         >
             <div style={{ maxWidth: '1920px', margin: '0 auto' }}>
-                <h2 style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: 'clamp(2rem, 5vw, 4rem)',
-                    fontWeight: '300',
-                    marginBottom: '80px',
-                    letterSpacing: '-0.02em',
-                    borderBottom: '1px solid rgba(0,0,0,0.1)',
-                    paddingBottom: '20px',
-                    color: '#000000'
-                }}>
-                    CLIENT PERSPECTIVES
-                </h2>
+                <div style={{ marginBottom: '80px', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '30px' }}>
+                    <h2 style={{
+                        fontFamily: 'var(--font-heading)',
+                        fontSize: 'clamp(2rem, 5vw, 4rem)',
+                        fontWeight: '300',
+                        marginBottom: '15px',
+                        letterSpacing: '-0.02em',
+                        color: '#000000'
+                    }}>
+                        {heading}
+                    </h2>
+                    {content?.subtext && (
+                        <p style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: 'clamp(0.9rem, 1.1vw, 1.2rem)',
+                            fontWeight: '400',
+                            color: '#737373',
+                            maxWidth: '600px',
+                            lineHeight: '1.6',
+                            margin: 0
+                        }}>
+                            {content.subtext}
+                        </p>
+                    )}
+                </div>
 
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
                     gap: '40px'
                 }}>
-                    {testimonials.map((item) => (
-                        <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {testimonials.map((item, idx) => (
+                        <div key={item._id || idx} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <p style={{
                                 fontFamily: 'var(--font-heading)',
                                 fontSize: 'clamp(1.1rem, 1.8vw, 1.6rem)',

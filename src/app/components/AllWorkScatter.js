@@ -7,7 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const scatteredImages = [
+const defaultScatteredImages = [
     // Layer 1: Background
     { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80', x: '5%', y: '10%', w: '18vw', h: '30vh', speed: 0.15, z: 1 },
     { src: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=600&q=80', x: '80%', y: '15%', w: '15vw', h: '25vh', speed: 0.2, z: 1 },
@@ -31,7 +31,7 @@ const scatteredImages = [
     { src: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=600&q=80', x: '75%', y: '95%', w: '14vw', h: '18vh', speed: 0.85, z: 13 },
 ];
 
-const mobileScatteredImages = [
+const defaultMobileScatteredImages = [
     { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80', x: '5%', y: '10%', w: '40vw', h: '20vh', speed: 0.15, z: 1 },
     { src: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=600&q=80', x: '55%', y: '15%', w: '35vw', h: '15vh', speed: 0.2, z: 1 },
     { src: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80', x: '10%', y: '45%', w: '45vw', h: '20vh', speed: 0.4, z: 5 },
@@ -40,7 +40,7 @@ const mobileScatteredImages = [
     { src: 'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?auto=format&fit=crop&w=800&q=80', x: '60%', y: '75%', w: '45vw', h: '30vh', speed: 0.9, z: 15 },
 ];
 
-const transitionImage = '/images/All-works-01.jpg';
+const defaultTransitionImage = '/images/All-works-01.jpg';
 
 const visionItems = [
     { title: 'Design integrity', desc: 'At the core of every structure lies intention.We integrate advanced research and evolving technology with a distinctly human sensibility — because innovation without intuition is incomplete.Our process challenges convention, tests boundaries, and explores possibilities beyond the expected. Each solution is thoughtfully engineered, creatively envisioned, and uncompromising in execution.' },
@@ -48,11 +48,25 @@ const visionItems = [
     { title: 'Enhanced Living', desc: 'Well-being is not an afterthought — it is the foundation. We design spaces that elevate everyday life, where light, proportion, material, and flow work in harmony. Every environment is thoughtfully crafted to encourage connection, comfort, and clarity. Our approach goes beyond structure. We create living experiences — spaces that nurture balance, inspire interaction, and enhance the rhythm of modern life.' }
 ];
 
-export default function AllWorkScatter() {
+export default function AllWorkScatter({ projects, content }) {
     const containerRef = useRef(null);
     const pinRef = useRef(null);
     const textRef = useRef(null);
     const imagesRef = useRef([]);
+
+    const heading = content?.heading || "All Work";
+    const displayProjects = projects || [];
+    const count = displayProjects.length;
+
+    // Use content from DB if available, otherwise fall back to hardcoded defaults
+    const resolveArray = (val, fallback) => {
+        if (!val) return fallback;
+        if (typeof val === 'string') { try { return JSON.parse(val); } catch { return fallback; } }
+        return Array.isArray(val) ? val : fallback;
+    };
+    const scatteredImages = resolveArray(content?.scatterImages, defaultScatteredImages);
+    const mobileScatteredImages = resolveArray(content?.mobileScatterImages, defaultMobileScatteredImages);
+    const transitionImage = content?.transitionImage || defaultTransitionImage;
 
     // Independent Refs
     const leftTextRef = useRef(null);
@@ -318,12 +332,25 @@ export default function AllWorkScatter() {
                     style={{ zIndex: 20, position: 'relative', textAlign: 'center', pointerEvents: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}
                 >
                     <Link href="/projects" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'baseline', gap: '0px' }}>
-                        <span ref={leftTextRef} style={textPartStyle}>All W</span>
-                        <div style={{ position: 'relative', display: 'inline-block', width: 'auto', height: 'auto' }}>
-                            <span ref={oSpanRef} style={textPartStyle}>o</span>
-                        </div>
-                        <span ref={rightTextRef} style={textPartStyle}>rk</span>
-                        <sup ref={countRef} style={{ fontSize: '1.5rem', fontWeight: 300, marginLeft: '8px', zIndex: 2 }}>(27)</sup>
+                        {(() => {
+                            const oIndex = heading.toLowerCase().indexOf('o');
+                            if (oIndex !== -1) {
+                                const leftPart = heading.slice(0, oIndex);
+                                const oPart = heading[oIndex];
+                                const rightPart = heading.slice(oIndex + 1);
+                                return (
+                                    <>
+                                        <span ref={leftTextRef} style={textPartStyle}>{leftPart}</span>
+                                        <div style={{ position: 'relative', display: 'inline-block', width: 'auto', height: 'auto' }}>
+                                            <span ref={oSpanRef} style={textPartStyle}>{oPart}</span>
+                                        </div>
+                                        <span ref={rightTextRef} style={textPartStyle}>{rightPart}</span>
+                                    </>
+                                );
+                            }
+                            return <span style={textPartStyle}>{heading}</span>;
+                        })()}
+                        <sup ref={countRef} style={{ fontSize: '1.5rem', fontWeight: 300, marginLeft: '8px', zIndex: 2 }}>({count})</sup>
                     </Link>
                 </div>
 
@@ -430,7 +457,7 @@ export default function AllWorkScatter() {
                                 fontWeight: 300
                             }}
                         >
-                            {visionItems[0].desc}
+                            {content?.subtext || visionItems[0].desc}
                         </p>
                     </div>
 

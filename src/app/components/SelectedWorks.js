@@ -7,29 +7,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const projects = [
-    {
-        title: 'The Grand Pavilion',
-        type: 'Residential',
-        year: '2025',
-        image: '/images/luxury-1.jpg',
-    },
-    {
-        title: 'Urban Sanctuary',
-        type: 'Commercial',
-        year: '2024',
-        image: '/images/luxury-2.jpg',
-    },
-    {
-        title: 'Heritage Revival',
-        type: 'Hospitality',
-        year: '2024',
-        image: '/images/luxury-3.jpg',
-    },
-];
-
-export default function SelectedWorks() {
+export default function SelectedWorks({ projects: initialProjects }) {
+    const listRef = useRef(null);
     const containerRef = useRef(null);
+    const projects = initialProjects || [];
+
+    const heading = "Selected Works";
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -148,15 +131,16 @@ export default function SelectedWorks() {
         }, containerRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [projects]);
 
     return (
         <section ref={containerRef} id="works" className="works-section" data-nav-theme="light">
             <div className="works-inner">
                 {/* Side Header */}
                 <div className="works-header-side">
-                    <h2 className="works-heading">Selected Works</h2>
+                    <h2 className="works-heading">{heading}</h2>
                     <span className="works-count">({projects.length})</span>
+                    {/* Removed content?.subtext block */}
                 </div>
 
                 {/* Content Column */}
@@ -171,14 +155,21 @@ export default function SelectedWorks() {
                                         <span className="bracket-right" style={{ display: 'inline-block' }}>]</span>
                                     </h3>
                                     <div className="work-image-container">
-                                        <Image
-                                            src={project.image}
-                                            alt={project.title}
-                                            width={2000}
-                                            height={1200}
-                                            style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                                            priority={i === 0}
-                                        />
+                                        {project.mainImage ? (
+                                            <Image
+                                                src={project.mainImage}
+                                                alt={project.title}
+                                                width={2000}
+                                                height={1200}
+                                                style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                                                priority={i === 0}
+                                                unoptimized
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                                <span className="text-[10px] uppercase tracking-widest text-gray-300">Visual Asset Pending</span>
+                                            </div>
+                                        )}
                                         <div className="work-overlay">
                                             <div className="work-meta">
                                                 <span>{project.type}</span>

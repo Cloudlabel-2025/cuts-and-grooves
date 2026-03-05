@@ -8,8 +8,14 @@ import FloatingCTA from './components/FloatingCTA';
 
 import SmoothScroll from './components/SmoothScroll';
 
+import { Providers } from './providers';
+
+import { usePathname } from 'next/navigation';
+
 export default function RootLayout({ children }) {
   const [loaded, setLoaded] = useState(false);
+  const pathname = usePathname();
+  const isAdminPath = pathname?.startsWith('/admin');
 
   return (
     <html lang="en">
@@ -22,12 +28,18 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body suppressHydrationWarning={true}>
-        <SmoothScroll>
-          {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
-          <Navbar />
-          {children}
-          <FloatingCTA />
-        </SmoothScroll>
+        <Providers>
+          {isAdminPath ? (
+            <main>{children}</main>
+          ) : (
+            <SmoothScroll>
+              {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
+              <Navbar />
+              <main>{children}</main>
+              <FloatingCTA />
+            </SmoothScroll>
+          )}
+        </Providers>
       </body>
     </html>
   );

@@ -61,8 +61,12 @@ const MorphingLine = ({ children }) => {
     );
 };
 
-export default function HeroSection() {
+export default function HeroSection({ content }) {
     const sectionRef = useRef(null);
+
+    const title = content?.title || "We Make your Livin' Better";
+    const subtitle = content?.subtitle || "An Architecture & Interior Design Studio";
+    const videoUrl = content?.videoUrl || "/videos/luxury-interior.mp4";
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -183,38 +187,49 @@ export default function HeroSection() {
                 },
                 0.2
             );
-
-
         }, sectionRef);
 
         return () => ctx.revert();
     }, []);
 
+    const isVideo = (url) => {
+        if (!url) return true; // Default to video if not sure
+        return url.match(/\.(mp4|webm|ogg)$|video\/upload/);
+    };
+
     return (
         <section ref={sectionRef} className="hero-section" data-nav-theme="dark" style={{ position: 'relative', zIndex: 10 }}>
             <div id="hero-pin-container" style={{ width: '100%', height: '100%' }}>
                 <div className="hero-clip-wrapper">
-                    <video
-                        className="hero-video"
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                    >
-                        <source src="/videos/luxury-interior.mp4" type="video/mp4" />
-                    </video>
+                    {isVideo(videoUrl) ? (
+                        <video
+                            className="hero-video"
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                            key={videoUrl}
+                        >
+                            <source src={videoUrl} type="video/mp4" />
+                        </video>
+                    ) : (
+                        <img
+                            src={videoUrl}
+                            alt={title}
+                            className="hero-video object-cover"
+                            style={{ width: '100%', height: '110%' }}
+                        />
+                    )}
                     <div className="hero-overlay"></div>
                 </div>
                 <div className="hero-inner">
                     <h1 className="hero-heading">
                         <MorphingLine>
-                            <span style={{ color: '#FDEBD0' }}>We Make your </span>Livin&apos; <span style={{ color: '#FDEBD0' }}>Better</span>
+                            <span dangerouslySetInnerHTML={{ __html: title }}></span>
                         </MorphingLine>
-                        {/* <MorphingLine>Building with Discipline,</MorphingLine>
-                        <MorphingLine>Delivering with Pride.</MorphingLine> */}
                     </h1>
                     <p className="hero-subtitle">
-                        An Architecture & Interior Design Studio
+                        {subtitle}
                     </p>
                 </div>
                 <div className="hero-scroll-indicator">
