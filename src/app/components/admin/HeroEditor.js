@@ -23,7 +23,15 @@ export default function HeroEditor({ page = 'home', section = 'hero' }) {
 
     const fetchHeroContent = async () => {
         try {
-            const res = await fetch(`/api/content?page=${page}&section=${section}`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const res = await fetch(`/api/content?page=${page}&section=${section}`, {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            
+            if (!res.ok) throw new Error('Failed to fetch');
             const data = await res.json();
             const contentMap = {};
             data.forEach(item => {
@@ -37,7 +45,14 @@ export default function HeroEditor({ page = 'home', section = 'hero' }) {
             setContent(loadedContent);
             setStagedContent(loadedContent);
         } catch (err) {
-            console.error(err);
+            console.error('Failed to fetch content:', err);
+            const defaultContent = {
+                title: "We Make Your Livin' Better",
+                subtitle: "Architectural Excellence & Interior Innovation",
+                videoUrl: "/videos/hero-bg.mp4"
+            };
+            setContent(defaultContent);
+            setStagedContent(defaultContent);
         } finally {
             setLoading(false);
         }
@@ -66,7 +81,7 @@ export default function HeroEditor({ page = 'home', section = 'hero' }) {
             setContent(stagedContent);
         } catch (err) {
             console.error(err);
-            alert('Failed to synchronize architectural changes.');
+            alert('Failed to save changes.');
         } finally {
             setSaving(false);
         }
@@ -77,153 +92,319 @@ export default function HeroEditor({ page = 'home', section = 'hero' }) {
     };
 
     if (loading) return (
-        <div className="flex items-center space-x-4 py-20 opacity-30">
-            <div className="w-2 h-2 bg-black animate-bounce"></div>
-            <div className="w-2 h-2 bg-black animate-bounce [animation-delay:-0.15s]"></div>
-            <div className="w-2 h-2 bg-black animate-bounce [animation-delay:-0.3s]"></div>
-            <span className="text-[10px] uppercase tracking-[1em] pl-4">Syncing Infrastructure</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingTop: '80px', paddingBottom: '80px', opacity: 0.3 }}>
+            <div style={{ width: '8px', height: '8px', backgroundColor: '#000000', borderRadius: '50%', animation: 'bounce 1.4s infinite' }}></div>
+            <div style={{ width: '8px', height: '8px', backgroundColor: '#000000', borderRadius: '50%', animation: 'bounce 1.4s infinite', animationDelay: '-0.2s' }}></div>
+            <div style={{ width: '8px', height: '8px', backgroundColor: '#000000', borderRadius: '50%', animation: 'bounce 1.4s infinite', animationDelay: '-0.4s' }}></div>
+            <span style={{ fontSize: '10px', letterSpacing: '0.1em', paddingLeft: '16px', textTransform: 'uppercase', fontWeight: '600' }}>Loading</span>
         </div>
     );
 
     return (
-        <div className="space-y-16">
-            <div className="flex justify-between items-end pb-8 border-b border-gray-100">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '64px' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingBottom: '24px', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
                 <div>
-                    <h1 className="text-4xl font-extralight tracking-[0.5em] uppercase mb-4">Hero Section</h1>
-                    <div className="flex items-center space-x-4">
-                        <div className="w-12 h-[1px] bg-[#A67C52]"></div>
-                        <p className="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold">Manage background video, heading and subtitle</p>
+                    <h1 style={{ fontSize: '40px', fontWeight: '700', letterSpacing: '-0.02em', textTransform: 'uppercase', marginBottom: '16px', margin: 0 }}>
+                        Hero Section
+                    </h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ width: '32px', height: '1px', backgroundColor: '#000000' }}></div>
+                        <p style={{ fontSize: '12px', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', fontWeight: '600', textTransform: 'uppercase', margin: 0 }}>
+                            Manage background video, heading and subtitle
+                        </p>
                     </div>
                 </div>
-                <div className="flex items-center space-x-8">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
                     {hasChanges && (
-                        <div className="flex items-center space-x-3 text-[10px] text-[#A67C52] font-bold uppercase tracking-[0.3em] animate-in fade-in slide-in-from-right-4 duration-500">
-                            <span className="w-2 h-2 bg-[#A67C52] rounded-full animate-pulse"></span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '10px', color: '#000000', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', animation: 'fadeIn 0.5s ease' }}>
+                            <span style={{ width: '8px', height: '8px', backgroundColor: '#000000', borderRadius: '50%', animation: 'pulse 2s infinite' }}></span>
                             <span>Unsaved Changes</span>
                         </div>
                     )}
                     {saving && (
-                        <div className="flex items-center space-x-3 text-[10px] text-black animate-pulse font-bold uppercase tracking-[0.3em]">
-                            <span className="w-2 h-2 bg-black rounded-full"></span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '10px', color: '#000000', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', animation: 'pulse 1s infinite' }}>
+                            <span style={{ width: '8px', height: '8px', backgroundColor: '#000000', borderRadius: '50%' }}></span>
                             <span>Saving...</span>
                         </div>
                     )}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-16">
-                {/* Visual Preview */}
-                <div className="space-y-8">
-                    <div className="flex items-center justify-between px-2">
-                        <h3 className="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold">Preview</h3>
-                        <span className="text-[8px] uppercase tracking-widest text-gray-300">Live</span>
+            {/* Main Content */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px' }}>
+                {/* Preview */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '8px', paddingRight: '8px' }}>
+                        <h3 style={{ fontSize: '12px', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', fontWeight: '700', textTransform: 'uppercase', margin: 0 }}>
+                            Preview
+                        </h3>
+                        <span style={{ fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.3)', textTransform: 'uppercase', fontWeight: '600' }}>Live</span>
                     </div>
-                    <div className="relative aspect-video rounded-[3rem] overflow-hidden border border-white shadow-[0_40px_100px_rgba(0,0,0,0.1)] bg-black group transition-all duration-700 hover:shadow-[0_60px_150px_rgba(0,0,0,0.15)]">
-                        <video
-                            key={stagedContent.videoUrl}
-                            autoPlay muted loop playsInline
-                            className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-1000"
-                        >
-                            <source src={stagedContent.videoUrl} type="video/mp4" />
-                        </video>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center">
-                            <h2 className="text-2xl md:text-3xl font-light tracking-tight text-white mb-4 leading-tight drop-shadow-2xl" dangerouslySetInnerHTML={{ __html: stagedContent.title }}></h2>
-                            <p className="text-[10px] uppercase tracking-[0.4em] text-white/70 font-bold drop-shadow-lg">{stagedContent.subtitle}</p>
-                        </div>
-
-                        {/* Asset Overlay */}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-700 flex flex-col items-center justify-center gap-6 backdrop-blur-md">
-                            <div className="text-[10px] uppercase tracking-[0.4em] text-white mb-2 font-bold">Replace Video / Image</div>
-                            <div className="flex items-center space-x-4">
-                                <CloudinaryUpload
-                                    folder="hero"
-                                    onUploadSuccess={(url) => setStagedContent({ ...stagedContent, videoUrl: url })}
-                                />
-                                {stagedContent.videoUrl && !stagedContent.videoUrl.startsWith('/videos/') && (
-                                    <button
-                                        onClick={() => setStagedContent({ ...stagedContent, videoUrl: '/videos/hero-bg.mp4' })}
-                                        className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-2xl text-[10px] uppercase tracking-widest font-bold hover:bg-red-600 hover:border-red-600 transition-all"
-                                    >
-                                        Restore Default
-                                    </button>
-                                )}
+                    <div style={{
+                        position: 'relative',
+                        aspectRatio: '16/9',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        border: '1px solid rgba(0,0,0,0.1)',
+                        backgroundColor: '#000000',
+                        transition: 'all 0.3s ease',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+                    }}
+                    >
+                        {stagedContent.videoUrl && stagedContent.videoUrl.startsWith('http') ? (
+                            <video
+                                key={stagedContent.videoUrl}
+                                autoPlay muted loop playsInline
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }}
+                            >
+                                <source src={stagedContent.videoUrl} type="video/mp4" />
+                            </video>
+                        ) : (
+                            <div style={{
+                                width: '100%',
+                                height: '100%',
+                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexDirection: 'column',
+                                gap: '16px'
+                            }}>
+                                <div style={{ fontSize: '48px' }}>🎬</div>
+                                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', margin: 0 }}>Upload video to preview</p>
                             </div>
+                        )}
+                        <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)',
+                            pointerEvents: 'none'
+                        }}></div>
+                        <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '48px',
+                            textAlign: 'center',
+                            pointerEvents: 'none'
+                        }}>
+                            <h2 style={{
+                                fontSize: '28px',
+                                fontWeight: '300',
+                                letterSpacing: '-0.01em',
+                                color: '#ffffff',
+                                marginBottom: '16px',
+                                lineHeight: 1.3,
+                                textShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                            }} dangerouslySetInnerHTML={{ __html: stagedContent.title }}></h2>
+                            <p style={{
+                                fontSize: '12px',
+                                letterSpacing: '0.1em',
+                                color: 'rgba(255,255,255,0.7)',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                textShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                            }}>
+                                {stagedContent.subtitle}
+                            </p>
                         </div>
                     </div>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-[0.3em] text-center font-medium italic">Hover the preview to upload new media</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.5)', letterSpacing: '0.05em', textAlign: 'center', fontWeight: '500', textTransform: 'uppercase', margin: 0 }}>
+                        Hover to upload new media
+                    </p>
                 </div>
 
-                {/* Content Controls */}
-                <div className="bg-white p-12 md:p-16 border border-white rounded-[3rem] shadow-[0_50px_150px_-50px_rgba(0,0,0,0.1)] flex flex-col space-y-16 animate-in slide-in-from-right-8 duration-1000 relative overflow-hidden">
-                    <div className="space-y-12">
-                        <div className="flex flex-col space-y-5 group">
-                            <div className="flex justify-between items-center px-4">
-                                <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400 group-focus-within:text-[#A67C52] transition-colors">
+                {/* Form Controls */}
+                <div style={{
+                    backgroundColor: '#ffffff',
+                    padding: '48px',
+                    border: '1px solid rgba(0,0,0,0.1)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '48px'
+                }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
+                        {/* Title Input */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '16px', paddingRight: '16px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', margin: 0 }}>
                                     Main Heading (HTML supported)
                                 </label>
-                                <span className="w-1.5 h-1.5 bg-gray-100 rounded-full"></span>
+                                <span style={{ width: '6px', height: '6px', backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '50%' }}></span>
                             </div>
                             <textarea
-                                className="w-full bg-gray-50/50 border border-gray-100 rounded-[2rem] p-10 text-lg font-medium tracking-tight text-gray-900 focus:outline-none focus:border-[#A67C52]/40 focus:bg-white focus:ring-8 focus:ring-[#A67C52]/5 transition-all duration-500 h-48 resize-none"
+                                style={{
+                                    width: '100%',
+                                    backgroundColor: 'rgba(0,0,0,0.02)',
+                                    border: '1px solid rgba(0,0,0,0.1)',
+                                    borderRadius: '8px',
+                                    padding: '16px',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    letterSpacing: '-0.01em',
+                                    color: '#000000',
+                                    outline: 'none',
+                                    transition: 'all 0.3s ease',
+                                    height: '120px',
+                                    resize: 'none',
+                                    fontFamily: 'inherit'
+                                }}
                                 value={stagedContent.title}
                                 onChange={(e) => setStagedContent({ ...stagedContent, title: e.target.value })}
+                                onFocus={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#ffffff';
+                                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)';
+                                }}
+                                onBlur={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.02)';
+                                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+                                }}
                             />
-                            <div className="flex items-center space-x-3 px-4">
-                                <span className="text-[9px] text-gray-300 font-bold uppercase tracking-widest leading-none">Syntax Guide</span>
-                                <div className="h-[1px] flex-1 bg-gray-50"></div>
-                                <p className="text-[9px] text-[#A67C52] font-bold uppercase tracking-widest">{'<'}span{'>'}Highlighted Word{'<'}/span{'>'}</p>
-                            </div>
                         </div>
 
-                        <div className="flex flex-col space-y-5 group">
-                            <div className="flex justify-between items-center px-4">
-                                <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400 group-focus-within:text-[#A67C52] transition-colors">
+                        {/* Subtitle Input */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '16px', paddingRight: '16px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', margin: 0 }}>
                                     Subtitle
                                 </label>
-                                <span className="w-1.5 h-1.5 bg-gray-100 rounded-full"></span>
+                                <span style={{ width: '6px', height: '6px', backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '50%' }}></span>
                             </div>
                             <input
-                                className="w-full px-10 py-9 bg-gray-50/50 border border-gray-100 rounded-[2rem] focus:outline-none focus:border-[#A67C52]/40 focus:bg-white focus:ring-8 focus:ring-[#A67C52]/5 transition-all duration-500 text-base font-medium tracking-tight text-gray-900 placeholder:text-gray-200"
+                                type="text"
+                                style={{
+                                    width: '100%',
+                                    paddingLeft: '16px',
+                                    paddingRight: '16px',
+                                    paddingTop: '12px',
+                                    paddingBottom: '12px',
+                                    backgroundColor: 'rgba(0,0,0,0.02)',
+                                    border: '1px solid rgba(0,0,0,0.1)',
+                                    borderRadius: '8px',
+                                    outline: 'none',
+                                    transition: 'all 0.3s ease',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    letterSpacing: '-0.01em',
+                                    color: '#000000',
+                                    fontFamily: 'inherit'
+                                }}
                                 value={stagedContent.subtitle}
                                 onChange={(e) => setStagedContent({ ...stagedContent, subtitle: e.target.value })}
+                                onFocus={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#ffffff';
+                                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)';
+                                }}
+                                onBlur={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.02)';
+                                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+                                }}
                             />
                         </div>
                     </div>
 
-                    <div className="space-y-6">
-                        <div className="flex items-center space-x-4">
+                    {/* Action Buttons */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div style={{ display: 'flex', gap: '16px' }}>
                             <button
                                 onClick={handleSaveAll}
                                 disabled={!hasChanges || saving}
-                                className={`flex-1 px-8 py-6 rounded-2xl text-[11px] font-bold uppercase tracking-[0.5em] transition-all duration-500 shadow-xl ${hasChanges && !saving
-                                    ? 'bg-black text-white hover:bg-[#A67C52] shadow-black/20 translate-y-0'
-                                    : 'bg-gray-100 text-gray-300 cursor-not-allowed translate-y-0'
-                                    }`}
+                                style={{
+                                    flex: 1,
+                                    paddingLeft: '24px',
+                                    paddingRight: '24px',
+                                    paddingTop: '12px',
+                                    paddingBottom: '12px',
+                                    borderRadius: '8px',
+                                    fontSize: '12px',
+                                    fontWeight: '700',
+                                    letterSpacing: '0.1em',
+                                    textTransform: 'uppercase',
+                                    transition: 'all 0.3s ease',
+                                    border: 'none',
+                                    cursor: hasChanges && !saving ? 'pointer' : 'not-allowed',
+                                    backgroundColor: hasChanges && !saving ? '#000000' : 'rgba(0,0,0,0.1)',
+                                    color: hasChanges && !saving ? '#ffffff' : 'rgba(0,0,0,0.3)'
+                                }}
                             >
                                 {saving ? 'Saving...' : 'Save Changes'}
                             </button>
                             {hasChanges && !saving && (
                                 <button
                                     onClick={handleReset}
-                                    className="px-8 py-6 bg-white border border-gray-100 text-red-500 rounded-2xl text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-gray-50 transition-all duration-500"
+                                    style={{
+                                        paddingLeft: '24px',
+                                        paddingRight: '24px',
+                                        paddingTop: '12px',
+                                        paddingBottom: '12px',
+                                        backgroundColor: '#ffffff',
+                                        border: '1px solid rgba(0,0,0,0.1)',
+                                        color: '#ff4444',
+                                        borderRadius: '8px',
+                                        fontSize: '11px',
+                                        fontWeight: '700',
+                                        letterSpacing: '0.1em',
+                                        textTransform: 'uppercase',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = 'rgba(255,68,68,0.1)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = '#ffffff';
+                                    }}
                                 >
                                     Reset
                                 </button>
                             )}
                         </div>
-                        <div className="pt-8 border-t border-gray-50 flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                                <div className={`w-2 h-2 rounded-full ${hasChanges ? 'bg-amber-400' : 'bg-green-500'}`}></div>
-                                <span className="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold">
-                                    {hasChanges ? 'You have unsaved changes' : 'All changes saved'}
+                        <div style={{ paddingTop: '16px', borderTop: '1px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{
+                                    width: '8px',
+                                    height: '8px',
+                                    borderRadius: '50%',
+                                    backgroundColor: hasChanges ? '#ff9800' : '#4caf50'
+                                }}></div>
+                                <span style={{ fontSize: '10px', letterSpacing: '0.05em', color: 'rgba(0,0,0,0.5)', fontWeight: '600', textTransform: 'uppercase', margin: 0 }}>
+                                    {hasChanges ? 'Unsaved changes' : 'All saved'}
                                 </span>
                             </div>
-                            <span className="text-[8px] uppercase tracking-[0.2em] text-gray-300">ID: SECTION_HERO_V1</span>
+                            <span style={{ fontSize: '9px', letterSpacing: '0.05em', color: 'rgba(0,0,0,0.3)', textTransform: 'uppercase' }}>HERO_V1</span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <style jsx>{`
+                @keyframes bounce {
+                    0%, 80%, 100% { transform: translateY(0); }
+                    40% { transform: translateY(-8px); }
+                }
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                }
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+            `}</style>
         </div>
     );
 }

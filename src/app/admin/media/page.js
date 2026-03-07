@@ -5,65 +5,250 @@ import { useState } from 'react';
 export default function MediaLibrary() {
     const [uploading, setUploading] = useState(false);
 
-    // In a real app, we'd use the Cloudinary Upload Widget or a signed upload
-    // For now, I'll provide a placeholder UI for the Cloudinary integration
-
     return (
-        <div className="space-y-16">
-            <div className="flex justify-between items-end pb-8 border-b border-gray-100">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
+            {/* Header */}
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-end',
+                paddingBottom: '24px',
+                borderBottom: '1px solid rgba(0,0,0,0.1)'
+            }}>
                 <div>
-                    <h1 className="text-4xl font-extralight tracking-[0.5em] uppercase mb-4">Media</h1>
-                    <div className="flex items-center space-x-4">
-                        <div className="w-12 h-[1px] bg-[#A67C52]"></div>
-                        <p className="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold">Asset Repository</p>
+                    <h1 style={{ fontSize: '48px', fontWeight: '700', letterSpacing: '-0.02em', color: '#000000', margin: 0, marginBottom: '16px' }}>
+                        Media Library
+                    </h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ width: '32px', height: '1px', backgroundColor: '#000000' }}></div>
+                        <p style={{ fontSize: '12px', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', fontWeight: '600', textTransform: 'uppercase', margin: 0 }}>
+                            Asset Repository
+                        </p>
                     </div>
                 </div>
                 <button
-                    className="px-10 py-5 bg-black text-white text-[11px] font-bold uppercase tracking-[0.5em] rounded-2xl hover:bg-[#A67C52] transition-all duration-500 shadow-xl shadow-black/10"
+                    style={{
+                        paddingLeft: '32px',
+                        paddingRight: '32px',
+                        paddingTop: '12px',
+                        paddingBottom: '12px',
+                        backgroundColor: '#000000',
+                        color: '#ffffff',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        borderRadius: '8px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#000000';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                    }}
                 >
-                    Initialize Upload
+                    Upload Media
                 </button>
             </div>
 
-            <div className="bg-white border border-gray-100 rounded-[3rem] p-16 md:p-24 shadow-[0_40px_100px_rgba(0,0,0,0.03)] border-white relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-gray-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#A67C52]/5 transition-colors duration-1000"></div>
-
-                <div className="max-w-2xl mx-auto text-center space-y-10 relative z-10">
-                    <div className="w-24 h-24 bg-gray-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-gray-100 shadow-inner group-hover:scale-110 transition-transform duration-700">
-                        <span className="text-4xl text-[#A67C52] font-extralight">☁</span>
+            {/* Upload Zone */}
+            <div style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.1)',
+                borderRadius: '12px',
+                padding: '64px 48px',
+                textAlign: 'center',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden'
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.02)';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+            }}
+            >
+                <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px', position: 'relative', zIndex: 10 }}>
+                    <div style={{
+                        width: '80px',
+                        height: '80px',
+                        backgroundColor: 'rgba(0,0,0,0.05)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto',
+                        fontSize: '40px'
+                    }}>
+                        ☁
                     </div>
-                    <div className="space-y-4">
-                        <h3 className="text-xs uppercase tracking-[0.6em] font-bold text-black">Cloud Infrastructure Active</h3>
-                        <p className="text-xs text-gray-400 leading-relaxed uppercase tracking-[0.3em] font-medium max-w-lg mx-auto">
-                            Your architectural assets are synchronized via Cloudinary. Optimized delivery for 4K renders and high-resolution site photography is enabled.
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <h3 style={{ fontSize: '12px', letterSpacing: '0.1em', fontWeight: '700', color: '#000000', textTransform: 'uppercase', margin: 0 }}>
+                            Cloud Storage Active
+                        </h3>
+                        <p style={{ fontSize: '13px', color: 'rgba(0,0,0,0.6)', lineHeight: '1.6', margin: 0 }}>
+                            Drag and drop your media files here or click to browse. Supports images, videos, and documents.
                         </p>
                     </div>
-                    <button className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#A67C52] hover:text-black transition-colors flex items-center justify-center mx-auto group/btn px-8 py-3 rounded-full hover:bg-gray-50">
-                        <span>Configure Network Nodes</span>
-                        <span className="ml-4 transform group-hover/btn:translate-x-2 transition-transform">→</span>
+                    <button style={{
+                        paddingLeft: '24px',
+                        paddingRight: '24px',
+                        paddingTop: '10px',
+                        paddingBottom: '10px',
+                        backgroundColor: '#000000',
+                        color: '#ffffff',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase',
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        margin: '0 auto'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#000000';
+                    }}
+                    >
+                        Browse Files
                     </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
-                {/* Placeholder for uploaded images */}
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(i => (
-                    <div key={i} className="aspect-square bg-white border border-gray-100 rounded-[2rem] overflow-hidden group relative cursor-pointer shadow-sm hover:shadow-xl hover:border-[#A67C52]/20 transition-all duration-700 hover:-translate-y-2">
-                        <div className="w-full h-full bg-gray-50 flex items-center justify-center relative overflow-hidden">
-                            <div className="text-[8px] uppercase tracking-[0.4em] text-gray-200 font-bold transform -rotate-45">Asset {i}</div>
-                            <div className="absolute inset-0 bg-[#A67C52]/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        </div>
+            {/* Media Grid */}
+            <div>
+                <h2 style={{ fontSize: '13px', letterSpacing: '0.1em', fontWeight: '700', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', margin: '0 0 24px 0' }}>
+                    Recent Assets
+                </h2>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                    gap: '16px'
+                }}>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(i => (
+                        <MediaCard key={i} index={i} />
+                    ))}
+                </div>
+            </div>
 
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center p-6 space-y-4">
-                            <button className="w-full py-3 bg-white text-black rounded-xl text-[9px] uppercase tracking-widest font-bold hover:bg-[#A67C52] hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500">
-                                View Data
-                            </button>
-                            <button className="w-full py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold hover:bg-red-600 hover:border-red-600 transition-all transform translate-y-4 group-hover:translate-y-0 duration-500 delay-75">
-                                Purge
-                            </button>
-                        </div>
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+            `}</style>
+        </div>
+    );
+}
+
+function MediaCard({ index }) {
+    const [showActions, setShowActions] = useState(false);
+
+    return (
+        <div
+            style={{
+                aspectRatio: '1',
+                backgroundColor: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.1)',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                position: 'relative'
+            }}
+            onMouseEnter={() => setShowActions(true)}
+            onMouseLeave={() => setShowActions(false)}
+        >
+            {/* Thumbnail */}
+            <div style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: 'rgba(0,0,0,0.05)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                color: 'rgba(0,0,0,0.3)',
+                fontWeight: '600',
+                position: 'relative'
+            }}>
+                Asset {index}
+                
+                {/* Overlay */}
+                {showActions && (
+                    <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        padding: '12px',
+                        animation: 'fadeIn 0.2s ease'
+                    }}>
+                        <button style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            backgroundColor: '#ffffff',
+                            color: '#000000',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.1)';
+                            e.currentTarget.style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ffffff';
+                            e.currentTarget.style.color = '#000000';
+                        }}
+                        >
+                            View
+                        </button>
+                        <button style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            color: '#ffffff',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ff4444';
+                            e.currentTarget.style.borderColor = '#ff4444';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                        }}
+                        >
+                            Delete
+                        </button>
                     </div>
-                ))}
+                )}
             </div>
         </div>
     );

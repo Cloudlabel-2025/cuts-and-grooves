@@ -1,23 +1,32 @@
+'use client';
+
 import Link from 'next/link';
 import SectionContentEditor from '@/app/components/admin/SectionContentEditor';
 import AllWorksMediaEditor from '@/app/components/admin/AllWorksMediaEditor';
 
 export default function AllWorksEditPage() {
     return (
-        <div className="space-y-10">
-            <div className="flex items-center gap-3 text-sm">
-                <Link href="/admin/pages/home" className="text-gray-400 hover:text-[#A67C52] transition-colors">Home</Link>
-                <span className="text-gray-200">›</span>
-                <span className="text-gray-800 font-medium">All Projects Gallery</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+            {/* Breadcrumb */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px' }}>
+                <Link href="/admin/pages/home" style={{ color: 'rgba(0,0,0,0.6)', textDecoration: 'none', transition: 'color 0.3s ease' }} onMouseEnter={(e) => e.currentTarget.style.color = '#000000'} onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0,0,0,0.6)'}>
+                    Home
+                </Link>
+                <span style={{ color: 'rgba(0,0,0,0.3)' }}>›</span>
+                <span style={{ color: '#000000', fontWeight: '600' }}>All Projects Gallery</span>
             </div>
 
-            <div className="pb-6 border-b border-gray-100">
-                <h1 className="text-2xl font-semibold text-black mb-2">All Projects Gallery</h1>
-                <p className="text-sm text-gray-400">
+            {/* Header */}
+            <div style={{ paddingBottom: '24px', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+                <h1 style={{ fontSize: '40px', fontWeight: '700', letterSpacing: '-0.02em', color: '#000000', margin: 0, marginBottom: '12px' }}>
+                    All Projects Gallery
+                </h1>
+                <p style={{ fontSize: '13px', color: 'rgba(0,0,0,0.6)', margin: 0, lineHeight: '1.6' }}>
                     Manage the scattered images, transition visual, and section text.
                 </p>
             </div>
 
+            {/* Content Editor */}
             <SectionContentEditor
                 section="all-works"
                 title="Text Content"
@@ -28,7 +37,8 @@ export default function AllWorksEditPage() {
                 ]}
             />
 
-            <div className="pt-4">
+            {/* Media Editor */}
+            <div style={{ paddingTop: '16px' }}>
                 <AllWorksMediaEditor />
             </div>
         </div>

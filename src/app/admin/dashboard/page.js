@@ -1,138 +1,297 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function AdminDashboard() {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     return (
-        <div className="space-y-24">
-            {/* Editorial Header */}
-            <div className="flex justify-between items-end pb-12 border-b border-gray-100">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div>
-                    <h1 className="text-[2.75rem] font-bold tracking-tight text-[#1f2937] mb-3" style={{ fontFamily: 'var(--font-heading)' }}>
-                        Editorial Hub
+                    <h1 style={{ fontSize: '48px', fontWeight: '700', letterSpacing: '-0.02em', color: '#000000', margin: 0, marginBottom: '8px' }}>
+                        Dashboard
                     </h1>
-                    <p className="text-[10px] uppercase tracking-[0.4em] text-[#A67C52] font-bold">Manage Your Brand Experience</p>
-                </div>
-                <div className="hidden lg:flex flex-col items-end">
-                    <span className="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold mb-1.5">System Status</span>
-                    <div className="flex items-center space-x-2.5 px-4 py-2 bg-green-50 rounded-full border border-green-100">
-                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-[11px] font-bold tracking-wide text-green-700 uppercase">Live & Synchronized</span>
-                    </div>
+                    <p style={{ fontSize: '13px', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', fontWeight: '600', textTransform: 'uppercase', margin: 0 }}>
+                        Manage your content and settings
+                    </p>
                 </div>
             </div>
 
-            {/* Quick Management Suite */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <QuickCard title="Media Library" detail="Assets / Cloudinary" icon="📁" href="/admin/media" />
-                <QuickCard title="Project Records" detail="Portfolio Management" icon="▧" href="/admin/projects" />
-                <QuickCard title="Client Feedback" detail="Testimonials" icon="▦" href="/admin/testimonials" />
-                <QuickCard title="Global Styles" detail="Theme & Narrative" icon="◈" href="#" />
+            {/* Quick Actions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <h2 style={{ fontSize: '13px', letterSpacing: '0.1em', fontWeight: '700', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', margin: 0 }}>
+                    Quick Actions
+                </h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                    <QuickCard title="Media Library" href="/admin/media" icon="📁" />
+                    <QuickCard title="Portfolio" href="/admin/pages/work" icon="🎨" />
+                    <QuickCard title="Home Page" href="/admin/pages/home" icon="🏠" />
+                    <QuickCard title="Settings" href="/admin/media" icon="⚙️" />
+                </div>
             </div>
 
-            {/* Visual Site Map */}
-            <div className="space-y-12">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-[10px] uppercase tracking-[0.5em] text-gray-400 font-bold">Visual Site Map</h3>
-                    <div className="h-[1px] flex-1 mx-10 bg-gradient-to-r from-gray-100 to-transparent"></div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {/* Pages Section */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <h2 style={{ fontSize: '13px', letterSpacing: '0.1em', fontWeight: '700', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', margin: 0 }}>
+                    Page Editor
+                </h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
                     <PageCard
                         title="Home"
-                        description="Main landing experience with cinematic hero and narrative."
+                        description="Hero section, featured works, testimonials"
                         href="/admin/pages/home"
-                        visualCanvas={true}
                         icon="🏠"
                     />
                     <PageCard
-                        title="Work"
-                        description="Showcase of your architectural and interior design portfolio."
+                        title="Portfolio"
+                        description="Project showcase and gallery views"
                         href="/admin/pages/work"
-                        icon="📂"
+                        icon="📁"
                     />
                     <PageCard
                         title="Process"
-                        description="Step-by-step breakdown of your studio's methodology."
+                        description="Methodology and workflow"
                         href="/admin/pages/process"
-                        icon="⚙️"
+                        icon="⚡"
                     />
                     <PageCard
                         title="Studio"
-                        description="Institutional philosophy and the human capital behind the brand."
+                        description="About, team, values, awards"
                         href="/admin/pages/studio"
-                        icon="🏢"
+                        icon="🏛️"
                     />
                     <PageCard
                         title="Contact"
-                        description="Direct communication portal and studio location details."
+                        description="Location and contact details"
                         href="/admin/pages/contact"
                         icon="✉️"
                     />
+                    <SystemCard />
                 </div>
             </div>
 
-            {/* System Intelligence Feed */}
-            <div className="bg-white rounded-[2rem] p-12 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.02)]">
-                <div className="flex items-center space-x-5 mb-10 pb-8 border-b border-gray-50">
-                    <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 shadow-sm border border-gray-100">✦</div>
-                    <h4 className="text-[10px] uppercase tracking-[0.4em] font-bold text-gray-500">Operational Intelligence</h4>
+            {/* System Status */}
+            <div style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.1)',
+                borderRadius: '12px',
+                padding: '32px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '32px'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <div>
+                        <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#000000', margin: 0, marginBottom: '8px' }}>
+                            System Status
+                        </h3>
+                        <p style={{ fontSize: '12px', color: 'rgba(0,0,0,0.5)', letterSpacing: '0.05em', fontWeight: '600', textTransform: 'uppercase', margin: 0 }}>
+                            Real-time information
+                        </p>
+                    </div>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        paddingLeft: '16px',
+                        paddingRight: '16px',
+                        paddingTop: '8px',
+                        paddingBottom: '8px',
+                        backgroundColor: 'rgba(0,0,0,0.05)',
+                        borderRadius: '20px'
+                    }}>
+                        <div style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#000000',
+                            borderRadius: '50%',
+                            animation: 'pulse 2s infinite'
+                        }}></div>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: '#000000', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                            Operational
+                        </span>
+                    </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <IntelligenceItem label="Node Density" value="Stable" color="green" />
-                    <IntelligenceItem label="Asset Health" value="100%" color="green" />
-                    <IntelligenceItem label="Pending Commits" value="0" color="gray" />
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+                    <StatusItem label="Database" value="Connected" />
+                    <StatusItem label="Media Assets" value="Synced" />
+                    <StatusItem label="Last Updated" value="Just now" />
                 </div>
+            </div>
+
+            <style jsx>{`
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                }
+            `}</style>
+        </div>
+    );
+}
+
+function QuickCard({ title, href, icon }) {
+    return (
+        <Link
+            href={href}
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                padding: '24px',
+                backgroundColor: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.1)',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                color: '#000000',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.02)';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)';
+                e.currentTarget.style.transform = 'translateY(-4px)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+                e.currentTarget.style.transform = 'translateY(0)';
+            }}
+        >
+            <div style={{ fontSize: '32px' }}>{icon}</div>
+            <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#000000', margin: 0, letterSpacing: '0.02em' }}>
+                {title}
+            </h4>
+        </Link>
+    );
+}
+
+function PageCard({ title, description, href, icon }) {
+    return (
+        <Link
+            href={href}
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                padding: '32px',
+                backgroundColor: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.1)',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                color: '#000000',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                height: '100%'
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.02)';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)';
+                e.currentTarget.style.transform = 'translateY(-8px)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+                e.currentTarget.style.transform = 'translateY(0)';
+            }}
+        >
+            <div style={{ fontSize: '40px' }}>{icon}</div>
+            <div>
+                <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#000000', margin: 0, marginBottom: '8px', letterSpacing: '-0.01em' }}>
+                    {title}
+                </h3>
+                <p style={{ fontSize: '13px', color: 'rgba(0,0,0,0.6)', margin: 0, lineHeight: '1.6' }}>
+                    {description}
+                </p>
+            </div>
+            <div style={{
+                marginTop: 'auto',
+                paddingTop: '16px',
+                borderTop: '1px solid rgba(0,0,0,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '12px',
+                fontWeight: '600',
+                color: 'rgba(0,0,0,0.4)',
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase'
+            }}>
+                <span>Edit</span>
+                <span>→</span>
+            </div>
+        </Link>
+    );
+}
+
+function SystemCard() {
+    return (
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            padding: '32px',
+            backgroundColor: 'rgba(0,0,0,0.05)',
+            border: '1px solid rgba(0,0,0,0.1)',
+            borderRadius: '12px',
+            height: '100%',
+            justifyContent: 'space-between'
+        }}>
+            <div>
+                <div style={{ fontSize: '40px', marginBottom: '16px' }}>📊</div>
+                <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#000000', margin: 0, marginBottom: '8px', letterSpacing: '-0.01em' }}>
+                    System Status
+                </h3>
+                <p style={{ fontSize: '13px', color: 'rgba(0,0,0,0.6)', margin: 0, lineHeight: '1.6' }}>
+                    Monitor platform health
+                </p>
+            </div>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                paddingTop: '16px',
+                borderTop: '1px solid rgba(0,0,0,0.1)'
+            }}>
+                <div style={{
+                    width: '6px',
+                    height: '6px',
+                    backgroundColor: '#000000',
+                    borderRadius: '50%',
+                    animation: 'pulse 2s infinite'
+                }}></div>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: '#000000', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                    All Systems Operational
+                </span>
             </div>
         </div>
     );
 }
 
-function QuickCard({ title, detail, icon, href }) {
+function StatusItem({ label, value }) {
     return (
-        <Link href={href} className="bg-white border border-gray-100 p-8 rounded-[2rem] shadow-sm hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] hover:border-[#A67C52]/20 hover:-translate-y-1 transition-all duration-500 group">
-            <div className="flex items-center space-x-6">
-                <span className="text-2xl group-hover:scale-110 group-hover:text-[#A67C52] transition-all duration-500">{icon}</span>
-                <div>
-                    <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#1f2937]">{title}</h4>
-                    <p className="text-[9px] text-gray-400 uppercase tracking-widest mt-1">{detail}</p>
-                </div>
-            </div>
-        </Link>
-    );
-}
-
-function PageCard({ title, description, href, visualCanvas, icon }) {
-    return (
-        <Link href={href} className="bg-white border border-gray-100 p-12 rounded-[2.5rem] shadow-sm hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden flex flex-col h-full">
-            {visualCanvas && (
-                <div className="absolute top-8 right-8 px-4 py-1.5 bg-[#A67C52]/5 rounded-full border border-[#A67C52]/10">
-                    <span className="text-[8px] uppercase tracking-[0.2em] font-bold text-[#A67C52]">Visual Canvas Active</span>
-                </div>
-            )}
-
-            <div className="text-[2.5rem] mb-10 group-hover:scale-110 group-hover:-rotate-3 origin-bottom-left transition-transform duration-500">{icon}</div>
-
-            <h3 className="text-[2rem] font-bold tracking-tight text-[#1f2937] mb-4 group-hover:text-[#A67C52] transition-colors" style={{ fontFamily: 'var(--font-heading)' }}>{title}</h3>
-            <p className="text-[13px] text-gray-500 leading-relaxed font-medium mb-12 flex-1">{description}</p>
-
-            <div className="pt-8 border-t border-gray-50 flex items-center justify-between text-[10px] uppercase font-bold tracking-[0.3em] text-gray-300 group-hover:text-[#1f2937] transition-colors">
-                <span>Edit Content</span>
-                <span className="group-hover:translate-x-3 transition-transform duration-500">→</span>
-            </div>
-        </Link>
-    );
-}
-
-function IntelligenceItem({ label, value, color }) {
-    const colorClass = color === 'green' ? 'bg-green-500' : 'bg-gray-300';
-    return (
-        <div className="flex items-center space-x-4 p-4 rounded-2xl hover:bg-gray-50 transition-colors">
-            <div className={`w-2 h-2 rounded-full ${colorClass} shadow-sm`}></div>
-            <div>
-                <p className="text-[9px] uppercase tracking-widest text-gray-400 mb-1.5 font-bold">{label}</p>
-                <p className="text-[15px] font-semibold tracking-tight text-gray-900">{value}</p>
-            </div>
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            padding: '16px',
+            backgroundColor: 'rgba(0,0,0,0.02)',
+            border: '1px solid rgba(0,0,0,0.1)',
+            borderRadius: '8px'
+        }}>
+            <p style={{ fontSize: '12px', color: 'rgba(0,0,0,0.5)', fontWeight: '600', letterSpacing: '0.05em', textTransform: 'uppercase', margin: 0 }}>
+                {label}
+            </p>
+            <p style={{ fontSize: '16px', fontWeight: '700', color: '#000000', margin: 0 }}>
+                {value}
+            </p>
         </div>
     );
 }

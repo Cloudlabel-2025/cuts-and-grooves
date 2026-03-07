@@ -18,15 +18,8 @@ export default function TestimonialManagement() {
     }, []);
 
     const fetchTestimonials = async () => {
-        try {
-            const res = await fetch('/api/testimonials');
-            const data = await res.json();
-            setTestimonials(data);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
+        setTestimonials([]);
+        setLoading(false);
     };
 
     const handleSubmit = async (e) => {

@@ -24,9 +24,14 @@ export default function ProjectManagement() {
 
     const fetchProjects = async () => {
         try {
-            const res = await fetch('/api/projects');
-            const data = await res.json();
-            setProjects(data);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const res = await fetch('/api/projects', { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (res.ok) {
+                const data = await res.json();
+                setProjects(data);
+            }
         } catch (err) {
             console.error(err);
         } finally {
@@ -52,7 +57,7 @@ export default function ProjectManagement() {
         e.preventDefault();
 
         if (!formData.mainImage) {
-            alert('Please provide a visual asset (Main Image) for this project.');
+            alert('Please provide a main image for this project.');
             return;
         }
 
@@ -86,12 +91,12 @@ export default function ProjectManagement() {
     };
 
     return (
-        <div className="space-y-12">
-            <div className="flex justify-between items-center pb-8 border-b border-gray-100">
-                <div className="flex items-center space-x-4">
-                    <div className="w-1.5 h-1.5 bg-[#A67C52] rounded-full"></div>
-                    <h2 className="text-[10px] uppercase tracking-[0.5em] text-gray-400 font-bold">Projects</h2>
-                </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '24px', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+                <h2 style={{ fontSize: '12px', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', fontWeight: '700', textTransform: 'uppercase', margin: 0 }}>
+                    Projects
+                </h2>
                 <button
                     onClick={() => {
                         if (showForm) {
@@ -102,85 +107,102 @@ export default function ProjectManagement() {
                             setShowForm(true);
                         }
                     }}
-                    className={`px-8 py-4 text-[9px] font-bold uppercase tracking-[0.4em] rounded-xl transition-all duration-500 shadow-lg ${showForm
-                        ? 'bg-white text-red-500 border border-red-100 shadow-red-500/5'
-                        : 'bg-black text-white hover:bg-[#A67C52] shadow-black/10'
-                        }`}
+                    style={{
+                        paddingLeft: '24px',
+                        paddingRight: '24px',
+                        paddingTop: '10px',
+                        paddingBottom: '10px',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        borderRadius: '6px',
+                        transition: 'all 0.3s ease',
+                        border: 'none',
+                        cursor: 'pointer',
+                        backgroundColor: showForm ? '#ffffff' : '#000000',
+                        color: showForm ? '#ff4444' : '#ffffff'
+                    }}
+                    onMouseEnter={(e) => {
+                        if (!showForm) e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                    }}
+                    onMouseLeave={(e) => {
+                        if (!showForm) e.currentTarget.style.backgroundColor = '#000000';
+                    }}
                 >
-                    {showForm ? 'Cancel' : 'Add New Project'}
+                    {showForm ? 'Cancel' : 'Add Project'}
                 </button>
             </div>
 
+            {/* Form */}
             {showForm && (
-                <form
-                    onSubmit={handleSubmit}
-                    className="bg-gray-50/50 p-12 rounded-[2.5rem] border border-gray-100 space-y-12 animate-in fade-in zoom-in-95 duration-700"
-                >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                        <div className="space-y-10">
-                            <FormInput
-                                label="Project Name"
-                                value={formData.title}
-                                onChange={(val) => setFormData({ ...formData, title: val })}
-                                required
-                            />
-                            <div className="grid grid-cols-2 gap-8">
-                                <FormInput
-                                    label="Category"
-                                    value={formData.category}
-                                    onChange={(val) => setFormData({ ...formData, category: val })}
-                                    required
-                                />
-                                <FormInput
-                                    label="Year"
-                                    placeholder="2024"
-                                    value={formData.year}
-                                    onChange={(val) => setFormData({ ...formData, year: val })}
-                                />
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '48px', padding: '48px', backgroundColor: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                            <FormInput label="Project Name" value={formData.title} onChange={(val) => setFormData({ ...formData, title: val })} required />
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                                <FormInput label="Category" value={formData.category} onChange={(val) => setFormData({ ...formData, category: val })} required />
+                                <FormInput label="Year" placeholder="2024" value={formData.year} onChange={(val) => setFormData({ ...formData, year: val })} />
                             </div>
-                            <FormInput
-                                label="Location"
-                                value={formData.location}
-                                onChange={(val) => setFormData({ ...formData, location: val })}
-                            />
+                            <FormInput label="Location" value={formData.location} onChange={(val) => setFormData({ ...formData, location: val })} />
                         </div>
 
-                        <div className="space-y-12">
-                            <div className="flex flex-col space-y-4">
-                                <div className="flex items-center justify-between px-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400">
-                                        Visual Asset
-                                    </label>
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-[7px] text-gray-300 uppercase tracking-widest">Recommended Size</span>
-                                        <span className="text-[9px] text-[#A67C52] font-bold uppercase tracking-tighter">2000 x 1200 PX</span>
-                                    </div>
-                                </div>
-                                <div className="space-y-6">
-                                    <CloudinaryUpload onUploadSuccess={(url) => setFormData({ ...formData, mainImage: url })} />
-                                    {formData.mainImage && (
-                                        <div className="relative group w-full aspect-video rounded-[2rem] overflow-hidden border border-gray-100 shadow-inner">
-                                            <img src={formData.mainImage} alt="Preview" className="w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, mainImage: '' })}
-                                                    className="bg-white/20 backdrop-blur-md border border-white/30 text-white px-6 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold hover:bg-white hover:text-black transition-all"
-                                                >
-                                                    Remove Asset
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '8px', paddingRight: '8px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', margin: 0 }}>
+                                    Main Image
+                                </label>
                             </div>
+                            <CloudinaryUpload onUploadSuccess={(url) => setFormData({ ...formData, mainImage: url })} />
+                            {formData.mainImage && (
+                                <div style={{ position: 'relative', aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)' }}>
+                                    <img src={formData.mainImage} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, mainImage: '' })}
+                                        style={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            backgroundColor: 'rgba(0,0,0,0.5)',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            fontSize: '12px',
+                                            fontWeight: '600',
+                                            opacity: 0,
+                                            transition: 'opacity 0.3s ease'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    <div className="flex justify-end pt-8 border-t border-gray-200/50">
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '24px', borderTop: '1px solid rgba(0,0,0,0.1)' }}>
                         <button
                             type="submit"
-                            className="px-12 py-5 bg-black text-white text-[10px] font-bold uppercase tracking-[0.4em] rounded-xl hover:bg-[#A67C52] transition-all duration-500 shadow-xl shadow-black/10"
+                            style={{
+                                paddingLeft: '32px',
+                                paddingRight: '32px',
+                                paddingTop: '12px',
+                                paddingBottom: '12px',
+                                backgroundColor: '#000000',
+                                color: '#ffffff',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                letterSpacing: '0.1em',
+                                textTransform: 'uppercase',
+                                borderRadius: '6px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#000000'}
                         >
                             {editingId ? 'Save Changes' : 'Save Project'}
                         </button>
@@ -188,71 +210,158 @@ export default function ProjectManagement() {
                 </form>
             )}
 
+            {/* Projects Grid */}
             {loading ? (
-                <div className="flex items-center space-x-4 py-12 opacity-30">
-                    <div className="w-1.5 h-1.5 bg-black animate-bounce"></div>
-                    <div className="w-1.5 h-1.5 bg-black animate-bounce [animation-delay:-0.15s]"></div>
-                    <div className="w-1.5 h-1.5 bg-black animate-bounce [animation-delay:-0.3s]"></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingTop: '48px', paddingBottom: '48px', opacity: 0.3 }}>
+                    <div style={{ width: '8px', height: '8px', backgroundColor: '#000000', borderRadius: '50%', animation: 'bounce 1.4s infinite' }}></div>
+                    <div style={{ width: '8px', height: '8px', backgroundColor: '#000000', borderRadius: '50%', animation: 'bounce 1.4s infinite', animationDelay: '-0.2s' }}></div>
+                    <div style={{ width: '8px', height: '8px', backgroundColor: '#000000', borderRadius: '50%', animation: 'bounce 1.4s infinite', animationDelay: '-0.4s' }}></div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
                     {projects.map((p) => (
-                        <div key={p._id} className="bg-white border border-gray-100 rounded-[2rem] overflow-hidden group shadow-sm hover:shadow-xl hover:border-[#A67C52]/20 transition-all duration-700">
-                            <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
-                                {p.mainImage ? (
-                                    <img src={p.mainImage} alt={p.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-200 text-[10px] uppercase font-bold tracking-widest">No Image</div>
-                                )}
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center space-x-4">
-                                    <button
-                                        onClick={() => handleEdit(p)}
-                                        className="bg-white text-black px-5 py-2.5 text-[9px] font-bold uppercase tracking-widest rounded-lg hover:bg-[#A67C52] hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(p._id)}
-                                        className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-5 py-2.5 text-[9px] font-bold uppercase tracking-widest rounded-lg hover:bg-red-600 hover:border-red-600 transition-all transform translate-y-4 group-hover:translate-y-0 duration-500 delay-75"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="p-8">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-[11px] font-bold tracking-widest uppercase group-hover:text-[#A67C52] transition-colors">{p.title}</h3>
-                                    <span className="text-[8px] text-gray-300 tracking-widest font-bold uppercase">{p.year}</span>
-                                </div>
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-4 h-[1px] bg-gray-100"></div>
-                                    <p className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">{p.category}</p>
-                                </div>
-                            </div>
-                        </div>
+                        <ProjectCard key={p._id} project={p} onEdit={handleEdit} onDelete={handleDelete} />
                     ))}
                 </div>
             )}
+
+            <style jsx>{`
+                @keyframes bounce {
+                    0%, 80%, 100% { transform: translateY(0); }
+                    40% { transform: translateY(-8px); }
+                }
+            `}</style>
+        </div>
+    );
+}
+
+function ProjectCard({ project, onEdit, onDelete }) {
+    return (
+        <div style={{
+            backgroundColor: '#ffffff',
+            border: '1px solid rgba(0,0,0,0.1)',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+        }}
+        onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)';
+            e.currentTarget.style.transform = 'translateY(-4px)';
+        }}
+        onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+            e.currentTarget.style.transform = 'translateY(0)';
+        }}
+        >
+            <div style={{ aspectRatio: '4/3', overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.05)', position: 'relative' }}>
+                {project.mainImage ? (
+                    <img src={project.mainImage} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.2)', fontSize: '12px', fontWeight: '600' }}>
+                        No Image
+                    </div>
+                )}
+            </div>
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <h3 style={{ fontSize: '13px', fontWeight: '600', color: '#000000', margin: 0, letterSpacing: '-0.01em' }}>
+                        {project.title}
+                    </h3>
+                    <span style={{ fontSize: '11px', color: 'rgba(0,0,0,0.4)', fontWeight: '600' }}>
+                        {project.year}
+                    </span>
+                </div>
+                <p style={{ fontSize: '12px', color: 'rgba(0,0,0,0.6)', margin: 0 }}>
+                    {project.category}
+                </p>
+                <div style={{ display: 'flex', gap: '8px', paddingTop: '8px' }}>
+                    <button
+                        onClick={() => onEdit(project)}
+                        style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            backgroundColor: '#000000',
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#000000'}
+                    >
+                        Edit
+                    </button>
+                    <button
+                        onClick={() => onDelete(project._id)}
+                        style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            backgroundColor: '#ffffff',
+                            color: '#ff4444',
+                            border: '1px solid rgba(0,0,0,0.1)',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ff4444';
+                            e.currentTarget.style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ffffff';
+                            e.currentTarget.style.color = '#ff4444';
+                        }}
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
 
 function FormInput({ label, value, onChange, required = false, type = "text", placeholder = "" }) {
     return (
-        <div className="flex flex-col space-y-4 group">
-            <div className="flex justify-between items-center px-2">
-                <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400 group-focus-within:text-[#A67C52] transition-colors">
-                    {label}
-                </label>
-                <span className="w-1 h-1 bg-gray-100 rounded-full"></span>
-            </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <label style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', margin: 0 }}>
+                {label}
+            </label>
             <input
                 type={type}
                 required={required}
                 placeholder={placeholder}
-                className="w-full px-8 py-5 bg-white border border-gray-100 rounded-2xl focus:outline-none focus:border-[#A67C52]/40 focus:bg-white focus:ring-8 focus:ring-[#A67C52]/5 transition-all duration-500 text-sm font-medium tracking-tight text-gray-900 placeholder:text-gray-200"
+                style={{
+                    width: '100%',
+                    paddingLeft: '16px',
+                    paddingRight: '16px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid rgba(0,0,0,0.1)',
+                    borderRadius: '6px',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    color: '#000000',
+                    fontFamily: 'inherit'
+                }}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
+                onFocus={(e) => {
+                    e.currentTarget.style.backgroundColor = '#ffffff';
+                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)';
+                }}
+                onBlur={(e) => {
+                    e.currentTarget.style.backgroundColor = '#ffffff';
+                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+                }}
             />
         </div>
     );

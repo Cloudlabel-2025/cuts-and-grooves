@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import gsap from 'gsap';
+import ArchitecturalBackground from '../../components/ArchitecturalBackground';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -13,22 +14,90 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
-    const formBoxRef = useRef(null);
+    const containerRef = useRef(null);
+    const cardRef = useRef(null);
+    const glowRef = useRef(null);
     const contentRef = useRef(null);
 
-    // Initial entrance animations
+    // Initial entrance and 3D interactions
     useEffect(() => {
         const ctx = gsap.context(() => {
-            const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+            // Entrance Animation
+            const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
 
-            // Reset states for left-aligned entrance
-            gsap.set(formBoxRef.current, { x: -50, opacity: 0 });
-            gsap.set('.login-reveal', { y: 20, opacity: 0 });
+            gsap.set(cardRef.current, {
+                y: 60,
+                opacity: 0,
+                rotateX: -10,
+                scale: 0.95
+            });
 
-            // Entrance sequence
-            tl.to(formBoxRef.current, { x: 0, opacity: 1, duration: 1.2, ease: 'power2.out' }, 0.2)
-                .to('.login-reveal', { y: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease: 'power2.out' }, 0.5);
-        }, contentRef);
+            gsap.set('.login-reveal', {
+                y: 30,
+                opacity: 0
+            });
+
+            tl.to(cardRef.current, {
+                y: 0,
+                opacity: 1,
+                rotateX: 0,
+                scale: 1,
+                duration: 1.8,
+                clearProps: "transform"
+            })
+                .to('.login-reveal', {
+                    y: 0,
+                    opacity: 1,
+                    duration: 1.2,
+                    stagger: 0.08
+                }, "-=1.2");
+
+            // Mouse Interaction for 3D Tilt
+            const handleMouseMove = (e) => {
+                if (!cardRef.current) return;
+
+                const { clientX, clientY } = e;
+                const { left, top, width, height } = cardRef.current.getBoundingClientRect();
+
+                const x = (clientX - left) / width - 0.5;
+                const y = (clientY - top) / height - 0.5;
+
+                gsap.to(cardRef.current, {
+                    rotateY: x * 10,
+                    rotateX: -y * 10,
+                    duration: 0.6,
+                    ease: 'power2.out',
+                    transformPerspective: 1000
+                });
+
+                // Move subtle glow following cursor inside the card
+                if (glowRef.current) {
+                    gsap.to(glowRef.current, {
+                        x: (clientX - left) - 150,
+                        y: (clientY - top) - 150,
+                        duration: 1,
+                        ease: 'power2.out'
+                    });
+                }
+            };
+
+            const handleMouseLeave = () => {
+                gsap.to(cardRef.current, {
+                    rotateY: 0,
+                    rotateX: 0,
+                    duration: 1,
+                    ease: 'elastic.out(1, 0.5)'
+                });
+            };
+
+            window.addEventListener('mousemove', handleMouseMove);
+            cardRef.current?.addEventListener('mouseleave', handleMouseLeave);
+
+            return () => {
+                window.removeEventListener('mousemove', handleMouseMove);
+                cardRef.current?.removeEventListener('mouseleave', handleMouseLeave);
+            };
+        }, containerRef);
 
         return () => ctx.revert();
     }, []);
@@ -45,156 +114,175 @@ export default function LoginPage() {
         });
 
         if (res?.error) {
-            setError('Invalid credentials. Access denied.');
+            setError('ACCESS DENIED. INVALID CREDENTIALS.');
             setLoading(false);
-            gsap.fromTo(formBoxRef.current,
-                { x: -8 },
-                { x: 0, duration: 0.08, repeat: 7, yoyo: true, ease: 'power1.inOut' }
-            );
+
+            // Shake effect on error
+            gsap.to(cardRef.current, {
+                x: 10,
+                duration: 0.05,
+                repeat: 5,
+                yoyo: true,
+                onComplete: () => gsap.set(cardRef.current, { x: 0 })
+            });
         } else {
-            // Smooth exit
             const tl = gsap.timeline();
-            tl.to('.login-reveal', { y: -10, opacity: 0, duration: 0.3, stagger: 0.02, ease: 'power2.in' })
-                .to(formBoxRef.current, {
+            tl.to('.login-reveal', {
+                y: -20,
+                opacity: 0,
+                duration: 0.5,
+                stagger: 0.03,
+                ease: 'expo.in'
+            })
+                .to(cardRef.current, {
+                    scale: 1.05,
                     opacity: 0,
-                    x: -30,
-                    duration: 0.5,
-                    ease: 'power2.inOut',
+                    backdropFilter: 'blur(0px)',
+                    duration: 0.8,
+                    ease: 'expo.inOut',
                     onComplete: () => router.push('/admin/dashboard')
-                }, '-=0.1');
+                }, "-=0.2");
         }
     };
 
     return (
-        <div ref={contentRef} className="min-h-screen flex items-center justify-center bg-gray-100 relative overflow-hidden font-sans">
+        <div ref={containerRef} className="min-h-screen flex items-center justify-center bg-[#f7f7f7] relative overflow-hidden font-sans selection:bg-[#A67C52]/20">
 
-            {/* ─── Full Bleed Architectural Background ─── */}
-            <div
-                className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-[20s] ease-linear hover:scale-105"
-                style={{
-                    backgroundImage: "url('/images/All-works-01.jpg')",
-                    // Fallback to a clean architectural image if the local one fails
-                    backgroundColor: '#e2e8f0',
-                    backgroundBlendMode: 'luminosity'
-                }}
-            >
-                {/* Subtle overlay to ensure the white box pops */}
-                <div className="absolute inset-0 bg-black/10"></div>
-            </div>
+            {/* ─── WebGL Geometrical Background ─── */}
+            <ArchitecturalBackground />
 
-            {/* ─── Responsive Form Container ─── */}
-            <div className="w-full max-w-[460px] px-4 sm:px-6 relative z-10 perspective-1000">
-
-                {/* Reference White Soft Box - Sophisticated Layered Shadow */}
+            {/* ─── Interactive Glass Portal (Enhanced Transparency) ─── */}
+            <div className="w-full max-w-[500px] px-6 relative z-10">
                 <div
-                    ref={formBoxRef}
-                    className="bg-white rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.12),0_20px_40px_-10px_rgba(0,0,0,0.08)] relative w-full overflow-hidden"
-                    style={{ padding: '3.5rem 3rem 4rem 3rem' }}
+                    ref={cardRef}
+                    className="relative group bg-white/[0.03] backdrop-blur-[4px] border border-black/[0.03] rounded-[2.5rem] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.06),0_10px_40px_-15px_rgba(0,0,0,0.04)] overflow-hidden transition-shadow duration-500 hover:shadow-[#A67C52]/10"
+                    style={{ padding: '4.5rem 3.5rem' }}
                 >
+                    {/* Inner Glow following cursor (Subtle on light) */}
+                    <div
+                        ref={glowRef}
+                        className="pointer-events-none absolute w-[300px] h-[300px] bg-[#A67C52]/5 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                        style={{ transform: 'translate(-50%, -50%)' }}
+                    />
 
-                    {/* Header */}
-                    <div className="text-center mb-12">
-                        <h2 className="login-reveal text-3xl font-bold text-[#001738] tracking-[-0.03em] mb-2"
-                            style={{ fontFamily: 'var(--font-heading)' }}>
-                            CUTS & GROOVES
+                    {/* Architectural decor lines */}
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-black/[0.03] to-transparent" />
+                    <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#A67C52]/20 to-transparent" />
+
+                    {/* Branding Header */}
+                    <div className="text-center mb-14">
+                        <h2 className="login-reveal text-4xl font-light text-[#001738] tracking-[0.2em] mb-4 leading-none"
+                            style={{ fontFamily: 'Cinzel, serif' }}>
+                            CUTS <span className="text-[#A67C52]">&</span> GROOVES
                         </h2>
-                        <p className="login-reveal text-[0.85rem] text-gray-400 font-medium tracking-wide uppercase" style={{ letterSpacing: '0.15em' }}>
-                            Studio portal
+                        <div className="login-reveal h-[0.5px] w-12 bg-[#A67C52]/40 mx-auto mb-4" />
+                        <p className="login-reveal text-[0.7rem] text-[#001738]/40 font-bold tracking-[0.4em] uppercase">
+                            Exclusive Entry
                         </p>
                     </div>
 
                     {error && (
-                        <div className="login-reveal mb-8 py-3.5 px-4 text-[0.8rem] text-red-700 bg-red-50/50 border border-red-100/50 text-center rounded-2xl">
+                        <div className="login-reveal mb-8 py-3.5 px-4 text-[0.65rem] text-[#cc3333] border border-[#cc3333]/10 bg-[#cc3333]/5 text-center tracking-widest font-black uppercase">
                             {error}
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-
-                        {/* Email Input */}
-                        <div className="login-reveal space-y-2.5">
-                            <label className="block text-[0.75rem] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                                Email Address
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        {/* User ID Field */}
+                        <div className="login-reveal space-y-3">
+                            <label className="block text-[0.6rem] font-black text-[#001738]/60 uppercase tracking-[0.3em] ml-1">
+                                User ID
                             </label>
-                            <input
-                                type="email"
-                                required
-                                className="w-full px-7 py-4 bg-gray-50/30 border border-gray-100 rounded-2xl focus:bg-white focus:border-[#A67C52]/40 focus:ring-4 focus:ring-[#A67C52]/5 focus:outline-none transition-all duration-300 text-[#001738] placeholder:text-gray-300 text-sm"
-                                placeholder="name@candg.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                disabled={loading}
-                            />
+                            <div className="relative group/input">
+                                <input
+                                    type="email"
+                                    required
+                                    className="w-full px-0 py-3 bg-transparent border-b border-black/[0.3] focus:border-[#A67C52] transition-all duration-500 text-[#001738] placeholder:text-gray-305 text-sm outline-none"
+                                    placeholder="E-mail ID"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    disabled={loading}
+                                />
+                                <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#A67C52] group-focus-within/input:w-full transition-all duration-700 ease-out" />
+                            </div>
                         </div>
 
-                        {/* Password Input */}
-                        <div className="login-reveal space-y-2.5 relative">
-                            <label className="block text-[0.75rem] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                        {/* Password Field */}
+                        <div className="login-reveal space-y-3">
+                            <label className="block text-[0.6rem] font-black text-[#001738]/60 uppercase tracking-[0.3em] ml-1">
                                 Password
                             </label>
-                            <div className="relative">
+                            <div className="relative group/input">
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     required
-                                    className="w-full pl-7 pr-14 py-4 bg-gray-50/30 border border-gray-100 rounded-2xl focus:bg-white focus:border-[#A67C52]/40 focus:ring-4 focus:ring-[#A67C52]/5 focus:outline-none transition-all duration-300 text-[#001738] placeholder:text-gray-300 text-sm tracking-widest"
+                                    className="w-full px-0 py-3 bg-transparent border-b border-black/[0.3] focus:border-[#A67C52] transition-all duration-500 text-[#001738] placeholder:text-gray-305 text-sm outline-none tracking-[0.4em]"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     disabled={loading}
                                 />
+                                <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#A67C52] group-focus-within/input:w-full transition-all duration-700 ease-out" />
+
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#A67C52] transition-colors p-1"
-                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 text-black/10 hover:text-[#A67C52] transition-colors"
                                 >
                                     {showPassword ? (
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                                        </svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
                                     ) : (
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                                     )}
                                 </button>
                             </div>
                         </div>
 
-                        {/* Forgot password text with brand color accent */}
-                        <div className="login-reveal flex justify-end">
-                            <a href="#" className="text-[0.75rem] font-bold text-gray-400 hover:text-[#A67C52] transition-colors uppercase tracking-widest">
-                                Forgot password?
-                            </a>
-                        </div>
-
-                        <div className="login-reveal pt-2">
+                        <div className="login-reveal mt-20 mb-8 flex justify-center">
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-4 bg-gradient-to-r from-[#A67C52] to-[#cba37b] text-white font-bold uppercase tracking-[0.2em] hover:shadow-lg hover:shadow-[#A67C52]/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-[0.8rem] rounded-2xl"
+                                className="relative w-1/2 py-4 group/btn overflow-hidden rounded-full transition-all duration-500 active:scale-[0.98] shadow-sm hover:shadow-md"
                             >
-                                {loading ? (
-                                    <span className="flex items-center justify-center gap-3">
-                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                        <span>Authorizing...</span>
-                                    </span>
-                                ) : (
-                                    <span>Sign in</span>
-                                )}
+                                <div className="absolute inset-0 bg-[#001738] text-white font-black uppercase tracking-[0.3em] text-[0.7rem] flex items-center justify-center group-hover/btn:bg-[#A67C52] transition-colors duration-500 rounded-full">
+                                    {loading ? (
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                            <span>Verifying</span>
+                                        </div>
+                                    ) : (
+                                        <span>Sign In</span>
+                                    )}
+                                </div>
                             </button>
                         </div>
+
+                        {/* Internal Navigation Links */}
+                        <div className="login-reveal mt-12 pt-8 border-t border-black/[0.03] text-center space-y-3">
+                            <p className="text-[0.6rem] font-medium text-[#001738]/30 uppercase tracking-[0.2em]">
+                                Lost access? <a href="#" className="text-[#001738]/60 hover:text-[#A67C52] transition-all ml-2 font-black !no-underline">Recovery Portal</a>
+                            </p>
+                            <p className="text-[0.6rem] font-medium text-[#001738]/30 uppercase tracking-[0.2em]">
+                                Public Domain? <a href="/" className="text-[#001738]/60 hover:text-[#A67C52] transition-all ml-2 font-black !no-underline">Return Home</a>
+                            </p>
+                        </div>
                     </form>
-
-                </div>
-
-                {/* Footer text with refined styling */}
-                <div className="login-reveal mt-8 text-center text-[0.75rem] font-bold text-[#001738]/60 uppercase tracking-[0.15em]">
-                    First time here? <a href="/" className="text-[#A67C52] border-b border-[#A67C52]/30 hover:border-[#A67C52] transition-all pb-0.5 ml-1">Return to Website</a>
                 </div>
             </div>
+
+            {/* Custom Styles */}
+            <style jsx global>{`
+                @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+                
+                body {
+                    background-color: #f7f7f7;
+                    color: #001738;
+                }
+                
+                .perspective-1000 {
+                    perspective: 1000px;
+                }
+            `}</style>
         </div>
     );
 }
