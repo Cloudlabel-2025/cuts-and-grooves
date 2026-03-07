@@ -242,18 +242,16 @@ export default function LoginPage() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="relative w-1/2 py-4 group/btn overflow-hidden rounded-full transition-all duration-500 active:scale-[0.98] shadow-sm hover:shadow-md"
+                                className="relative w-1/2 py-4 bg-[#001738] text-white font-black uppercase tracking-[0.3em] text-[0.7rem] rounded-full transition-all duration-500 active:scale-[0.98] shadow-sm hover:shadow-md hover:bg-[#A67C52] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <div className="absolute inset-0 bg-[#001738] text-white font-black uppercase tracking-[0.3em] text-[0.7rem] flex items-center justify-center group-hover/btn:bg-[#A67C52] transition-colors duration-500 rounded-full">
-                                    {loading ? (
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                                            <span>Verifying</span>
-                                        </div>
-                                    ) : (
-                                        <span>Sign In</span>
-                                    )}
-                                </div>
+                                {loading ? (
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                        <span>Verifying</span>
+                                    </div>
+                                ) : (
+                                    <span>Sign In</span>
+                                )}
                             </button>
                         </div>
 
