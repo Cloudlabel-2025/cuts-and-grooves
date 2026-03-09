@@ -39,32 +39,40 @@ export default function AdminLayout({ children }) {
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#fff', color: '#000', display: 'flex', flexDirection: 'row', fontFamily: 'Inter, sans-serif' }}>
             {/* SIDEBAR */}
-            <aside style={{
-                width: '280px',
-                height: '100vh',
-                backgroundColor: '#fff',
-                borderRight: '1px solid rgba(0,0,0,0.1)',
-                display: 'flex',
-                flexDirection: 'column',
-                zIndex: 40,
-                position: 'relative'
-            }}>
+            <aside className={`admin-sidebar ${isMobileMenuOpen ? 'admin-sidebar-open' : ''}`}>
                 {/* Sidebar Header */}
-                <div style={{ padding: '32px 24px', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-                    <h2 style={{ fontSize: '18px', fontWeight: '700', margin: 0, letterSpacing: '-0.02em' }}>Admin</h2>
-                    <p style={{ fontSize: '12px', color: 'rgba(0,0,0,0.5)', margin: '8px 0 0 0', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: '500' }}>Dashboard</p>
+                <div style={{ padding: '32px 24px', borderBottom: '1px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                        <h2 style={{ fontSize: '18px', fontWeight: '700', margin: 0, letterSpacing: '-0.02em' }}>Admin</h2>
+                        <p style={{ fontSize: '12px', color: 'rgba(0,0,0,0.5)', margin: '8px 0 0 0', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: '500' }}>Dashboard</p>
+                    </div>
+                    {/* Mobile Close */}
+                    <button
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="admin-mobile-close"
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '24px',
+                            color: '#000',
+                            padding: '4px'
+                        }}
+                    >
+                        ✕
+                    </button>
                 </div>
 
                 {/* Sidebar Nav */}
                 <nav style={{ flex: 1, padding: '24px 16px', overflowY: 'auto' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <SidebarLink href="/admin/dashboard" label="Dashboard" pathname={pathname} />
-                        <SidebarLink href="/admin/media" label="Media" pathname={pathname} />
-                        <SidebarLink href="/admin/pages/home" label="Home" pathname={pathname} matchPrefix />
-                        <SidebarLink href="/admin/pages/work" label="Portfolio" pathname={pathname} matchPrefix />
-                        <SidebarLink href="/admin/pages/process" label="Process" pathname={pathname} matchPrefix />
-                        <SidebarLink href="/admin/pages/studio" label="Studio" pathname={pathname} matchPrefix />
-                        <SidebarLink href="/admin/pages/contact" label="Contact" pathname={pathname} matchPrefix />
+                        <SidebarLink href="/admin/dashboard" label="Dashboard" pathname={pathname} onClick={() => setIsMobileMenuOpen(false)} />
+                        <SidebarLink href="/admin/media" label="Media" pathname={pathname} onClick={() => setIsMobileMenuOpen(false)} />
+                        <SidebarLink href="/admin/pages/home" label="Home" pathname={pathname} matchPrefix onClick={() => setIsMobileMenuOpen(false)} />
+                        <SidebarLink href="/admin/pages/projects" label="Portfolio" pathname={pathname} matchPrefix onClick={() => setIsMobileMenuOpen(false)} />
+                        <SidebarLink href="/admin/pages/process" label="Process" pathname={pathname} matchPrefix onClick={() => setIsMobileMenuOpen(false)} />
+                        <SidebarLink href="/admin/pages/studio" label="Studio" pathname={pathname} matchPrefix onClick={() => setIsMobileMenuOpen(false)} />
+                        <SidebarLink href="/admin/pages/contact" label="Contact" pathname={pathname} matchPrefix onClick={() => setIsMobileMenuOpen(false)} />
                     </div>
                 </nav>
 
@@ -139,71 +147,31 @@ export default function AdminLayout({ children }) {
                         </div>
                     )}
                 </div>
-
-                {/* Mobile Close */}
-                <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    style={{
-                        display: 'none',
-                        position: 'absolute',
-                        top: '16px',
-                        right: '16px',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '24px',
-                        color: '#000'
-                    }}
-                    className="lg:hidden"
-                >
-                    ✕
-                </button>
             </aside>
 
             {/* Mobile Overlay */}
             {isMobileMenuOpen && (
                 <div
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        backgroundColor: 'rgba(0,0,0,0.3)',
-                        zIndex: 30,
-                        display: 'none'
-                    }}
-                    className="lg:hidden"
+                    className="admin-overlay"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
 
             {/* MAIN CONTENT */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', marginLeft: '0' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', height: '100vh', overflow: 'hidden', marginLeft: '0' }}>
                 {/* TOP NAVBAR */}
-                <header style={{
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 30,
-                    backgroundColor: '#ffffff',
-                    borderBottom: '1px solid rgba(0,0,0,0.1)',
-                    height: '80px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingLeft: '32px',
-                    paddingRight: '32px',
-                    width: '100%'
-                }}>
-                    {/* Left */}
+                <header className="admin-topbar">
+                    {/* Left - Hamburger */}
                     <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="admin-hamburger"
                         style={{
-                            display: 'none',
                             background: 'none',
                             border: 'none',
                             cursor: 'pointer',
                             fontSize: '24px',
                             color: '#000000'
                         }}
-                        className="lg:hidden"
                     >
                         ☰
                     </button>
@@ -235,6 +203,7 @@ export default function AdminLayout({ children }) {
                         <Link
                             href="/"
                             target="_blank"
+                            className="admin-preview-btn"
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -254,14 +223,14 @@ export default function AdminLayout({ children }) {
                             }}
                         >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
-                            Preview
+                            <span className="admin-preview-text">Preview</span>
                         </Link>
                     </div>
                 </header>
 
                 {/* MAIN CONTENT AREA */}
                 <main style={{ flex: 1, overflowY: 'auto', backgroundColor: '#fff' }}>
-                    <div style={{ padding: '32px 40px', maxWidth: '1400px', margin: '0 auto' }}>
+                    <div className="admin-content-area">
                         {children}
                     </div>
                 </main>
@@ -276,17 +245,97 @@ export default function AdminLayout({ children }) {
                     0%, 100% { opacity: 1; }
                     50% { opacity: 0.5; }
                 }
+
+                /* Desktop sidebar */
+                .admin-sidebar {
+                    width: 280px;
+                    height: 100vh;
+                    background-color: #fff;
+                    border-right: 1px solid rgba(0,0,0,0.1);
+                    display: flex;
+                    flex-direction: column;
+                    z-index: 40;
+                    position: relative;
+                    flex-shrink: 0;
+                    transition: transform 0.3s ease;
+                }
+                .admin-mobile-close { display: none; }
+                .admin-hamburger { display: none; }
+                .admin-overlay { display: none; }
+
+                .admin-topbar {
+                    position: sticky;
+                    top: 0;
+                    z-index: 30;
+                    background-color: #ffffff;
+                    border-bottom: 1px solid rgba(0,0,0,0.1);
+                    height: 80px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding-left: 32px;
+                    padding-right: 32px;
+                    width: 100%;
+                }
+
+                .admin-content-area {
+                    padding: 32px 40px;
+                    max-width: 1400px;
+                    margin: 0 auto;
+                }
+
+                .admin-preview-text { display: inline; }
+
+                /* MOBILE / TABLET ( < 1024px ) */
+                @media (max-width: 1023px) {
+                    .admin-sidebar {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        height: 100vh;
+                        width: 280px;
+                        transform: translateX(-100%);
+                        z-index: 50;
+                        box-shadow: none;
+                    }
+                    .admin-sidebar-open {
+                        transform: translateX(0);
+                        box-shadow: 4px 0 24px rgba(0,0,0,0.1);
+                    }
+                    .admin-mobile-close { display: block; }
+                    .admin-hamburger { display: block; }
+                    .admin-overlay {
+                        display: block;
+                        position: fixed;
+                        inset: 0;
+                        background-color: rgba(0,0,0,0.3);
+                        z-index: 45;
+                    }
+                    .admin-topbar {
+                        padding-left: 16px;
+                        padding-right: 16px;
+                        height: 64px;
+                    }
+                    .admin-content-area {
+                        padding: 16px;
+                    }
+                    .admin-preview-text { display: none; }
+                    .admin-preview-btn {
+                        padding: 10px !important;
+                    }
+                }
             `}</style>
         </div>
     );
 }
 
-function SidebarLink({ href, label, pathname, matchPrefix = false }) {
+function SidebarLink({ href, label, pathname, matchPrefix = false, onClick }) {
     const isActive = matchPrefix ? pathname?.startsWith(href) : pathname === href;
 
     return (
         <Link
             href={href}
+            onClick={onClick}
             style={{
                 display: 'flex',
                 alignItems: 'center',

@@ -172,7 +172,7 @@ export default function SelectedWorks({ projects: initialProjects }) {
                                         )}
                                         <div className="work-overlay">
                                             <div className="work-meta">
-                                                <span>{project.type}</span>
+                                                <span>{project.category}</span>
                                                 <span>{project.year}</span>
                                             </div>
                                         </div>

@@ -4,9 +4,16 @@ import Project from '@/models/Project';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(req) {
+    const { searchParams } = new URL(req.url);
+    const slug = searchParams.get('slug');
     await dbConnect();
     try {
+        if (slug) {
+            const project = await Project.findOne({ slug });
+            if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+            return NextResponse.json(project);
+        }
         const projects = await Project.find({}).sort({ createdAt: -1 });
         return NextResponse.json(projects);
     } catch (error) {

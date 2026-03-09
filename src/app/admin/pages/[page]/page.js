@@ -11,8 +11,7 @@ const PAGE_ARCHITECTURES = {
         { id: 'testimonials', name: 'Testimonials', description: 'Client feedback and quotes' },
         { id: 'footer', name: 'Footer', description: 'Contact and social links' },
     ],
-    work: [
-        { id: 'hero', name: 'Portfolio Hero', description: 'Portfolio page header' },
+    projects: [
         { id: 'grid', name: 'Projects Grid', description: 'Dynamic grid of projects' },
     ],
     process: [
@@ -136,8 +135,8 @@ export default function GenericPageEditor({ params }) {
                     cursor: 'pointer',
                     border: 'none'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#000000'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#000000'}
                 >
                     Visit Site
                 </Link>

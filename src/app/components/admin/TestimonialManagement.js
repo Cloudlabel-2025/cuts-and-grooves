@@ -1,15 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import CloudinaryUpload from '@/app/components/admin/CloudinaryUpload';
 
 export default function TestimonialManagement() {
     const [testimonials, setTestimonials] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
         quote: '',
         author: '',
         role: '',
+        image: '',
         order: 0
     });
 
@@ -18,8 +21,17 @@ export default function TestimonialManagement() {
     }, []);
 
     const fetchTestimonials = async () => {
-        setTestimonials([]);
-        setLoading(false);
+        try {
+            const res = await fetch('/api/testimonials');
+            if (res.ok) {
+                const data = await res.json();
+                setTestimonials(data);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -30,17 +42,33 @@ export default function TestimonialManagement() {
             return;
         }
 
-        const res = await fetch('/api/testimonials', {
-            method: 'POST',
+        const url = editingId ? `/api/testimonials/${editingId}` : '/api/testimonials';
+        const method = editingId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+            method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         });
 
         if (res.ok) {
             setShowForm(false);
-            setFormData({ quote: '', author: '', role: '', order: 0 });
+            setEditingId(null);
+            setFormData({ quote: '', author: '', role: '', image: '', order: 0 });
             fetchTestimonials();
         }
+    };
+
+    const handleEdit = (testimonial) => {
+        setFormData({
+            quote: testimonial.quote || '',
+            author: testimonial.author || '',
+            role: testimonial.role || '',
+            image: testimonial.image || '',
+            order: testimonial.order || 0
+        });
+        setEditingId(testimonial._id);
+        setShowForm(true);
     };
 
     const handleDelete = async (id) => {
@@ -59,8 +87,13 @@ export default function TestimonialManagement() {
                 </div>
                 <button
                     onClick={() => {
-                        setShowForm(!showForm);
-                        if (showForm) setFormData({ quote: '', author: '', role: '', order: 0 });
+                        if (showForm) {
+                            setShowForm(false);
+                            setEditingId(null);
+                            setFormData({ quote: '', author: '', role: '', image: '', order: 0 });
+                        } else {
+                            setShowForm(true);
+                        }
                     }}
                     className={`px-8 py-4 text-[9px] font-bold uppercase tracking-[0.4em] rounded-xl transition-all duration-500 shadow-lg ${showForm
                         ? 'bg-white text-red-500 border border-red-100 shadow-red-500/5'
@@ -103,6 +136,28 @@ export default function TestimonialManagement() {
                                 value={formData.role}
                                 onChange={(val) => setFormData({ ...formData, role: val })}
                             />
+
+                            <div className="space-y-4 pt-4">
+                                <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400 px-2">
+                                    Client Image / Project Reference
+                                </label>
+                                <CloudinaryUpload
+                                    folder="testimonials"
+                                    onUploadSuccess={(url) => setFormData({ ...formData, image: url })}
+                                />
+                                {formData.image && (
+                                    <div className="relative w-24 h-24 rounded-2xl overflow-hidden border border-gray-100 group/img">
+                                        <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, image: '' })}
+                                            className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -128,6 +183,11 @@ export default function TestimonialManagement() {
                     {testimonials.map((t) => (
                         <div key={t._id} className="bg-white border border-gray-100 rounded-[2rem] p-8 flex flex-col justify-between group shadow-sm hover:shadow-xl hover:border-[#A67C52]/20 transition-all duration-700">
                             <div>
+                                {t.image && (
+                                    <div className="w-12 h-12 rounded-full overflow-hidden mb-6 border border-gray-100">
+                                        <img src={t.image} alt={t.author} className="w-full h-full object-cover" />
+                                    </div>
+                                )}
                                 <p className="text-gray-600 font-light italic leading-relaxed mb-8 text-sm group-hover:text-black transition-colors">
                                     "{t.quote}"
                                 </p>
@@ -137,13 +197,22 @@ export default function TestimonialManagement() {
                                     <h4 className="text-[11px] font-bold tracking-widest uppercase text-black mb-1">{t.author}</h4>
                                     <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">{t.role}</span>
                                 </div>
-                                <button
-                                    onClick={() => handleDelete(t._id)}
-                                    className="w-10 h-10 rounded-full flex items-center justify-center text-red-300 hover:text-white hover:bg-red-500 transition-all duration-300"
-                                    title="Delete"
-                                >
-                                    ✕
-                                </button>
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        onClick={() => handleEdit(t)}
+                                        className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-[#A67C52] hover:bg-[#A67C52]/5 transition-all duration-300"
+                                        title="Edit"
+                                    >
+                                        ✎
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(t._id)}
+                                        className="w-10 h-10 rounded-full flex items-center justify-center text-red-300 hover:text-white hover:bg-red-500 transition-all duration-300"
+                                        title="Delete"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}

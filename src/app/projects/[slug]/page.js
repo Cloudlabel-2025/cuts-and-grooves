@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { projects } from '../../data/projects';
 import Footer from '../../components/Footer';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -13,23 +12,48 @@ gsap.registerPlugin(ScrollTrigger);
 export default function ProjectDetail() {
     const { slug } = useParams();
     const router = useRouter();
-    const project = projects.find(p => p.slug === slug);
-    const projectIndex = projects.findIndex(p => p.slug === slug);
-    const nextProject = projects[(projectIndex + 1) % projects.length];
+    const [project, setProject] = useState(null);
+    const [nextProject, setNextProject] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const heroRef = useRef(null);
     const containerRef = useRef(null);
-    const navRef = useRef(null);
-
-    // Redirect if project doesn't exist
-    useEffect(() => {
-        if (!project) {
-            router.push('/projects');
-        }
-    }, [project, router]);
+    const heroRef = useRef(null);
 
     useEffect(() => {
-        if (!project) return;
+        const fetchData = async () => {
+            try {
+                // Fetch current project
+                const res = await fetch(`/api/projects?slug=${slug}`);
+                if (!res.ok) {
+                    router.push('/projects');
+                    return;
+                }
+                const data = await res.json();
+                setProject(data);
+
+                // Fetch all projects to find the next one
+                const allRes = await fetch('/api/projects');
+                if (allRes.ok) {
+                    const allProjects = await allRes.json();
+                    const currentIndex = allProjects.findIndex(p => p.slug === slug);
+                    if (currentIndex !== -1) {
+                        const next = allProjects[(currentIndex + 1) % allProjects.length];
+                        setNextProject(next);
+                    }
+                }
+            } catch (err) {
+                console.error('Project detail fetch error:', err);
+                router.push('/projects');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [slug, router]);
+
+    useEffect(() => {
+        if (!project || loading) return;
 
         const ctx = gsap.context(() => {
             // Hero Image Zoom Out (Entrance)
@@ -44,7 +68,7 @@ export default function ProjectDetail() {
                 { yPercent: 0, duration: 1.5, stagger: 0.1, ease: 'power4.out', delay: 0.2 }
             );
 
-            // Parallax on Gallery Images... (existing logic)
+            // Parallax on Gallery Images
             gsap.utils.toArray('.gallery-img-wrapper').forEach((img, i) => {
                 const speed = 0.5 + (i % 3) * 0.2;
                 gsap.to(img, {
@@ -72,16 +96,16 @@ export default function ProjectDetail() {
                 }
             });
 
-            // --- FIXED BACK BUTTON LOGIC ---
+            // Fixed Back Button
             gsap.fromTo('.fixed-back-button',
                 { opacity: 0, y: 20 },
                 { opacity: 1, y: 0, duration: 1, delay: 1, ease: 'power3.out' }
             );
 
-            // Hide fixed button when reaching the next project section or footer
+            // Hide fixed button when reaching the next project section
             ScrollTrigger.create({
                 trigger: '.next-project-teaser',
-                start: 'top bottom', // When teaser enters screen
+                start: 'top bottom',
                 onEnter: () => gsap.to('.fixed-back-button', { opacity: 0, scale: 0.9, duration: 0.4 }),
                 onLeaveBack: () => gsap.to('.fixed-back-button', { opacity: 1, scale: 1, duration: 0.4 })
             });
@@ -101,7 +125,15 @@ export default function ProjectDetail() {
         }, containerRef);
 
         return () => ctx.revert();
-    }, [project]);
+    }, [project, loading]);
+
+    if (loading) {
+        return (
+            <div style={{ height: '100vh', backgroundColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ fontSize: '10px', letterSpacing: '0.3em', textTransform: 'uppercase', opacity: 0.3 }}>Decrypting...</div>
+            </div>
+        );
+    }
 
     if (!project) return null;
 
@@ -137,13 +169,13 @@ export default function ProjectDetail() {
                 />
                 <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', color: '#fff' }}>
                     <div style={{ overflow: 'hidden' }}>
-                        <h1 className="project-hero-title" style={{ fontSize: 'clamp(4rem, 12vw, 15rem)', fontFamily: 'var(--font-heading)', fontWeight: 600, margin: 0, letterSpacing: '-0.02em' }}>
+                        <h1 className="project-hero-title" style={{ fontSize: 'clamp(3rem, 10vw, 12rem)', fontFamily: 'var(--font-heading)', fontWeight: 600, margin: 0, letterSpacing: '-0.02em' }}>
                             {project.title.split(' ').map((word, i) => (
                                 <span key={i} style={{ display: 'inline-block' }}>{word}&nbsp;</span>
                             ))}
                         </h1>
                     </div>
-                    <p style={{ marginTop: '20px', fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.2em', opacity: 0.8 }}>
+                    <p style={{ marginTop: '20px', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.2em', opacity: 0.8 }}>
                         {project.category} — {project.location}
                     </p>
                 </div>
@@ -184,7 +216,7 @@ export default function ProjectDetail() {
                 style={{ padding: '0 4% 80px' }}
             >
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4vw', alignItems: 'start' }}>
-                    {project.gallery.map((img, i) => (
+                    {project.gallery && project.gallery.map((img, i) => (
                         <div
                             key={i}
                             className="gallery-img-wrapper"
@@ -206,51 +238,53 @@ export default function ProjectDetail() {
             </section>
 
             {/* --- NEXT PROJECT TEASER SECTION --- */}
-            <section
-                className="next-project-teaser"
-                data-nav-theme="light"
-                style={{
-                    padding: '60px 4% 100px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#fff'
-                }}
-            >
-                <Link
-                    href={`/projects/${nextProject.slug}`}
-                    className="next-project-card"
+            {nextProject && (
+                <section
+                    className="next-project-teaser"
+                    data-nav-theme="light"
                     style={{
+                        padding: '60px 4% 100px',
                         display: 'flex',
+                        flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '12px',
-                        backgroundColor: '#000',
-                        color: '#fff',
-                        padding: '6px',
-                        borderRadius: '4px',
-                        textDecoration: 'none',
-                        boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-                        minWidth: 'clamp(160px, 18vw, 220px)',
-                        transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                        border: '1px solid #222'
+                        justifyContent: 'center',
+                        backgroundColor: '#fff'
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
                 >
-                    <div style={{ width: '60px', height: '45px', overflow: 'hidden', borderRadius: '2px' }}>
-                        <img
-                            src={nextProject.mainImage}
-                            alt={nextProject.title}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                    </div>
-                    <div style={{ paddingRight: '10px' }}>
-                        <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 400, fontFamily: 'var(--font-heading)', letterSpacing: '-0.01em' }}>{nextProject.title}</span>
-                        <span style={{ display: 'block', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.5, marginTop: '1px' }}>Next project</span>
-                    </div>
-                </Link>
-            </section>
+                    <Link
+                        href={`/projects/${nextProject.slug}`}
+                        className="next-project-card"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            backgroundColor: '#000',
+                            color: '#fff',
+                            padding: '6px',
+                            borderRadius: '4px',
+                            textDecoration: 'none',
+                            boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                            minWidth: 'clamp(160px, 18vw, 220px)',
+                            transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                            border: '1px solid #222'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                    >
+                        <div style={{ width: '60px', height: '45px', overflow: 'hidden', borderRadius: '2px' }}>
+                            <img
+                                src={nextProject.mainImage}
+                                alt={nextProject.title}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                        </div>
+                        <div style={{ paddingRight: '10px' }}>
+                            <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 400, fontFamily: 'var(--font-heading)', letterSpacing: '-0.01em' }}>{nextProject.title}</span>
+                            <span style={{ display: 'block', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.5, marginTop: '1px' }}>Next project</span>
+                        </div>
+                    </Link>
+                </section>
+            )}
 
             <Footer />
 

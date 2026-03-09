@@ -50,7 +50,7 @@
 
 .studio-team-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.8fr 1fr;
   gap: 40px;
   max-width: 1400px;
   margin: 0 auto;
@@ -209,10 +209,11 @@
 
   .team-image-mobile-inner {
     width: 100%;
+    max-width: 320px;
+    margin: 0 auto 12px;
     aspect-ratio: 4/5;
     background-color: #f0f0f0;
     overflow: hidden;
-    margin-bottom: 12px;
   }
 
   .team-image-mobile-inner img {

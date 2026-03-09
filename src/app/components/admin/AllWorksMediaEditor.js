@@ -29,6 +29,12 @@ const DEFAULT_MOBILE_SCATTER_IMAGES = [
     { src: 'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?auto=format&fit=crop&w=800&q=80', x: '60%', y: '75%', w: '45vw', h: '30vh', speed: 0.9, z: 15 },
 ];
 
+const DEFAULT_VISION_ITEMS = [
+    { title: 'Design integrity', desc: 'At the core of every structure lies intention.We integrate advanced research and evolving technology with a distinctly human sensibility — because innovation without intuition is incomplete.Our process challenges convention, tests boundaries, and explores possibilities beyond the expected. Each solution is thoughtfully engineered, creatively envisioned, and uncompromising in execution.' },
+    { title: 'Innovation', desc: 'We combine rigorous research, advanced technology, and refined craftsmanship to redefine what’s possible. Yet we believe true innovation is not purely technical — it is human.Every breakthrough we pursue is guided by insight, experience, and an uncompromising pursuit of better solutions. We challenge limits, rethink conventions, and transform complexity into clarity.Because progress is not about change for the sake of it — it is about building smarter, stronger, and ahead of time.' },
+    { title: 'Enhanced Living', desc: 'Well-being is not an afterthought — it is the foundation. We design spaces that elevate everyday life, where light, proportion, material, and flow work in harmony. Every environment is thoughtfully crafted to encourage connection, comfort, and clarity. Our approach goes beyond structure. We create living experiences — spaces that nurture balance, inspire interaction, and enhance the rhythm of modern life.' }
+];
+
 export default function AllWorksMediaEditor({ page = 'home', section = 'all-works' }) {
     const [transitionImage, setTransitionImage] = useState('');
     const [stagedTransitionImage, setStagedTransitionImage] = useState('');
@@ -36,6 +42,10 @@ export default function AllWorksMediaEditor({ page = 'home', section = 'all-work
     const [stagedScatterImages, setStagedScatterImages] = useState([]);
     const [mobileScatterImages, setMobileScatterImages] = useState([]);
     const [stagedMobileScatterImages, setStagedMobileScatterImages] = useState([]);
+    const [heading, setHeading] = useState('All Work');
+    const [stagedHeading, setStagedHeading] = useState('All Work');
+    const [visionItems, setVisionItems] = useState(DEFAULT_VISION_ITEMS);
+    const [stagedVisionItems, setStagedVisionItems] = useState(DEFAULT_VISION_ITEMS);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState('transition');
@@ -69,6 +79,16 @@ export default function AllWorksMediaEditor({ page = 'home', section = 'all-work
                 : DEFAULT_MOBILE_SCATTER_IMAGES;
             setMobileScatterImages(loadedMobileScatter);
             setStagedMobileScatterImages(JSON.parse(JSON.stringify(loadedMobileScatter)));
+
+            const loadedHeading = contentMap.heading || 'All Work';
+            setHeading(loadedHeading);
+            setStagedHeading(loadedHeading);
+
+            const loadedVision = contentMap.visionItems
+                ? (typeof contentMap.visionItems === 'string' ? JSON.parse(contentMap.visionItems) : contentMap.visionItems)
+                : DEFAULT_VISION_ITEMS;
+            setVisionItems(loadedVision);
+            setStagedVisionItems(JSON.parse(JSON.stringify(loadedVision)));
         } catch (err) {
             console.error(err);
         } finally {
@@ -78,6 +98,8 @@ export default function AllWorksMediaEditor({ page = 'home', section = 'all-work
 
     const hasChanges =
         stagedTransitionImage !== transitionImage ||
+        stagedHeading !== heading ||
+        JSON.stringify(stagedVisionItems) !== JSON.stringify(visionItems) ||
         JSON.stringify(stagedScatterImages) !== JSON.stringify(scatterImages) ||
         JSON.stringify(stagedMobileScatterImages) !== JSON.stringify(mobileScatterImages);
 
@@ -107,9 +129,25 @@ export default function AllWorksMediaEditor({ page = 'home', section = 'all-work
                     body: JSON.stringify({ page, section, key: 'mobileScatterImages', value: stagedMobileScatterImages }),
                 }));
             }
+            if (stagedHeading !== heading) {
+                updates.push(fetch('/api/content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ page, section, key: 'heading', value: stagedHeading }),
+                }));
+            }
+            if (JSON.stringify(stagedVisionItems) !== JSON.stringify(visionItems)) {
+                updates.push(fetch('/api/content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ page, section, key: 'visionItems', value: stagedVisionItems }),
+                }));
+            }
 
             await Promise.all(updates);
             setTransitionImage(stagedTransitionImage);
+            setHeading(stagedHeading);
+            setVisionItems(JSON.parse(JSON.stringify(stagedVisionItems)));
             setScatterImages(JSON.parse(JSON.stringify(stagedScatterImages)));
             setMobileScatterImages(JSON.parse(JSON.stringify(stagedMobileScatterImages)));
         } catch (err) {
@@ -122,6 +160,8 @@ export default function AllWorksMediaEditor({ page = 'home', section = 'all-work
 
     const handleReset = () => {
         setStagedTransitionImage(transitionImage);
+        setStagedHeading(heading);
+        setStagedVisionItems(JSON.parse(JSON.stringify(visionItems)));
         setStagedScatterImages(JSON.parse(JSON.stringify(scatterImages)));
         setStagedMobileScatterImages(JSON.parse(JSON.stringify(mobileScatterImages)));
     };
@@ -229,7 +269,7 @@ export default function AllWorksMediaEditor({ page = 'home', section = 'all-work
                             </div>
 
                             {/* Position & Size Grid */}
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 {[
                                     { key: 'x', label: 'X Position' },
                                     { key: 'y', label: 'Y Position' },
@@ -305,8 +345,8 @@ export default function AllWorksMediaEditor({ page = 'home', section = 'all-work
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex-1 py-4 text-[10px] uppercase tracking-[0.3em] font-bold rounded-xl transition-all duration-500 ${activeTab === tab.id
-                                ? 'bg-white text-black shadow-lg'
-                                : 'text-gray-400 hover:text-gray-600'
+                            ? 'bg-white text-black shadow-lg'
+                            : 'text-gray-400 hover:text-gray-600'
                             }`}
                     >
                         {tab.label}
@@ -351,6 +391,59 @@ export default function AllWorksMediaEditor({ page = 'home', section = 'all-work
                         <p className="text-[9px] text-gray-400 uppercase tracking-[0.3em] text-center font-medium italic">
                             Hover to access media uplink
                         </p>
+
+                        <div className="pt-12 space-y-12 border-t border-gray-100 mt-12">
+                            <div>
+                                <h3 className="text-[10px] uppercase tracking-[0.4em] font-bold text-gray-400 mb-6">Text Content</h3>
+                                <div className="space-y-6">
+                                    <div className="space-y-3">
+                                        <label className="text-[9px] uppercase tracking-[0.4em] font-bold text-gray-400">Section Heading</label>
+                                        <input
+                                            type="text"
+                                            value={stagedHeading}
+                                            onChange={(e) => setStagedHeading(e.target.value)}
+                                            className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:border-[#A67C52]/40 text-xs text-gray-700"
+                                        />
+                                    </div>
+
+                                    {stagedVisionItems.map((item, idx) => (
+                                        <div key={idx} className="space-y-4 pt-6 first:pt-0">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-[#A67C52]"></div>
+                                                <label className="text-[9px] uppercase tracking-[0.4em] font-bold text-gray-600">Vision Step {idx + 1}</label>
+                                            </div>
+                                            <div className="space-y-3 pl-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[8px] uppercase tracking-[0.3em] font-bold text-gray-400">Title</label>
+                                                    <input
+                                                        type="text"
+                                                        value={item.title}
+                                                        onChange={(e) => {
+                                                            const newItems = [...stagedVisionItems];
+                                                            newItems[idx].title = e.target.value;
+                                                            setStagedVisionItems(newItems);
+                                                        }}
+                                                        className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:border-[#A67C52]/40 text-xs text-gray-700 font-bold"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[8px] uppercase tracking-[0.3em] font-bold text-gray-400">Description</label>
+                                                    <textarea
+                                                        value={item.desc}
+                                                        onChange={(e) => {
+                                                            const newItems = [...stagedVisionItems];
+                                                            newItems[idx].desc = e.target.value;
+                                                            setStagedVisionItems(newItems);
+                                                        }}
+                                                        className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:border-[#A67C52]/40 text-xs text-gray-700 leading-relaxed h-32 resize-none"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -365,8 +458,8 @@ export default function AllWorksMediaEditor({ page = 'home', section = 'all-work
                         onClick={handleSave}
                         disabled={!hasChanges || saving}
                         className={`px-12 py-5 rounded-2xl text-[11px] font-bold uppercase tracking-[0.5em] transition-all duration-500 shadow-xl ${hasChanges && !saving
-                                ? 'bg-black text-white hover:bg-[#A67C52] shadow-black/20'
-                                : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                            ? 'bg-black text-white hover:bg-[#A67C52] shadow-black/20'
+                            : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                             }`}
                     >
                         {saving ? 'Syncing...' : 'Finalize Media'}

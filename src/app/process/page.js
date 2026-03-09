@@ -7,34 +7,44 @@ import Footer from '../components/Footer';
 
 export default function ProcessPage() {
     const containerRef = useRef(null);
-    const [mounted, setMounted] = useState(false);
+    const [content, setContent] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setMounted(true);
+        const fetchContent = async () => {
+            try {
+                const res = await fetch('/api/content?page=process');
+                if (res.ok) {
+                    const data = await res.json();
+                    const contentMap = {};
+                    data.forEach(item => {
+                        if (!contentMap[item.section]) contentMap[item.section] = {};
+                        contentMap[item.section][item.key] = item.value;
+                    });
+                    setContent(contentMap);
+                }
+            } catch (err) {
+                console.error('Failed to fetch process content:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchContent();
     }, []);
 
     useEffect(() => {
+        if (loading || !content) return;
+
         gsap.registerPlugin(ScrollTrigger);
 
         const ctx = gsap.context(() => {
-            // 1. Unified Text Highlight Effect (Hero + Narrative)
-            const highlightTexts = gsap.utils.toArray('.reveal-text, .narrative-paragraph');
+            // 1. Text Highlight Effect (Narrative)
+            const highlightTexts = gsap.utils.toArray('.narrative-paragraph');
             highlightTexts.forEach((p) => {
-                // We keep the inner structure for reveal-text but wrap content if needed
-                // For narrative-paragraph, we do the split logic
-                if (p.classList.contains('narrative-paragraph')) {
-                    const words = p.innerText.split(' ');
-                    p.innerHTML = words.map(word => `<span style="opacity: 0.2; transition: opacity 0.1s ease">${word} </span>`).join('');
-                } else {
-                    // For hero text, it's already split in the JSX, we just need to target the inner spans
-                    const innerSpans = p.querySelectorAll('span > span');
-                    innerSpans.forEach(s => {
-                        s.style.opacity = '0.2';
-                        s.style.transition = 'opacity 0.1s ease';
-                    });
-                }
+                const words = p.innerText.split(' ');
+                p.innerHTML = words.map(word => `<span style="opacity: 0.2; transition: opacity 0.1s ease">${word} </span>`).join('');
 
-                const targetSpans = p.querySelectorAll('span > span, span');
+                const targetSpans = p.querySelectorAll('span');
                 const finalSpans = Array.from(targetSpans).filter(s => s.innerText.trim().length > 0);
 
                 gsap.to(finalSpans, {
@@ -50,15 +60,7 @@ export default function ProcessPage() {
                 });
             });
 
-            // 2. Initial Entry Reveal (Transform only)
-            gsap.from('.reveal-text span > span', {
-                y: 100,
-                duration: 1.2,
-                stagger: 0.08,
-                ease: 'power3.out',
-            });
-
-            // 3. Sticky Sustainability Section Effect
+            // 2. Sticky Sustainability Section Effect
             ScrollTrigger.create({
                 trigger: '.sustainability-container',
                 start: 'top top',
@@ -67,8 +69,8 @@ export default function ProcessPage() {
                 pinSpacing: false
             });
 
-            // 4. Section reveals for initiatives
-            gsap.utils.toArray('.initiative-card').forEach((card, i) => {
+            // 3. Section reveals for initiatives
+            gsap.utils.toArray('.initiative-card').forEach((card) => {
                 gsap.from(card, {
                     opacity: 0,
                     y: 60,
@@ -84,63 +86,31 @@ export default function ProcessPage() {
         }, containerRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [loading, content]);
 
-    const initiatives = [
-        {
-            title: "Sustainability Action Plan",
-            subtitle: "Driven by purpose and guided by values, we translate our environmental commitments into clear, measurable actions. From responsible material selection to long-term performance strategies, sustainability is embedded into every phase of our process.",
-            image: "https://images.unsplash.com/photo-1464938050520-ef2270bb8ce8?auto=format&fit=crop&w=1200&q=80",
-            description: "We believe Architecture & Design can strengthen people’s connection to place, enrich daily life, and preserve the cultural narratives that shape communities. Our Sustainability Action Plan ensures that these principles are not aspirational — but operational."
-        },
-        {
-            title: "Reconciliation Action Plan",
-            subtitle: "Building trust, inspiring confidence, delivering excellence.",
-            image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
-            description: "Our approach is grounded in respect, collaboration, and meaningful engagement. We actively seek to understand the histories and communities connected to the places we build, ensuring our work contributes positively and responsibly to its social and cultural context. Our lasting impact lies in thoughtful, context-led buildings that honour their histories while strengthening the neighbourhoods they serve."
-        },
-        {
-            title: "Quality Management System",
-            subtitle: "Precision in every detail of our methodology.",
-            image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
-            description: "Each project responds to multiple influences — context, client vision, technical requirements, and user experience. No outcome is shaped by a single perspective. Our Quality Management System ensures disciplined processes, rigorous review, and consistent excellence from concept through completion."
-        },
-        {
-            title: "100% Green Power",
-            subtitle: "Committed to a sustainable and connected built world.",
-            image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1200&q=80",
-            description: "We operate with renewable energy to minimise our environmental footprint and support a more responsible future. Our thoughtful designs stand as enduring contributions — reducing impact while enhancing the environments in which they exist."
-        }
-    ];
+    if (loading) {
+        return (
+            <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' }}>
+                <div style={{ fontSize: '12px', letterSpacing: '0.4em', opacity: 0.3, textTransform: 'uppercase' }}>Tracing Process...</div>
+            </div>
+        );
+    }
+
+    const narrative = content?.narrative || {};
+    const sustainability = content?.sustainability || {};
+    const initiatives = content?.initiatives || {};
+    const accreditations = content?.accreditations || {};
+
+    const initiativeItems = initiatives.items || [];
+    const accreditationItems = accreditations.items || [];
 
     return (
         <main ref={containerRef} className="process-page bg-white text-black">
-            {/* --- HERO SECTION --- */}
-            <section
-                className="process-hero-section"
-                data-nav-theme="light"
-            >
-                <h1 className="reveal-text" style={{
-                    fontSize: 'clamp(1.8rem, 3.2vw, 3.2rem)',
-                    fontFamily: 'var(--font-heading)',
-                    fontWeight: 300,
-                    lineHeight: 1.15,
-                    letterSpacing: '-0.025em',
-                    maxWidth: '1200px',
-                    margin: 0
-                }}>
-                    {"Our projects are shaped by a deliberate balance of influences — the character of the site, the clarity of the client’s brief, our architectural vision, and the lived experience of the end user.".split(' ').map((word, i) => (
-                        <span key={i} style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'top' }}>
-                            <span style={{ display: 'inline-block' }}>{word}&nbsp;</span>
-                        </span>
-                    ))}
-                </h1>
-            </section>
-
             {/* --- NARRATIVE SECTION (TEXT HIGHLIGHT) --- */}
             <section
                 className="process-narrative-section"
                 data-nav-theme="light"
+                style={{ paddingTop: '160px' }}
             >
                 <div style={{ maxWidth: '1400px' }}>
                     <h2 className="narrative-paragraph" style={{
@@ -152,7 +122,7 @@ export default function ProcessPage() {
                         letterSpacing: '-0.01em',
                         color: '#000'
                     }}>
-                        “Each element informs the other. Context grounds the design. The brief defines direction. Our aspirations elevate the outcome. User experience ensures purpose."
+                        {narrative.heading}
                     </h2>
                     <p className="narrative-paragraph" style={{
                         fontSize: 'clamp(0.95rem, 1.25vw, 1.35rem)',
@@ -161,7 +131,7 @@ export default function ProcessPage() {
                         fontWeight: 400,
                         color: '#000'
                     }}>
-                        We believe architecture has the power to strengthen the bond between people and place.Through thoughtful, context-led design, we create buildings that enrich daily life and respect the cultural narratives that shape communities. Our ambition is not simply to construct — but to contribute.To deliver spaces that honour their history, elevate their surroundings, and endure with purpose in a more connected built world.
+                        {narrative.subtext}
                     </p>
                 </div>
             </section>
@@ -170,7 +140,7 @@ export default function ProcessPage() {
             <section className="sustainability-container" data-nav-theme="dark" style={{ position: 'relative', overflow: 'visible', minHeight: '200vh' }}>
                 <div className="sustainability-sticky-box" style={{ height: '100vh', width: '100%', position: 'absolute', top: 0, left: 0, overflow: 'hidden', zIndex: 1 }}>
                     <img
-                        src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80"
+                        src={sustainability.image}
                         alt="Sustainability"
                         style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 1 }}
                     />
@@ -179,9 +149,9 @@ export default function ProcessPage() {
 
                 <div style={{ position: 'relative', zIndex: 2, padding: '120vh 4% 160px', color: '#fff' }}>
                     <div style={{ maxWidth: '800px', backgroundColor: 'rgba(0,0,0,0.1)', backdropFilter: 'blur(5px)', padding: '60px', borderRadius: '4px' }}>
-                        <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2rem', opacity: 0.8, fontWeight: 600 }}>Environmental Impact</span>
+                        <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2rem', opacity: 0.8, fontWeight: 600 }}>{sustainability.label}</span>
                         <h3 style={{ fontSize: 'clamp(1.5rem, 3vw, 3.5rem)', marginTop: '20px', fontWeight: 300, fontFamily: 'var(--font-heading)' }}>
-                            Building with care — for the land, the community, and generations ahead.
+                            {sustainability.heading}
                         </h3>
                     </div>
                 </div>
@@ -194,8 +164,8 @@ export default function ProcessPage() {
                 style={{ padding: '160px 4%', backgroundColor: '#fff', position: 'relative', zIndex: 3 }}
             >
                 <div style={{ marginBottom: '120px' }}>
-                    <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2rem', opacity: 0.4, fontWeight: 600 }}>Our Initiatives</span>
-                    <h3 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 4rem)', marginTop: '24px', fontWeight: 300, fontFamily: 'var(--font-heading)', letterSpacing: '-0.02em' }}>Driven by conviction, proven through action.</h3>
+                    <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2rem', opacity: 0.4, fontWeight: 600 }}>{initiatives.label}</span>
+                    <h3 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 4rem)', marginTop: '24px', fontWeight: 300, fontFamily: 'var(--font-heading)', letterSpacing: '-0.02em' }}>{initiatives.heading}</h3>
                 </div>
 
                 <div className="initiatives-grid" style={{
@@ -203,7 +173,7 @@ export default function ProcessPage() {
                     flexDirection: 'column',
                     gap: '160px'
                 }}>
-                    {initiatives.map((init, i) => (
+                    {initiativeItems.map((init, i) => (
                         <div key={i} className="initiative-card" style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(12, 1fr)',
@@ -241,8 +211,9 @@ export default function ProcessPage() {
                 style={{ padding: '120px 4% 160px', textAlign: 'center', backgroundColor: '#fff', borderTop: '1px solid #f8f8f8' }}
             >
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '100px', flexWrap: 'wrap', alignItems: 'center', opacity: 0.3 }}>
-                    <div style={{ fontSize: '1rem', fontWeight: 600, letterSpacing: '0.2em', fontFamily: 'var(--font-heading)' }}>ISO 9001 CERTIFIED</div>
-                    <div style={{ fontSize: '1rem', fontWeight: 600, letterSpacing: '0.2em', fontFamily: 'var(--font-heading)' }}>ARCHITECTS REGISTRATION BOARD</div>
+                    {accreditationItems.map((item, i) => (
+                        <div key={i} style={{ fontSize: '1rem', fontWeight: 600, letterSpacing: '0.2em', fontFamily: 'var(--font-heading)' }}>{item}</div>
+                    ))}
                 </div>
             </section>
 

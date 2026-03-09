@@ -5,8 +5,51 @@ import gsap from 'gsap';
 import Link from 'next/link';
 import Footer from '../components/Footer';
 
+const DEFAULT_CONTENT = {
+    hero: {
+        heroText: 'Based in Tamil Nadu but available for your projects in',
+        locations: ["Chennai", "Madurai", "Coimbatore", "Trichy", "Salem", "Erode"]
+    },
+    details: {
+        socials: [
+            { platform: 'Instagram', url: 'https://instagram.com' },
+            { platform: 'LinkedIn', url: 'https://linkedin.com' }
+        ],
+        email: 'contact@cutsandgrooves.com',
+        phone: '+61 3 8672 5999',
+        studio: 'Cumbum,\nTheni, Tamil Nadu.',
+        mapIframe: 'https://maps.google.com/maps?q=Cumbum,+Tamil+Nadu&t=k&z=13&ie=UTF8&iwloc=&output=embed'
+    }
+};
+
 export default function ContactPage() {
     const containerRef = useRef(null);
+    const [content, setContent] = useState(DEFAULT_CONTENT);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            try {
+                const res = await fetch('/api/content?page=contact');
+                if (!res.ok) throw new Error('Failed to fetch');
+                const data = await res.json();
+
+                if (data && data.length > 0) {
+                    const contentMap = { hero: {}, details: {} };
+                    data.forEach(item => {
+                        contentMap[item.section][item.key] = item.value;
+                    });
+                    setContent(contentMap);
+                }
+            } catch (err) {
+                console.error('Error fetching contact content:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchContent();
+    }, []);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -32,22 +75,35 @@ export default function ContactPage() {
             });
 
             // 3. Contact Form Reveal
-            gsap.to('.contact-form', {
-                y: 0,
-                opacity: 1,
+            gsap.from('.contact-form', {
+                y: 50,
+                opacity: 0,
                 duration: 1.5,
                 ease: 'power3.out',
                 delay: 1.2
             });
 
+            // 4. Contact Map Reveal
+            gsap.from('.contact-map', {
+                y: 50,
+                opacity: 0,
+                duration: 1.5,
+                ease: 'power3.out',
+                delay: 1.4
+            });
+
         }, containerRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [loading]);
 
-    const locations = [
-        "Chennai", "Madurai", "Coimbatore","Trichy", "Salem", "Erode"
-    ];
+    const heroText = content?.hero?.heroText || DEFAULT_CONTENT.hero.heroText;
+    const locations = content?.hero?.locations || DEFAULT_CONTENT.hero.locations;
+    const socials = content?.details?.socials || DEFAULT_CONTENT.details.socials;
+    const email = content?.details?.email || DEFAULT_CONTENT.details.email;
+    const phone = content?.details?.phone || DEFAULT_CONTENT.details.phone;
+    const studioAddress = content?.details?.studio || DEFAULT_CONTENT.details.studio;
+    const mapIframe = content?.details?.mapIframe || DEFAULT_CONTENT.details.mapIframe;
 
     return (
         <main ref={containerRef} className="contact-page bg-white text-black min-h-screen pb-[80px] px-[4%]" data-nav-theme="light" style={{ paddingTop: '240px' }}>
@@ -62,7 +118,7 @@ export default function ContactPage() {
                         lineHeight: 1.2,
                         letterSpacing: '-0.02em'
                     }}>
-                        {"Based in Tamil Nadu but available for your projects in ".split(' ').map((word, i) => (
+                        {heroText.split(' ').map((word, i) => (
                             <span key={i} style={{ display: 'inline-block', marginRight: '0.25em' }}>{word}</span>
                         ))}
                         <br />
@@ -79,30 +135,32 @@ export default function ContactPage() {
                     <div>
                         <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '20px', opacity: 0.4 }}>Social</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover-link" style={{ fontSize: '1.1rem', fontWeight: 500 }}>Instagram</a>
-                            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover-link" style={{ fontSize: '1.1rem', fontWeight: 500 }}>LinkedIn</a>
+                            {socials.map((social, i) => (
+                                <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" className="hover-link" style={{ fontSize: '1.1rem', fontWeight: 500 }}>
+                                    {social.platform}
+                                </a>
+                            ))}
                         </div>
                     </div>
 
                     {/* Email */}
                     <div>
                         <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '20px', opacity: 0.4 }}>Email</h4>
-                        <a href="mailto:contact@cutsandgrooves.com" className="hover-link" style={{ fontSize: '1.1rem', fontWeight: 500 }}>contact@cutsandgrooves.com</a>
+                        <a href={`mailto:${email}`} className="hover-link" style={{ fontSize: '1.1rem', fontWeight: 500 }}>{email}</a>
                     </div>
 
                     {/* Phone */}
                     <div>
                         <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '20px', opacity: 0.4 }}>Phone</h4>
-                        <a href="tel:+91 8015759988" className="hover-link" style={{ fontSize: '1.1rem', fontWeight: 500 }}>+61 3 8672 5999</a>
+                        <a href={`tel:${phone}`} className="hover-link" style={{ fontSize: '1.1rem', fontWeight: 500 }}>{phone}</a>
                     </div>
 
                     {/* Address */}
                     <div>
                         <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '20px', opacity: 0.4 }}>Studio</h4>
-                        <p style={{ fontSize: '1.1rem', lineHeight: 1.5, fontWeight: 500 }}>
-                            Cumbum,<br />
-                            Theni, Tamil Nadu.
-                        </p>
+                        <div style={{ fontSize: '1.1rem', lineHeight: 1.5, fontWeight: 500, whiteSpace: 'pre-line' }}>
+                            {studioAddress}
+                        </div>
                     </div>
 
                 </div>
@@ -117,18 +175,32 @@ export default function ContactPage() {
                 .hover-link:hover {
                     opacity: 0.5;
                 }
-                @media (max-width: 768px) {
-                    .contact-grid {
+                @media (max-width: 1024px) {
+                    .contact-grid, .contact-bottom-grid {
                         grid-template-columns: 1fr !important;
                         gap: 60px !important;
                     }
                 }
             `}</style>
 
-            {/* --- CONTACT FORM --- */}
-            <div className="contact-form" style={{ marginTop: '100px', maxWidth: '800px', opacity: 0, transform: 'translateY(50px)' }}>
-                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', fontWeight: 300, marginBottom: '60px' }}>Send us a message</h2>
-                <ContactForm />
+            {/* --- CONTACT FORM & MAP --- */}
+            <div className="contact-bottom-grid" style={{ maxWidth: '1400px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.8fr)', gap: '80px', alignItems: 'end' }}>
+                <div className="contact-form" style={{ marginTop: '100px', maxWidth: '800px' }}>
+                    <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', fontWeight: 300, marginBottom: '60px' }}>Send us a message</h2>
+                    <ContactForm />
+                </div>
+
+                <div className="contact-map" style={{ width: '100%', height: '100%', minHeight: '400px', backgroundColor: '#f0f0f0', display: 'flex' }}>
+                    <iframe
+                        src={mapIframe}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen=""
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                    ></iframe>
+                </div>
             </div>
 
             {/* FOOTER */}
@@ -139,9 +211,9 @@ export default function ContactPage() {
 
 function ContactForm() {
     const [focused, setFocused] = useState(null);
-    const [values, setValues] = useState({ name: '', email: '', message: '' });
+    const [values, setValues] = useState({ name: '', phone: '', message: '' });
     const nameRef = useRef(null);
-    const emailRef = useRef(null);
+    const phoneRef = useRef(null);
 
     const handleChange = (field, e) => {
         setValues(prev => ({ ...prev, [field]: e.target.value }));
@@ -166,8 +238,8 @@ function ContactForm() {
         };
 
         adjustWidth(nameRef, values.name, 'your name');
-        adjustWidth(emailRef, values.email, 'your email');
-    }, [values.name, values.email]);
+        adjustWidth(phoneRef, values.phone, 'your number');
+    }, [values.name, values.phone]);
 
 
     return (
@@ -184,21 +256,23 @@ function ContactForm() {
                         onFocus={() => setFocused('name')}
                         onBlur={() => setFocused(null)}
                         onChange={(e) => handleChange('name', e)}
+                        suppressHydrationWarning
                     />
                 </div>
 
                 <span className="text-segment">and I'd like to talk about a project.</span>
                 <span className="text-segment">You can reach me at</span>
 
-                <div className={`input-wrapper ${focused === 'email' ? 'focused' : ''}`}>
+                <div className={`input-wrapper ${focused === 'phone' ? 'focused' : ''}`}>
                     <input
-                        ref={emailRef}
-                        type="email"
-                        placeholder="your email"
-                        value={values.email}
-                        onFocus={() => setFocused('email')}
+                        ref={phoneRef}
+                        type="tel"
+                        placeholder="your number"
+                        value={values.phone}
+                        onFocus={() => setFocused('phone')}
                         onBlur={() => setFocused(null)}
-                        onChange={(e) => handleChange('email', e)}
+                        onChange={(e) => handleChange('phone', e)}
+                        suppressHydrationWarning
                     />
                 </div>
 
@@ -220,8 +294,8 @@ function ContactForm() {
                 </div>
             </div>
 
-            <button type="submit" className="submit-btn group">
-                <span className="btn-text">Send Request</span>
+            <button type="submit" className="submit-btn group" suppressHydrationWarning>
+                <span className="btn-text" suppressHydrationWarning>Send Request</span>
                 <span className="btn-line"></span>
                 <span className="btn-arrow">&rarr;</span>
             </button>

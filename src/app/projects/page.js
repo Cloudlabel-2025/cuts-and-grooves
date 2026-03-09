@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { projects } from '../data/projects';
 import Footer from '../components/Footer';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -118,8 +117,26 @@ const ProjectCard = ({ project, index }) => {
 
 export default function Projects() {
     const containerRef = useRef(null);
+    const [projects, setProjects] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                const res = await fetch('/api/projects');
+                if (res.ok) {
+                    const data = await res.json();
+                    setProjects(data);
+                }
+            } catch (err) {
+                console.error('Portfolio fetch error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProjects();
+
         const ctx = gsap.context(() => {
             gsap.from('.projects-title span', {
                 yPercent: 110,
@@ -157,12 +174,23 @@ export default function Projects() {
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
                     gridAutoRows: 'minmax(200px, auto)',
-                    gap: '2vw'
+                    gap: '2vw',
+                    minHeight: '400px'
                 }}
             >
-                {projects.map((project, i) => (
-                    <ProjectCard key={project.id} project={project} index={i} />
-                ))}
+                {loading ? (
+                    <div style={{ gridColumn: 'span 4', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+                        <div style={{ fontSize: '12px', letterSpacing: '0.2em', opacity: 0.4, textTransform: 'uppercase' }}>Retrieving archive...</div>
+                    </div>
+                ) : projects.length > 0 ? (
+                    projects.map((project, i) => (
+                        <ProjectCard key={project._id || project.id} project={project} index={i} />
+                    ))
+                ) : (
+                    <div style={{ gridColumn: 'span 4', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+                        <div style={{ fontSize: '12px', letterSpacing: '0.2em', opacity: 0.4, textTransform: 'uppercase' }}>Registry Empty</div>
+                    </div>
+                )}
             </section>
 
             <Footer />

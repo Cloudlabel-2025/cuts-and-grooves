@@ -147,7 +147,7 @@ export default function Navbar() {
 
                 {/* ─── Center-left: Nav links (comma separated) ─── */}
                 <div className="nav-links nav-item">
-                    <Link href="/projects" className="nav-link">Work</Link>
+                    <Link href="/projects" className="nav-link">Portfolio</Link>
                     <span className="nav-comma">,</span>
                     <Link href="/process" className="nav-link">Process</Link>
                     <span className="nav-comma">,</span>
@@ -184,7 +184,7 @@ export default function Navbar() {
                 <div className="drawer-content">
                     <div className="drawer-links">
                         <Link href="/" className="drawer-link" onClick={() => setMenuOpen(false)}>Home</Link>
-                        <Link href="/projects" className="drawer-link" onClick={() => setMenuOpen(false)}>Work</Link>
+                        <Link href="/projects" className="drawer-link" onClick={() => setMenuOpen(false)}>Portfolio</Link>
                         <Link href="/studio" className="drawer-link" onClick={() => setMenuOpen(false)}>Studio</Link>
                         <Link href="/process" className="drawer-link" onClick={() => setMenuOpen(false)}>Process</Link>
                         <Link href="/contact" className="drawer-link" onClick={() => setMenuOpen(false)}>Contact</Link>

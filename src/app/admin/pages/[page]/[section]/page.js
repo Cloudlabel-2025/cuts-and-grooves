@@ -3,6 +3,16 @@
 import { use } from 'react';
 import HeroEditor from '@/app/components/admin/HeroEditor';
 import VisualCanvasEditor from '@/app/components/admin/VisualCanvasEditor';
+import ProjectManagement from '@/app/components/admin/ProjectManagement';
+import ProcessNarrativeEditor from '@/app/components/admin/ProcessNarrativeEditor';
+import SustainabilityEditor from '@/app/components/admin/SustainabilityEditor';
+import InitiativesEditor from '@/app/components/admin/InitiativesEditor';
+import AccreditationsEditor from '@/app/components/admin/AccreditationsEditor';
+import StudioNarrativeEditor from '@/app/components/admin/StudioNarrativeEditor';
+import TeamEditor from '@/app/components/admin/TeamEditor';
+import VisionEditor from '@/app/components/admin/VisionEditor';
+import AwardsEditor from '@/app/components/admin/AwardsEditor';
+import CareersEditor from '@/app/components/admin/CareersEditor';
 import Link from 'next/link';
 
 export default function DynamicSectionEditor({ params }) {
@@ -27,6 +37,26 @@ export default function DynamicSectionEditor({ params }) {
                 <VisualCanvasEditor page={page} section={section} />
             ) : isHero ? (
                 <HeroEditor page={page} section={section} />
+            ) : page === 'projects' && section === 'grid' ? (
+                <ProjectManagement />
+            ) : page === 'process' && section === 'narrative' ? (
+                <ProcessNarrativeEditor />
+            ) : page === 'process' && section === 'sustainability' ? (
+                <SustainabilityEditor />
+            ) : page === 'process' && section === 'initiatives' ? (
+                <InitiativesEditor />
+            ) : page === 'process' && section === 'accreditations' ? (
+                <AccreditationsEditor />
+            ) : page === 'studio' && section === 'narrative' ? (
+                <StudioNarrativeEditor />
+            ) : page === 'studio' && section === 'team' ? (
+                <TeamEditor />
+            ) : page === 'studio' && section === 'vision' ? (
+                <VisionEditor />
+            ) : page === 'studio' && section === 'awards' ? (
+                <AwardsEditor />
+            ) : page === 'studio' && section === 'careers' ? (
+                <CareersEditor />
             ) : (
                 <div className="bg-white border border-gray-100 rounded-[3.5rem] p-24 text-center space-y-10 shadow-[0_50px_150px_-50px_rgba(0,0,0,0.05)] border-white">
                     <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-4xl opacity-20 grayscale">⚒</div>

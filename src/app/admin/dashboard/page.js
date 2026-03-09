@@ -31,7 +31,7 @@ export default function AdminDashboard() {
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                     <QuickCard title="Media Library" href="/admin/media" icon="📁" />
-                    <QuickCard title="Portfolio" href="/admin/pages/work" icon="🎨" />
+                    <QuickCard title="Portfolio" href="/admin/pages/projects" icon="🎨" />
                     <QuickCard title="Home Page" href="/admin/pages/home" icon="🏠" />
                     <QuickCard title="Settings" href="/admin/media" icon="⚙️" />
                 </div>
@@ -52,7 +52,7 @@ export default function AdminDashboard() {
                     <PageCard
                         title="Portfolio"
                         description="Project showcase and gallery views"
-                        href="/admin/pages/work"
+                        href="/admin/pages/projects"
                         icon="📁"
                     />
                     <PageCard

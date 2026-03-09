@@ -5,41 +5,107 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Footer from '../components/Footer';
 
-const teamMembers = [
-    { name: "Morgan Jenkins", role: "Director", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80" },
-    { name: "Clara Mcdonald", role: "Associate", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80" },
-    { name: "Ethan Hunt", role: "Senior Architect", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80" },
-    { name: "Sarah Connor", role: "Interior Designer", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" },
-    { name: "John Wick", role: "Graduate Architect", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80" },
-];
+const DEFAULT_CONTENT = {
+    narrative: {
+        heading: 'Cuts & Grooves is a India based architecture & interior design studio.',
+        quote: '“Each project embodies the vision and expertise of our designers — transforming ideas into purposeful, enduring spaces.”',
+        valuesText: 'We deliver a highly personalised service with direct involvement at every stage of the project.Our work is grounded in a deep understanding of context, client priorities, and user experience — ensuring each building is purposeful, enduring, and relevant over time.'
+    },
+    team: {
+        members: [
+            { name: "Morgan Jenkins", role: "Director", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80" },
+            { name: "Clara Mcdonald", role: "Associate", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80" },
+            { name: "Ethan Hunt", role: "Senior Architect", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80" },
+            { name: "Sarah Connor", role: "Interior Designer", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" },
+            { name: "John Wick", role: "Graduate Architect", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80" },
+        ]
+    },
+    vision: {
+        items: [
+            {
+                title: "Design Integrity",
+                text: "Our design aesthetic is established through a consistent process and a detailed concept brief, which considers client needs, site context, and the future occupiers. We combine and test these elements to create a singular design vision concealing many influencing layers. This singular vision, like a piece of artwork, is unique and individual. We believe the principles of design quality should always be present no matter the project brief or building scale.",
+                image: "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=1200&q=80"
+            },
+            {
+                title: "Innovation",
+                text: "Cuts and Grooves embraces innovation as a disciplined pursuit, grounded in research and informed by evolving technology. We challenge conventions, explore new methodologies, and contribute fresh thinking to the built environment.Technology is integral to our process — a powerful tool that sharpens precision and expands possibility. Yet creativity remains human at its core. Insight, intuition, and critical thinking guide every decision we make.",
+                image: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1200&q=80"
+            },
+            {
+                title: "Enhanced Living",
+                text: "We believe enhanced user experience and well-being should be at the forefront of design. We constantly consider the impact of design on the end user to ensure our designs promote positive human interaction and encourage healthier, enriched experiences.",
+                image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80"
+            }
+        ]
+    },
+    awards: {
+        items: [
+            {
+                year: "2025",
+                items: [
+                    { project: "PNG Waterfront Residences", contest: "Architizer Vision Awards", distinction: "Vision for Localism: Finalist" },
+                    { project: "Ormond House", contest: "Houses Awards", distinction: "House Alteration and Addition over 200sqm: Shortlisted" }
+                ]
+            },
+            {
+                year: "2024",
+                items: [
+                    { project: "The Saint Hotel", contest: "Australian Interior Design Awards", distinction: "Hospitality Design: Shortlisted" },
+                    { project: "The Saint Hotel", contest: "Eat Drink Design Awards", distinction: "Best Restaurant design" }
+                ]
+            }
+        ]
+    },
+    careers: {
+        heading: 'We are looking for motivated, curious and dedicated talent who want to contribute to our growth while sharing our values.',
+        jobs: [
+            { title: "Graduate Architect", type: "Full-time", location: "Melbourne" },
+            { title: "Interior Designer", type: "Full-time", location: "Melbourne" }
+        ]
+    }
+};
 
 export default function StudioPage() {
     const containerRef = useRef(null);
     const teamContainerRef = useRef(null);
     const [hoveredIndex, setHoveredIndex] = useState(0);
     const [activeVisionIndex, setActiveVisionIndex] = useState(null);
-    const [mounted, setMounted] = useState(false);
+    const [content, setContent] = useState(DEFAULT_CONTENT);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setMounted(true);
+        const fetchContent = async () => {
+            try {
+                const res = await fetch('/api/content?page=studio');
+                if (!res.ok) throw new Error('Failed to fetch');
+                const data = await res.json();
+
+                if (data && data.length > 0) {
+                    const contentMap = {};
+                    data.forEach(item => {
+                        if (!contentMap[item.section]) contentMap[item.section] = {};
+                        contentMap[item.section][item.key] = item.value;
+                    });
+                    setContent(contentMap);
+                }
+            } catch (err) {
+                console.error('Error fetching studio content:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchContent();
     }, []);
 
     useEffect(() => {
+        if (!content) return;
+
         gsap.registerPlugin(ScrollTrigger);
 
         const ctx = gsap.context(() => {
-            // 1. Hero Text Reveal
-            const heroText = document.querySelectorAll('.studio-hero h1 span');
-            gsap.from(heroText, {
-                y: 100,
-                opacity: 0,
-                duration: 1.2,
-                stagger: 0.05,
-                ease: 'power3.out',
-                delay: 0.2
-            });
-
-            // 2. Narrative/Quote Reveal
+            // 1. Narrative/Quote Reveal
             gsap.from('.studio-quote', {
                 opacity: 0,
                 y: 40,
@@ -51,7 +117,7 @@ export default function StudioPage() {
                 }
             });
 
-            // 3. Values Section Reveal
+            // 2. Values Section Reveal
             const values = document.querySelectorAll('.value-item');
             values.forEach((value, i) => {
                 gsap.from(value, {
@@ -67,7 +133,7 @@ export default function StudioPage() {
                 });
             });
 
-            // 4. Vision Section Reveal
+            // 3. Vision Section Reveal
             const visionItems = document.querySelectorAll('.vision-item');
             visionItems.forEach((item, i) => {
                 gsap.from(item, {
@@ -85,41 +151,66 @@ export default function StudioPage() {
         }, containerRef);
 
         return () => ctx.revert();
+    }, [loading, content]);
+
+    // Initial loading state (brief pulse before content appears)
+    const [initialWait, setInitialWait] = useState(true);
+    useEffect(() => {
+        const timer = setTimeout(() => setInitialWait(false), 800);
+        return () => clearTimeout(timer);
     }, []);
 
-    return (
-        <main ref={containerRef} className="studio-page bg-white text-black" data-nav-theme="light">
-            {/* --- HERO SECTION --- */}
-            <section className="studio-hero-section">
-                <h1 className="studio-hero-title" style={{
-                    fontSize: 'clamp(2rem, 3.5vw, 4rem)',
-                    fontFamily: 'var(--font-heading)',
-                    fontWeight: 300,
-                    lineHeight: 1.2,
-                    maxWidth: '1400px',
-                    margin: 0,
-                    letterSpacing: '-0.02em'
-                }}>
-                    {"Cuts & Grooves is a India based architecture & interior design studio.".split(' ').map((word, i) => (
-                        <span key={i} style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'top', marginRight: '0.25em' }}>{word}</span>
-                    ))}
-                </h1>
-            </section>
+    if (initialWait && loading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="text-[10px] uppercase tracking-[0.5em] animate-pulse">Consulting Studio Archives...</div>
+            </div>
+        );
+    }
 
-            {/* --- QUOTE SECTION --- */}
-            <section style={{ padding: '0 4% 160px' }}>
-                <h2 className="studio-quote" style={{
-                    fontSize: 'clamp(1.5rem, 2.5vw, 3rem)',
-                    fontFamily: 'var(--font-heading)',
-                    fontWeight: 300,
-                    lineHeight: 1.3,
-                    maxWidth: '1200px',
-                    margin: '0 auto',
-                    textAlign: 'center',
-                    color: '#000'
-                }}>
-                    “Each project embodies the vision and expertise of our designers — transforming ideas into purposeful, enduring spaces.”
-                </h2>
+    const teamMembers = content?.team?.members || DEFAULT_CONTENT.team.members;
+    const visionItems = content?.vision?.items || DEFAULT_CONTENT.vision.items;
+    const awards = content?.awards?.items || DEFAULT_CONTENT.awards.items;
+    const jobOffers = content?.careers?.jobs || DEFAULT_CONTENT.careers.jobs;
+    const introHeading = content?.narrative?.heading || DEFAULT_CONTENT.narrative.heading;
+    const quote = content?.narrative?.quote || DEFAULT_CONTENT.narrative.quote;
+    const valuesText = content?.narrative?.valuesText || DEFAULT_CONTENT.narrative.valuesText;
+    const careersHeading = content?.careers?.heading || DEFAULT_CONTENT.careers.heading;
+
+    return (
+        <main ref={containerRef} className="studio-page bg-white text-black pt-48" data-nav-theme="light">
+
+            {/* --- NARRATIVE SECTION --- */}
+            <section style={{ padding: '15vh 4% 15vh' }}>
+                <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+                    <h1 className="studio-heading" style={{
+                        fontSize: 'clamp(1.8rem, 4.2vw, 5.2rem)',
+                        fontFamily: 'var(--font-heading)',
+                        fontWeight: 300,
+                        lineHeight: 1.1,
+                        maxWidth: '1200px',
+                        marginBottom: '15vh',
+                        textAlign: 'left',
+                        color: '#000',
+                        letterSpacing: '-0.02em'
+                    }}>
+                        {introHeading}
+                    </h1>
+
+                    <h2 className="studio-quote" style={{
+                        fontSize: 'clamp(1rem, 1.8vw, 2.2rem)',
+                        fontFamily: 'var(--font-heading)',
+                        fontWeight: 300,
+                        lineHeight: 1.5,
+                        maxWidth: '1100px',
+                        margin: '0 auto',
+                        textAlign: 'center',
+                        color: '#000',
+                        letterSpacing: '-0.01em'
+                    }}>
+                        {quote}
+                    </h2>
+                </div>
             </section>
 
             {/* --- MEET THE TEAM SECTION --- */}
@@ -188,7 +279,7 @@ export default function StudioPage() {
 
                     {/* RIGHT COLUMN: STICKY PREVIEW */}
                     <div className="team-preview-col">
-                        <div className="team-preview-sticky">
+                        <div className="team-preview-sticky" style={{ maxWidth: '400px', marginLeft: 'auto' }}>
                             <div style={{
                                 width: '100%',
                                 aspectRatio: '4/5',
@@ -196,17 +287,19 @@ export default function StudioPage() {
                                 marginBottom: '20px',
                                 overflow: 'hidden'
                             }}>
-                                <img
-                                    src={teamMembers[hoveredIndex].image}
-                                    alt="Team Member"
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                        transition: 'opacity 0.4s ease',
-                                        display: 'block'
-                                    }}
-                                />
+                                {teamMembers[hoveredIndex] && (
+                                    <img
+                                        src={teamMembers[hoveredIndex].image}
+                                        alt="Team Member"
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            transition: 'opacity 0.4s ease',
+                                            display: 'block'
+                                        }}
+                                    />
+                                )}
                             </div>
                             <div style={{
                                 display: 'flex',
@@ -217,7 +310,7 @@ export default function StudioPage() {
                             }}>
                                 <span style={{ fontSize: '0.9rem', opacity: 0.6 }}>[ Role ]</span>
                                 <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>
-                                    {teamMembers[hoveredIndex].role}
+                                    {teamMembers[hoveredIndex]?.role}
                                 </span>
                             </div>
                         </div>
@@ -237,7 +330,7 @@ export default function StudioPage() {
                         </div>
                         <div>
                             <p style={{ fontSize: '1.5rem', lineHeight: 1.4, fontWeight: 300, maxWidth: '800px' }}>
-                                We deliver a highly personalised service with direct involvement at every stage of the project.Our work is grounded in a deep understanding of context, client priorities, and user experience — ensuring each building is purposeful, enduring, and relevant over time.
+                                {valuesText}
                             </p>
                         </div>
                     </div>
@@ -249,29 +342,13 @@ export default function StudioPage() {
                             <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.2em', margin: 0 }}>Our vision</h3>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            {[
-                                {
-                                    title: "Design Integrity",
-                                    text: "Our design aesthetic is established through a consistent process and a detailed concept brief, which considers client needs, site context, and the future occupiers. We combine and test these elements to create a singular design vision concealing many influencing layers. This singular vision, like a piece of artwork, is unique and individual. We believe the principles of design quality should always be present no matter the project brief or building scale.",
-                                    image: "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=1200&q=80"
-                                },
-                                {
-                                    title: "Innovation",
-                                    text: "Cuts and Grooves embraces innovation as a disciplined pursuit, grounded in research and informed by evolving technology. We challenge conventions, explore new methodologies, and contribute fresh thinking to the built environment.Technology is integral to our process — a powerful tool that sharpens precision and expands possibility. Yet creativity remains human at its core. Insight, intuition, and critical thinking guide every decision we make.",
-                                    image: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1200&q=80"
-                                },
-                                {
-                                    title: "Enhanced Living",
-                                    text: "We believe enhanced user experience and well-being should be at the forefront of design. We constantly consider the impact of design on the end user to ensure our designs promote positive human interaction and encourage healthier, enriched experiences.",
-                                    image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80"
-                                }
-                            ].map((item, i) => {
-                                const isOpen = activeVisionIndex === i; // Changed to use activeVisionIndex
+                            {visionItems.map((item, i) => {
+                                const isOpen = activeVisionIndex === i;
                                 return (
                                     <div
                                         key={i}
                                         className="vision-item"
-                                        onMouseEnter={() => setActiveVisionIndex(i)} // Changed to use setActiveVisionIndex
+                                        onMouseEnter={() => setActiveVisionIndex(i)}
                                         style={{
                                             borderTop: '1px solid rgba(0,0,0,0.1)',
                                             padding: '40px 0',
@@ -340,22 +417,7 @@ export default function StudioPage() {
                         </div>
 
                         {/* Table Content */}
-                        {[
-                            {
-                                year: "2025",
-                                items: [
-                                    { project: "PNG Waterfront Residences", contest: "Architizer Vision Awards", distinction: "Vision for Localism: Finalist" },
-                                    { project: "Ormond House", contest: "Houses Awards", distinction: "House Alteration and Addition over 200sqm: Shortlisted" }
-                                ]
-                            },
-                            {
-                                year: "2024",
-                                items: [
-                                    { project: "The Saint Hotel", contest: "Australian Interior Design Awards", distinction: "Hospitality Design: Shortlisted" },
-                                    { project: "The Saint Hotel", contest: "Eat Drink Design Awards", distinction: "Best Restaurant design" }
-                                ]
-                            }
-                        ].map((group, i) => (
+                        {awards.map((group, i) => (
                             <div key={i} className="awards-row-grid">
                                 <div className="awards-year">{group.year}</div>
                                 <div className="awards-items-col">
@@ -379,18 +441,10 @@ export default function StudioPage() {
                     <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '80px', opacity: 0.4 }}>Job Offers</h3>
                     <div style={{ paddingBottom: '60px' }}>
                         <p style={{ fontSize: '1.2rem', marginBottom: '60px', maxWidth: '800px', lineHeight: 1.6 }}>
-                            We are looking for motivated, curious and dedicated talent who want to contribute to our growth while sharing our values.
+                            {careersHeading}
                         </p>
 
-                        {[{
-                            title: "Graduate Architect",
-                            type: "Full-time",
-                            location: "Melbourne"
-                        }, {
-                            title: "Interior Designer",
-                            type: "Full-time",
-                            location: "Melbourne"
-                        }].map((job, i) => (
+                        {jobOffers.map((job, i) => (
                             <a key={i} href="mailto:careers@cutsandgrooves.com" className="job-offer-card">
                                 <div>
                                     <span className="job-title">{job.title}</span>
@@ -405,8 +459,6 @@ export default function StudioPage() {
                     </div>
                 </div>
             </section >
-
-
 
             <Footer />
         </main >

@@ -15,29 +15,32 @@ export default function ProjectManagement() {
         location: '',
         description: '',
         mainImage: '',
+        gallery: [],
         isFeatured: false
     });
 
-    useEffect(() => {
-        fetchProjects();
-    }, []);
-
     const fetchProjects = async () => {
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-            const res = await fetch('/api/projects', { signal: controller.signal });
-            clearTimeout(timeoutId);
+            const res = await fetch('/api/projects', {
+                cache: 'no-store'
+            });
+
             if (res.ok) {
                 const data = await res.json();
                 setProjects(data);
             }
         } catch (err) {
-            console.error(err);
+            if (err.name !== 'AbortError') {
+                console.error('Fetch project error:', err);
+            }
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchProjects();
+    }, []);
 
     const handleEdit = (project) => {
         setFormData({
@@ -47,6 +50,7 @@ export default function ProjectManagement() {
             location: project.location || '',
             description: project.description || '',
             mainImage: project.mainImage || '',
+            gallery: project.gallery || [],
             isFeatured: project.isFeatured || false
         });
         setEditingId(project._id);
@@ -78,7 +82,7 @@ export default function ProjectManagement() {
         if (res.ok) {
             setShowForm(false);
             setEditingId(null);
-            setFormData({ title: '', category: '', year: '', location: '', description: '', mainImage: '', isFeatured: false });
+            setFormData({ title: '', category: '', year: '', location: '', description: '', mainImage: '', gallery: [], isFeatured: false });
             fetchProjects();
         }
     };
@@ -90,121 +94,168 @@ export default function ProjectManagement() {
         }
     };
 
+    const addGalleryImage = (url) => {
+        setFormData(prev => ({
+            ...prev,
+            gallery: [...prev.gallery, url]
+        }));
+    };
+
+    const removeGalleryImage = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            gallery: prev.gallery.filter((_, i) => i !== index)
+        }));
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '24px', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-                <h2 style={{ fontSize: '12px', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', fontWeight: '700', textTransform: 'uppercase', margin: 0 }}>
-                    Projects
-                </h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '32px', borderBottom: '1px solid rgba(0,0,0,0.1)', marginBottom: '16px' }}>
+                <div>
+                    <h2 style={{ fontSize: '12px', letterSpacing: '0.4em', color: 'rgba(0,0,0,0.5)', fontWeight: '700', textTransform: 'uppercase', margin: 0, fontFamily: 'var(--font-heading)' }}>
+                        Registry
+                    </h2>
+                    <p style={{ fontSize: '10px', color: 'rgba(0,0,0,0.3)', textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '8px' }}>
+                        Curate and manage your architectural projects
+                    </p>
+                </div>
                 <button
                     onClick={() => {
                         if (showForm) {
                             setShowForm(false);
                             setEditingId(null);
                         } else {
-                            setFormData({ title: '', category: '', year: '', location: '', description: '', mainImage: '', isFeatured: false });
+                            setFormData({ title: '', category: '', year: '', location: '', description: '', mainImage: '', gallery: [], isFeatured: false });
                             setShowForm(true);
                         }
                     }}
                     style={{
-                        paddingLeft: '24px',
-                        paddingRight: '24px',
-                        paddingTop: '10px',
-                        paddingBottom: '10px',
-                        fontSize: '11px',
+                        paddingLeft: '32px',
+                        paddingRight: '32px',
+                        paddingTop: '12px',
+                        paddingBottom: '12px',
+                        fontSize: '10px',
                         fontWeight: '700',
-                        letterSpacing: '0.1em',
+                        letterSpacing: '0.3em',
                         textTransform: 'uppercase',
-                        borderRadius: '6px',
-                        transition: 'all 0.3s ease',
+                        borderRadius: '4px',
+                        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                         border: 'none',
                         cursor: 'pointer',
                         backgroundColor: showForm ? '#ffffff' : '#000000',
-                        color: showForm ? '#ff4444' : '#ffffff'
-                    }}
-                    onMouseEnter={(e) => {
-                        if (!showForm) e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
-                    }}
-                    onMouseLeave={(e) => {
-                        if (!showForm) e.currentTarget.style.backgroundColor = '#000000';
+                        color: showForm ? '#ff4444' : '#ffffff',
+                        boxShadow: showForm ? 'none' : '0 10px 30px rgba(0,0,0,0.1)',
+                        fontFamily: 'var(--font-heading)'
                     }}
                 >
-                    {showForm ? 'Cancel' : 'Add Project'}
+                    {showForm ? 'Cancel' : 'Register Project'}
                 </button>
             </div>
 
             {/* Form */}
             {showForm && (
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '48px', padding: '48px', backgroundColor: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                            <FormInput label="Project Name" value={formData.title} onChange={(val) => setFormData({ ...formData, title: val })} required />
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                                <FormInput label="Category" value={formData.category} onChange={(val) => setFormData({ ...formData, category: val })} required />
+                <form onSubmit={handleSubmit} style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '64px',
+                    padding: '64px',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                    borderRadius: '24px',
+                    boxShadow: '0 40px 100px -20px rgba(0,0,0,0.05)'
+                }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '64px' }}>
+                        {/* Left Column: Basic Info */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+                            <FormInput label="Title" value={formData.title} onChange={(val) => setFormData({ ...formData, title: val })} required placeholder="E.g. The Glass Pavilion" />
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+                                <FormInput label="Category" value={formData.category} onChange={(val) => setFormData({ ...formData, category: val })} required placeholder="Bespoke Residential" />
                                 <FormInput label="Year" placeholder="2024" value={formData.year} onChange={(val) => setFormData({ ...formData, year: val })} />
                             </div>
-                            <FormInput label="Location" value={formData.location} onChange={(val) => setFormData({ ...formData, location: val })} />
+                            <FormInput label="Location" value={formData.location} onChange={(val) => setFormData({ ...formData, location: val })} placeholder="London, United Kingdom" />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <label style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.2em', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', margin: 0, fontFamily: 'var(--font-heading)' }}>
+                                    Narrative / Description
+                                </label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    placeholder="Describe the architectural intent..."
+                                    style={{
+                                        width: '100%',
+                                        minHeight: '120px',
+                                        padding: '16px',
+                                        backgroundColor: '#f9f9f9',
+                                        border: '1px solid rgba(0,0,0,0.05)',
+                                        borderRadius: '8px',
+                                        fontSize: '14px',
+                                        lineHeight: '1.6',
+                                        outline: 'none',
+                                        resize: 'vertical',
+                                        fontFamily: 'inherit'
+                                    }}
+                                />
+                            </div>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '8px', paddingRight: '8px' }}>
-                                <label style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', margin: 0 }}>
-                                    Main Image
+                        {/* Right Column: Assets */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
+                            {/* Main Image */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <label style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.2em', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', margin: 0, fontFamily: 'var(--font-heading)' }}>
+                                    Primary Asset (Hero)
                                 </label>
+                                <CloudinaryUpload onUploadSuccess={(url) => setFormData({ ...formData, mainImage: url })} />
+                                {formData.mainImage && (
+                                    <div style={{ position: 'relative', aspectRatio: '16/10', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)' }}>
+                                        <img src={formData.mainImage} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <button type="button" onClick={() => setFormData({ ...formData, mainImage: '' })} style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: 'rgba(255,0,0,0.8)', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 8px', fontSize: '9px', cursor: 'pointer' }}>REMOVE</button>
+                                    </div>
+                                )}
                             </div>
-                            <CloudinaryUpload onUploadSuccess={(url) => setFormData({ ...formData, mainImage: url })} />
-                            {formData.mainImage && (
-                                <div style={{ position: 'relative', aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)' }}>
-                                    <img src={formData.mainImage} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, mainImage: '' })}
-                                        style={{
-                                            position: 'absolute',
-                                            inset: 0,
-                                            backgroundColor: 'rgba(0,0,0,0.5)',
-                                            color: '#ffffff',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            fontSize: '12px',
-                                            fontWeight: '600',
-                                            opacity: 0,
-                                            transition: 'opacity 0.3s ease'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
-                                    >
-                                        Remove
-                                    </button>
+
+                            {/* Gallery Images */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <label style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.2em', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', margin: 0, fontFamily: 'var(--font-heading)' }}>
+                                    Additional Gallery Images
+                                </label>
+                                <CloudinaryUpload onUploadSuccess={addGalleryImage} />
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                                    {formData.gallery.map((url, index) => (
+                                        <div key={index} style={{ position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)' }}>
+                                            <img src={url} alt={`Gallery ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <button type="button" onClick={() => removeGalleryImage(index)} style={{ position: 'absolute', top: '4px', right: '4px', backgroundColor: 'rgba(255,0,0,0.8)', color: '#fff', border: 'none', borderRadius: '4px', width: '20px', height: '20px', fontSize: '10px', cursor: 'pointer' }}>×</button>
+                                        </div>
+                                    ))}
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '24px', borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '40px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
                         <button
                             type="submit"
                             style={{
-                                paddingLeft: '32px',
-                                paddingRight: '32px',
-                                paddingTop: '12px',
-                                paddingBottom: '12px',
+                                paddingLeft: '48px',
+                                paddingRight: '48px',
+                                paddingTop: '16px',
+                                paddingBottom: '16px',
                                 backgroundColor: '#000000',
                                 color: '#ffffff',
-                                fontSize: '11px',
+                                fontSize: '10px',
                                 fontWeight: '700',
-                                letterSpacing: '0.1em',
+                                letterSpacing: '0.3em',
                                 textTransform: 'uppercase',
-                                borderRadius: '6px',
+                                borderRadius: '4px',
                                 border: 'none',
                                 cursor: 'pointer',
-                                transition: 'all 0.3s ease'
+                                transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                                fontFamily: 'var(--font-heading)',
+                                boxShadow: '0 15px 45px rgba(0,0,0,0.15)'
                             }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#000000'}
                         >
-                            {editingId ? 'Save Changes' : 'Save Project'}
+                            {editingId ? 'Update Record' : 'Commit to Registry'}
                         </button>
                     </div>
                 </form>
@@ -239,87 +290,44 @@ function ProjectCard({ project, onEdit, onDelete }) {
     return (
         <div style={{
             backgroundColor: '#ffffff',
-            border: '1px solid rgba(0,0,0,0.1)',
-            borderRadius: '12px',
+            border: '1px solid rgba(0,0,0,0.05)',
+            borderRadius: '16px',
             overflow: 'hidden',
-            transition: 'all 0.3s ease',
-            cursor: 'pointer'
+            transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
         }}
-        onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)';
-            e.currentTarget.style.transform = 'translateY(-4px)';
-        }}
-        onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
-            e.currentTarget.style.transform = 'translateY(0)';
-        }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
+                e.currentTarget.style.transform = 'translateY(-6px)';
+                e.currentTarget.style.boxShadow = '0 30px 60px -20px rgba(0,0,0,0.1)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.02)';
+            }}
         >
-            <div style={{ aspectRatio: '4/3', overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.05)', position: 'relative' }}>
-                {project.mainImage ? (
-                    <img src={project.mainImage} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.2)', fontSize: '12px', fontWeight: '600' }}>
-                        No Image
+            <div style={{ aspectRatio: '16/10', overflow: 'hidden', backgroundColor: '#f9f9f9', position: 'relative' }}>
+                <img src={project.mainImage} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '4px' }}>
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.9)', padding: '4px 8px', borderRadius: '4px', fontSize: '8px', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                        {project.gallery?.length || 0} Gallery
                     </div>
-                )}
+                </div>
             </div>
             <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <h3 style={{ fontSize: '13px', fontWeight: '600', color: '#000000', margin: 0, letterSpacing: '-0.01em' }}>
+                    <h3 style={{ fontSize: '11px', fontWeight: '700', color: '#000000', margin: 0, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'var(--font-heading)' }}>
                         {project.title}
                     </h3>
-                    <span style={{ fontSize: '11px', color: 'rgba(0,0,0,0.4)', fontWeight: '600' }}>
+                    <span style={{ fontSize: '10px', color: 'rgba(0,0,0,0.3)', fontWeight: '600' }}>
                         {project.year}
                     </span>
                 </div>
-                <p style={{ fontSize: '12px', color: 'rgba(0,0,0,0.6)', margin: 0 }}>
-                    {project.category}
-                </p>
-                <div style={{ display: 'flex', gap: '8px', paddingTop: '8px' }}>
-                    <button
-                        onClick={() => onEdit(project)}
-                        style={{
-                            flex: 1,
-                            padding: '8px 12px',
-                            backgroundColor: '#000000',
-                            color: '#ffffff',
-                            border: 'none',
-                            borderRadius: '4px',
-                            fontSize: '11px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#000000'}
-                    >
-                        Edit
-                    </button>
-                    <button
-                        onClick={() => onDelete(project._id)}
-                        style={{
-                            flex: 1,
-                            padding: '8px 12px',
-                            backgroundColor: '#ffffff',
-                            color: '#ff4444',
-                            border: '1px solid rgba(0,0,0,0.1)',
-                            borderRadius: '4px',
-                            fontSize: '11px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#ff4444';
-                            e.currentTarget.style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#ffffff';
-                            e.currentTarget.style.color = '#ff4444';
-                        }}
-                    >
-                        Delete
-                    </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => onEdit(project)} style={{ flex: 1, padding: '8px', backgroundColor: '#000', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '9px', fontWeight: '700', cursor: 'pointer' }}>Edit</button>
+                    <button onClick={() => onDelete(project._id)} style={{ flex: 1, padding: '8px', backgroundColor: '#fff', color: '#ff4444', border: '1px solid rgba(255,68,68,0.2)', borderRadius: '4px', fontSize: '9px', fontWeight: '700', cursor: 'pointer' }}>Delete</button>
                 </div>
             </div>
         </div>
@@ -329,39 +337,16 @@ function ProjectCard({ project, onEdit, onDelete }) {
 function FormInput({ label, value, onChange, required = false, type = "text", placeholder = "" }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <label style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', margin: 0 }}>
+            <label style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.2em', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', margin: 0, fontFamily: 'var(--font-heading)' }}>
                 {label}
             </label>
             <input
                 type={type}
                 required={required}
                 placeholder={placeholder}
-                style={{
-                    width: '100%',
-                    paddingLeft: '16px',
-                    paddingRight: '16px',
-                    paddingTop: '10px',
-                    paddingBottom: '10px',
-                    backgroundColor: '#ffffff',
-                    border: '1px solid rgba(0,0,0,0.1)',
-                    borderRadius: '6px',
-                    outline: 'none',
-                    transition: 'all 0.3s ease',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    color: '#000000',
-                    fontFamily: 'inherit'
-                }}
+                style={{ width: '100%', border: 'none', borderBottom: '1px solid rgba(0,0,0,0.1)', outline: 'none', fontSize: '14px', padding: '12px 0', backgroundColor: 'transparent' }}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                onFocus={(e) => {
-                    e.currentTarget.style.backgroundColor = '#ffffff';
-                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)';
-                }}
-                onBlur={(e) => {
-                    e.currentTarget.style.backgroundColor = '#ffffff';
-                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
-                }}
             />
         </div>
     );

@@ -16,6 +16,7 @@ export default function HeroEditor({ page = 'home', section = 'hero' }) {
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
         fetchHeroContent();
@@ -25,12 +26,12 @@ export default function HeroEditor({ page = 'home', section = 'hero' }) {
         try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
-            
+
             const res = await fetch(`/api/content?page=${page}&section=${section}`, {
                 signal: controller.signal
             });
             clearTimeout(timeoutId);
-            
+
             if (!res.ok) throw new Error('Failed to fetch');
             const data = await res.json();
             const contentMap = {};
@@ -154,12 +155,8 @@ export default function HeroEditor({ page = 'home', section = 'hero' }) {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = 'rgba(0,0,0,0.2)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)';
-                    }}
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
                     >
                         {stagedContent.videoUrl && stagedContent.videoUrl.startsWith('http') ? (
                             <video
@@ -218,8 +215,32 @@ export default function HeroEditor({ page = 'home', section = 'hero' }) {
                                 textTransform: 'uppercase',
                                 textShadow: '0 2px 8px rgba(0,0,0,0.3)'
                             }}>
-                                {stagedContent.subtitle}
                             </p>
+                        </div>
+
+                        {/* Upload Overlay */}
+                        <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundColor: 'rgba(0,0,0,0.4)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            opacity: isHovered ? 1 : 0,
+                            transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                            pointerEvents: isHovered ? 'auto' : 'none',
+                            backdropFilter: 'blur(8px)'
+                        }}>
+                            <div style={{
+                                transform: isHovered ? 'translateY(0)' : 'translateY(20px)',
+                                transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                transitionDelay: '0.1s'
+                            }}>
+                                <CloudinaryUpload
+                                    folder="hero"
+                                    onUploadSuccess={(url) => setStagedContent({ ...stagedContent, videoUrl: url })}
+                                />
+                            </div>
                         </div>
                     </div>
                     <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.5)', letterSpacing: '0.05em', textAlign: 'center', fontWeight: '500', textTransform: 'uppercase', margin: 0 }}>
