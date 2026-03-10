@@ -3,14 +3,38 @@
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 export default function AdminLayout({ children }) {
-    const { data: session, status } = useSession();
+    const { data: session, status, update } = useSession();
     const router = useRouter();
     const pathname = usePathname();
     const [showLogout, setShowLogout] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const lastActivityRef = useRef(Date.now());
+
+    // Activity-based session keepalive
+    const markActive = useCallback(() => {
+        lastActivityRef.current = Date.now();
+    }, []);
+
+    useEffect(() => {
+        const events = ['mousedown', 'keydown', 'scroll', 'mousemove', 'touchstart'];
+        events.forEach(e => window.addEventListener(e, markActive, { passive: true }));
+
+        // Every 15 minutes, if user was active in the last 15 min, refresh session
+        const interval = setInterval(() => {
+            const idleMs = Date.now() - lastActivityRef.current;
+            if (idleMs < 15 * 60 * 1000) {
+                update(); // refreshes the JWT token, extending its expiry
+            }
+        }, 15 * 60 * 1000);
+
+        return () => {
+            events.forEach(e => window.removeEventListener(e, markActive));
+            clearInterval(interval);
+        };
+    }, [markActive, update]);
 
     const isLoginPage = pathname?.includes('/login');
 

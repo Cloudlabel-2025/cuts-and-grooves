@@ -268,7 +268,11 @@ export default function Footer({ content }) {
                             <a href="#" style={{ ...linkStyle, color: '#000000' }}>Privacy policy</a>
                             <a href="#" style={{ ...linkStyle, color: '#000000' }}>Terms of services</a>
                         </div>
-                        <a href="#" style={{ ...linkStyle, color: '#000000' }}>Website by <span style={{ textDecoration: 'underline' }}>CHC</span></a>
+                        <a href="/admin/login" target='blank' style={{ ...linkStyle, color: 'rgba(0,0,0,0.25)', fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'color 0.3s ease' }}
+                            onMouseEnter={(e) => e.target.style.color = '#000000'}
+                            onMouseLeave={(e) => e.target.style.color = 'rgba(0,0,0,0.25)'}
+                        >Admin Portal</a>
+                        <a href="https://cloudheard.org/" target='blank' style={{ ...linkStyle, color: '#000000' }}>Website by <span style={{ textDecoration: 'none', color: '#1028dbff' }}>CHC</span></a>
                     </div>
                 </div>
             </div>

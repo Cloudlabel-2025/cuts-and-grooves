@@ -23,6 +23,7 @@ const HoverChar = ({ char }) => {
 
 export default function Testimonials({ testimonials: dynamicTestimonials, content }) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef(null);
     const sliderRef = useRef(null);
 
@@ -48,15 +49,22 @@ export default function Testimonials({ testimonials: dynamicTestimonials, conten
         }
     ];
 
-    const showCarousel = testimonials.length > 3;
-    const itemsPerView = 3; // On desktop
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    const itemsPerView = isMobile ? 1 : 3;
+    const showCarousel = testimonials.length > itemsPerView;
     const maxIndex = Math.max(0, testimonials.length - itemsPerView);
 
     const handleNext = () => {
         if (currentIndex < maxIndex) {
             setCurrentIndex(prev => prev + 1);
         } else {
-            setCurrentIndex(0); // Loop back
+            setCurrentIndex(0);
         }
     };
 
@@ -64,13 +72,13 @@ export default function Testimonials({ testimonials: dynamicTestimonials, conten
         if (currentIndex > 0) {
             setCurrentIndex(prev => prev - 1);
         } else {
-            setCurrentIndex(maxIndex); // Loop to end
+            setCurrentIndex(maxIndex);
         }
     };
 
     useEffect(() => {
         if (sliderRef.current) {
-            const gap = 40;
+            const gap = isMobile ? 20 : 40;
             const cardWidth = (sliderRef.current.offsetWidth - (gap * (itemsPerView - 1))) / itemsPerView;
             const moveX = -(currentIndex * (cardWidth + gap));
 
@@ -82,30 +90,16 @@ export default function Testimonials({ testimonials: dynamicTestimonials, conten
                 });
             });
         }
-    }, [currentIndex, testimonials.length]);
+    }, [currentIndex, testimonials.length, isMobile, itemsPerView]);
 
     return (
         <section
             data-nav-theme="light"
-            style={{
-                backgroundColor: '#ffffff',
-                color: '#737373',
-                padding: '120px 4%',
-                position: 'relative',
-                zIndex: 5,
-                overflow: 'hidden'
-            }}
+            className="testimonials-section"
             ref={containerRef}
         >
             <div style={{ maxWidth: '1920px', margin: '0 auto' }}>
-                <div style={{
-                    marginBottom: '80px',
-                    borderBottom: '1px solid rgba(0,0,0,0.1)',
-                    paddingBottom: '30px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-end'
-                }}>
+                <div className="testimonials-header">
                     <div>
                         <h2 style={{
                             fontFamily: 'var(--font-heading)',
@@ -136,26 +130,17 @@ export default function Testimonials({ testimonials: dynamicTestimonials, conten
 
                 <div style={{
                     position: 'relative',
-                    width: '100%'
+                    width: '100%',
+                    overflow: 'hidden'
                 }}>
                     <div
                         ref={sliderRef}
-                        style={{
-                            display: 'flex',
-                            gap: '40px',
-                            width: '100%'
-                        }}
+                        className="testimonials-slider"
                     >
                         {testimonials.map((item, idx) => (
                             <div
                                 key={item._id || idx}
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '20px',
-                                    flex: '0 0 calc(33.33% - 27px)', // 27px = (40px * 2) / 3 approx
-                                    minWidth: '300px'
-                                }}
+                                className="testimonial-card"
                             >
                                 {item.image && (
                                     <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)', backgroundColor: '#f9f9f9' }}>
@@ -275,6 +260,56 @@ export default function Testimonials({ testimonials: dynamicTestimonials, conten
                     </div>
                 )}
             </div>
+
+            <style jsx>{`
+                .testimonials-section {
+                    background-color: #ffffff;
+                    color: #737373;
+                    padding: 120px 4%;
+                    position: relative;
+                    z-index: 5;
+                    overflow: hidden;
+                }
+                .testimonials-header {
+                    margin-bottom: 80px;
+                    border-bottom: 1px solid rgba(0,0,0,0.1);
+                    padding-bottom: 30px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-end;
+                }
+                .testimonials-slider {
+                    display: flex;
+                    gap: 40px;
+                    width: 100%;
+                }
+                .testimonial-card {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                    flex: 0 0 calc(33.33% - 27px);
+                    min-width: 0;
+                }
+                @media (max-width: 1024px) {
+                    .testimonial-card {
+                        flex: 0 0 calc(50% - 20px);
+                    }
+                }
+                @media (max-width: 768px) {
+                    .testimonials-section {
+                        padding: 80px 4%;
+                    }
+                    .testimonials-header {
+                        margin-bottom: 40px;
+                    }
+                    .testimonials-slider {
+                        gap: 20px;
+                    }
+                    .testimonial-card {
+                        flex: 0 0 100%;
+                    }
+                }
+            `}</style>
         </section>
     );
 }

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Footer from '../components/Footer';
+import PageNavigation from '../components/PageNavigation';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -193,6 +194,7 @@ export default function Projects() {
                 )}
             </section>
 
+            <PageNavigation currentPath="/projects" />
             <Footer />
         </main>
     );

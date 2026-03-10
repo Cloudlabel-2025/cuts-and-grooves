@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Footer from '../components/Footer';
+import PageNavigation from '../components/PageNavigation';
 
 export default function ProcessPage() {
     const containerRef = useRef(null);
@@ -148,7 +149,7 @@ export default function ProcessPage() {
                 </div>
 
                 <div style={{ position: 'relative', zIndex: 2, padding: '120vh 4% 160px', color: '#fff' }}>
-                    <div style={{ maxWidth: '800px', backgroundColor: 'rgba(0,0,0,0.1)', backdropFilter: 'blur(5px)', padding: '60px', borderRadius: '4px' }}>
+                    <div className="sustainability-text-card" style={{ maxWidth: '800px', backgroundColor: 'rgba(0,0,0,0.1)', backdropFilter: 'blur(5px)', padding: '60px', borderRadius: '4px' }}>
                         <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.2rem', opacity: 0.8, fontWeight: 600 }}>{sustainability.label}</span>
                         <h3 style={{ fontSize: 'clamp(1.5rem, 3vw, 3.5rem)', marginTop: '20px', fontWeight: 300, fontFamily: 'var(--font-heading)' }}>
                             {sustainability.heading}
@@ -174,34 +175,78 @@ export default function ProcessPage() {
                     gap: '160px'
                 }}>
                     {initiativeItems.map((init, i) => (
-                        <div key={i} className="initiative-card" style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(12, 1fr)',
-                            gap: '60px',
-                            alignItems: 'center'
-                        }}>
-                            <div style={{ gridColumn: i % 2 === 0 ? 'span 5' : '8 / span 5', order: i % 2 === 0 ? 1 : 2 }}>
+                        <div key={i} className={`initiative-card ${i % 2 === 0 ? 'initiative-normal' : 'initiative-reverse'}`}>
+                            <div className="initiative-text">
                                 <h4 style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.8rem)', fontWeight: 300, fontFamily: 'var(--font-heading)', marginBottom: '32px' }}>{init.title}</h4>
                                 <p style={{ fontSize: '1.2rem', opacity: 0.7, lineHeight: 1.6, marginBottom: '40px', fontWeight: 400 }}>{init.subtitle}</p>
                                 <p style={{ fontSize: '1rem', opacity: 0.4, lineHeight: 1.6 }}>{init.description}</p>
                                 <div style={{ marginTop: '48px', height: '1px', width: '80px', backgroundColor: '#000', opacity: 0.3 }} />
                             </div>
-                            <div style={{
-                                gridColumn: i % 2 === 0 ? '7 / span 6' : 'span 6',
-                                order: i % 2 === 0 ? 2 : 1,
-                                overflow: 'hidden',
-                                borderRadius: '2px',
-                                boxShadow: '0 20px 60px rgba(0,0,0,0.05)'
-                            }}>
+                            <div className="initiative-image-wrap">
                                 <img
                                     src={init.image}
                                     alt={init.title}
-                                    style={{ width: '100%', height: '700px', objectFit: 'cover' }}
+                                    className="initiative-img"
                                 />
                             </div>
                         </div>
                     ))}
                 </div>
+
+                <style jsx>{`
+                    .initiative-card {
+                        display: grid;
+                        grid-template-columns: 1fr 1.2fr;
+                        gap: 60px;
+                        align-items: center;
+                    }
+                    .initiative-reverse {
+                        direction: rtl;
+                    }
+                    .initiative-reverse > * {
+                        direction: ltr;
+                    }
+                    .initiative-image-wrap {
+                        overflow: hidden;
+                        border-radius: 2px;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+                    }
+                    .initiative-img {
+                        width: 100%;
+                        height: auto;
+                        aspect-ratio: 3/4;
+                        object-fit: cover;
+                    }
+                    @media (max-width: 1024px) {
+                        .initiative-card {
+                            grid-template-columns: 1fr;
+                            gap: 40px;
+                        }
+                        .initiative-reverse {
+                            direction: ltr;
+                        }
+                        .initiative-img {
+                            aspect-ratio: 16/9;
+                        }
+                    }
+                    @media (max-width: 768px) {
+                        .initiatives-grid {
+                            gap: 80px !important;
+                        }
+                        .initiative-card {
+                            gap: 30px;
+                        }
+                        .process-page > section:first-of-type {
+                            padding-top: 100px !important;
+                        }
+                        .sustainability-text-card {
+                            padding: 30px !important;
+                        }
+                        .process-accreditations {
+                            gap: 40px !important;
+                        }
+                    }
+                `}</style>
             </section>
 
             {/* --- ACCREDITATIONS --- */}
@@ -210,13 +255,16 @@ export default function ProcessPage() {
                 data-nav-theme="light"
                 style={{ padding: '120px 4% 160px', textAlign: 'center', backgroundColor: '#fff', borderTop: '1px solid #f8f8f8' }}
             >
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '100px', flexWrap: 'wrap', alignItems: 'center', opacity: 0.3 }}>
+                <div className="process-accreditations" style={{ display: 'flex', justifyContent: 'center', gap: '100px', flexWrap: 'wrap', alignItems: 'center', opacity: 0.3 }}>
                     {accreditationItems.map((item, i) => (
                         <div key={i} style={{ fontSize: '1rem', fontWeight: 600, letterSpacing: '0.2em', fontFamily: 'var(--font-heading)' }}>{item}</div>
                     ))}
                 </div>
             </section>
 
+
+
+            <PageNavigation currentPath="/process" />
             <Footer />
         </main>
     );

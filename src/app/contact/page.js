@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import Link from 'next/link';
 import Footer from '../components/Footer';
+import PageNavigation from '../components/PageNavigation';
 
 const DEFAULT_CONTENT = {
     hero: {
@@ -181,6 +182,26 @@ export default function ContactPage() {
                         gap: 60px !important;
                     }
                 }
+                @media (max-width: 768px) {
+                    .contact-page {
+                        padding-top: 120px !important;
+                        padding-bottom: 40px !important;
+                    }
+                    .contact-grid, .contact-bottom-grid {
+                        gap: 40px !important;
+                    }
+                    .contact-form {
+                        margin-top: 40px !important;
+                    }
+                    .contact-map {
+                        min-height: 300px !important;
+                    }
+                }
+                @media (max-width: 480px) {
+                    .contact-page {
+                        padding-top: 100px !important;
+                    }
+                }
             `}</style>
 
             {/* --- CONTACT FORM & MAP --- */}
@@ -204,6 +225,7 @@ export default function ContactPage() {
             </div>
 
             {/* FOOTER */}
+            <PageNavigation currentPath="/contact" />
             <Footer />
         </main>
     );
@@ -338,6 +360,7 @@ function ContactForm() {
                     color: #000;
                     padding: 0;
                     min-width: 120px; /* Fallback */
+                    max-width: 100%;
                 }
                 
                 /* TEXTAREA */
@@ -401,6 +424,26 @@ function ContactForm() {
                  }
                  .submit-btn:hover .btn-arrow {
                     transform: translateX(5px);
+                 }
+                 @media (max-width: 768px) {
+                    .form-content {
+                        font-size: clamp(1.4rem, 5vw, 2rem) !important;
+                    }
+                    input {
+                        min-width: 80px !important;
+                    }
+                    .submit-btn {
+                        margin-top: 2rem;
+                        font-size: 1.2rem;
+                    }
+                    .textarea-wrapper {
+                        margin-top: 0.6em;
+                    }
+                 }
+                 @media (max-width: 480px) {
+                    .form-content {
+                        font-size: clamp(1.2rem, 5vw, 1.6rem) !important;
+                    }
                  }
             `}</style>
         </form>

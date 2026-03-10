@@ -250,7 +250,7 @@
   }
 
   .initiative-card img {
-    height: 400px !important;
+    height: auto !important;
   }
 
   /* Footer Mobile Refinements */
@@ -309,6 +309,38 @@
 }
 
 @media (max-width: 768px) {
+  /* Process page mobile */
+  .process-narrative-section {
+    padding: 0 6% 60px !important;
+  }
+
+  .process-section {
+    padding: 80px 4% !important;
+  }
+
+  .sustainability-sticky-box {
+    height: 60vh !important;
+  }
+
+  /* Studio page mobile */
+  .studio-team-section {
+    padding: 0 4% 80px;
+  }
+
+  .studio-values-section {
+    padding: 0 4% 60px !important;
+  }
+
+  .values-layout-grid,
+  .vision-layout-grid {
+    margin-bottom: 60px;
+  }
+
+  /* Accreditations section */
+  .process-section .accreditations-wrap {
+    gap: 40px !important;
+  }
+
   .awards-header-grid {
     display: none;
   }
@@ -1178,9 +1210,44 @@ img {
     font-size: clamp(1.8rem, 7vw, 2.8rem);
   }
 
+  .hero-inner {
+    padding: 40px clamp(16px, 4vw, 40px);
+  }
+
+  .hero-subtitle {
+    margin-top: 16px;
+    font-size: clamp(0.65rem, 2.5vw, 0.8rem);
+  }
+
   .works-header {
     padding: 0 24px;
     margin-bottom: 40px;
+  }
+
+  .work-card {
+    height: 40vh;
+  }
+
+  .work-card-inner {
+    width: 95%;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-line {
+    font-size: clamp(1.5rem, 8vw, 2.2rem);
+  }
+
+  .hero-inner {
+    padding: 30px 16px;
+  }
+
+  .hero-scroll-indicator {
+    bottom: 24px;
+  }
+
+  .work-card {
+    height: 35vh;
   }
 }
 

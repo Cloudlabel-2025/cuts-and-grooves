@@ -6,6 +6,7 @@ import SelectedWorks from './components/SelectedWorks';
 import AllWorkScatter from './components/AllWorkScatter';
 import Testimonials from './components/Testimonials';
 import Footer from './components/Footer';
+import PageNavigation from './components/PageNavigation';
 
 import Testimonial from '@/models/Testimonial';
 
@@ -38,6 +39,7 @@ export default async function Home() {
       <SelectedWorks projects={projects} />
       <AllWorkScatter projects={projects} content={content['all-works']} />
       <Testimonials testimonials={testimonials} content={content.testimonials} />
+      <PageNavigation currentPath="/" />
       <Footer content={content.footer} />
     </main>
   );

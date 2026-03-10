@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Footer from '../components/Footer';
+import PageNavigation from '../components/PageNavigation';
 
 const DEFAULT_CONTENT = {
     narrative: {
@@ -180,8 +181,27 @@ export default function StudioPage() {
     return (
         <main ref={containerRef} className="studio-page bg-white text-black pt-48" data-nav-theme="light">
 
+            <style jsx>{`
+                @media (max-width: 768px) {
+                    .studio-page {
+                        padding-top: 7rem !important;
+                    }
+                    .studio-awards-section,
+                    .studio-jobs-section {
+                        padding-bottom: 80px !important;
+                    }
+                    .studio-awards-inner,
+                    .studio-jobs-inner {
+                        padding-top: 60px !important;
+                    }
+                    .studio-narrative-section {
+                        padding: 8vh 4% 8vh !important;
+                    }
+                }
+            `}</style>
+
             {/* --- NARRATIVE SECTION --- */}
-            <section style={{ padding: '15vh 4% 15vh' }}>
+            <section className="studio-narrative-section" style={{ padding: '15vh 4% 15vh' }}>
                 <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
                     <h1 className="studio-heading" style={{
                         fontSize: 'clamp(1.8rem, 4.2vw, 5.2rem)',
@@ -396,9 +416,9 @@ export default function StudioPage() {
             </section >
 
             {/* --- AWARDS SECTION --- */}
-            < section style={{ padding: '0 4% 160px', backgroundColor: '#f9f9f9' }
+            < section className="studio-awards-section" style={{ padding: '0 4% 160px', backgroundColor: '#f9f9f9' }
             }>
-                <div style={{ maxWidth: '1400px', margin: '0 auto', paddingTop: '100px' }}>
+                <div className="studio-awards-inner" style={{ maxWidth: '1400px', margin: '0 auto', paddingTop: '100px' }}>
 
                     {/* Header with Number */}
                     <div style={{ display: 'flex', gap: '20px', marginBottom: '80px', opacity: 0.4 }}>
@@ -436,8 +456,8 @@ export default function StudioPage() {
             </section >
 
             {/* --- JOB OFFERS SECTION --- */}
-            < section style={{ padding: '0 4% 160px', backgroundColor: '#f9f9f9', borderTop: '1px solid #eee' }}>
-                <div style={{ maxWidth: '1400px', margin: '0 auto', paddingTop: '100px' }}>
+            < section className="studio-jobs-section" style={{ padding: '0 4% 160px', backgroundColor: '#f9f9f9', borderTop: '1px solid #eee' }}>
+                <div className="studio-jobs-inner" style={{ maxWidth: '1400px', margin: '0 auto', paddingTop: '100px' }}>
                     <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '80px', opacity: 0.4 }}>Job Offers</h3>
                     <div style={{ paddingBottom: '60px' }}>
                         <p style={{ fontSize: '1.2rem', marginBottom: '60px', maxWidth: '800px', lineHeight: 1.6 }}>
@@ -460,6 +480,7 @@ export default function StudioPage() {
                 </div>
             </section >
 
+            <PageNavigation currentPath="/studio" />
             <Footer />
         </main >
     );
