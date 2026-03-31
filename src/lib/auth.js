@@ -13,24 +13,34 @@ export const authOptions = {
                 password: { label: 'Password', type: 'password' },
             },
             async authorize(credentials) {
-                await dbConnect();
-                console.log('Auth attempt for:', credentials.email);
+                try {
+                    console.log('--- Auth Attempt Start ---');
+                    console.log('Email:', credentials.email);
+                    
+                    await dbConnect();
+                    console.log('Database connected successfully');
 
-                const user = await User.findOne({ email: credentials.email });
+                    const user = await User.findOne({ email: credentials.email });
 
-                if (!user) {
-                    console.log('No user found');
-                    throw new Error('No user found with this email.');
+                    if (!user) {
+                        console.log('Auth failed: No user found for email:', credentials.email);
+                        throw new Error('No user found with this email.');
+                    }
+
+                    const isValid = await bcrypt.compare(credentials.password, user.password);
+                    console.log('Password valid:', isValid);
+
+                    if (!isValid) {
+                        console.log('Auth failed: Invalid password for:', credentials.email);
+                        throw new Error('Invalid password.');
+                    }
+
+                    console.log('Auth successful for:', user.email);
+                    return { id: user._id.toString(), email: user.email, name: 'Admin' };
+                } catch (error) {
+                    console.error('Auth system error:', error.message);
+                    throw error;
                 }
-
-                const isValid = await bcrypt.compare(credentials.password, user.password);
-                console.log('Password valid:', isValid);
-
-                if (!isValid) {
-                    throw new Error('Invalid password.');
-                }
-
-                return { id: user._id.toString(), email: user.email, name: 'Admin' };
             },
         }),
     ],

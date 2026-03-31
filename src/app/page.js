@@ -1,5 +1,6 @@
 import dbConnect from '@/lib/mongodb';
 import Project from '@/models/Project';
+import Testimonial from '@/models/Testimonial';
 import Content from '@/models/Content';
 import HeroSection from './components/HeroSection';
 import SelectedWorks from './components/SelectedWorks';
@@ -7,8 +8,6 @@ import AllWorkScatter from './components/AllWorkScatter';
 import Testimonials from './components/Testimonials';
 import Footer from './components/Footer';
 import PageNavigation from './components/PageNavigation';
-
-import Testimonial from '@/models/Testimonial';
 
 async function getHomeData() {
   await dbConnect();
@@ -31,6 +30,7 @@ async function getHomeData() {
 }
 
 export default async function Home() {
+  // Middleware handles access restriction — if we reach here, user has access
   const { projects, testimonials, content } = await getHomeData();
 
   return (
