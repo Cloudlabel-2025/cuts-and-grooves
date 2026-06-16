@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
+import gsap from 'gsap';
 
 const HoverChar = ({ char }) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -82,12 +83,10 @@ export default function Testimonials({ testimonials: dynamicTestimonials, conten
             const cardWidth = (sliderRef.current.offsetWidth - (gap * (itemsPerView - 1))) / itemsPerView;
             const moveX = -(currentIndex * (cardWidth + gap));
 
-            import('gsap').then(gsap => {
-                gsap.default.to(sliderRef.current, {
-                    x: moveX,
-                    duration: 0.8,
-                    ease: "expo.out"
-                });
+            gsap.to(sliderRef.current, {
+                x: moveX,
+                duration: 0.8,
+                ease: "expo.out"
             });
         }
     }, [currentIndex, testimonials.length, isMobile, itemsPerView]);
@@ -154,10 +153,9 @@ export default function Testimonials({ testimonials: dynamicTestimonials, conten
                                     fontWeight: '300',
                                     flex: '1 0 auto',
                                     margin: 0,
-                                    textAlign: 'justify',
-                                    textJustify: 'inter-word'
+                                    textAlign: 'left'
                                 }}>
-                                    {item.quote.split('').map((char, index) => (
+                                    {isMobile ? item.quote : item.quote.split('').map((char, index) => (
                                         <HoverChar key={index} char={char} />
                                     ))}
                                 </p>

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import gsap from 'gsap';
-import ArchitecturalBackground from '../../components/ArchitecturalBackground';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -14,273 +14,423 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
-    const containerRef = useRef(null);
-    const cardRef = useRef(null);
-    const glowRef = useRef(null);
-    const contentRef = useRef(null);
-
-    // Initial entrance and 3D interactions
-    useEffect(() => {
-        const ctx = gsap.context(() => {
-            // Entrance Animation
-            const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-
-            gsap.set(cardRef.current, {
-                y: 60,
-                opacity: 0,
-                rotateX: -10,
-                scale: 0.95
-            });
-
-            gsap.set('.login-reveal', {
-                y: 30,
-                opacity: 0
-            });
-
-            tl.to(cardRef.current, {
-                y: 0,
-                opacity: 1,
-                rotateX: 0,
-                scale: 1,
-                duration: 1.8,
-                clearProps: "transform"
-            })
-                .to('.login-reveal', {
-                    y: 0,
-                    opacity: 1,
-                    duration: 1.2,
-                    stagger: 0.08
-                }, "-=1.2");
-
-            // Mouse Interaction for 3D Tilt
-            const handleMouseMove = (e) => {
-                if (!cardRef.current) return;
-
-                const { clientX, clientY } = e;
-                const { left, top, width, height } = cardRef.current.getBoundingClientRect();
-
-                const x = (clientX - left) / width - 0.5;
-                const y = (clientY - top) / height - 0.5;
-
-                gsap.to(cardRef.current, {
-                    rotateY: x * 10,
-                    rotateX: -y * 10,
-                    duration: 0.6,
-                    ease: 'power2.out',
-                    transformPerspective: 1000
-                });
-
-                // Move subtle glow following cursor inside the card
-                if (glowRef.current) {
-                    gsap.to(glowRef.current, {
-                        x: (clientX - left) - 150,
-                        y: (clientY - top) - 150,
-                        duration: 1,
-                        ease: 'power2.out'
-                    });
-                }
-            };
-
-            const handleMouseLeave = () => {
-                gsap.to(cardRef.current, {
-                    rotateY: 0,
-                    rotateX: 0,
-                    duration: 1,
-                    ease: 'elastic.out(1, 0.5)'
-                });
-            };
-
-            window.addEventListener('mousemove', handleMouseMove);
-            cardRef.current?.addEventListener('mouseleave', handleMouseLeave);
-
-            return () => {
-                window.removeEventListener('mousemove', handleMouseMove);
-                cardRef.current?.removeEventListener('mouseleave', handleMouseLeave);
-            };
-        }, containerRef);
-
-        return () => ctx.revert();
-    }, []);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (event) => {
+        event.preventDefault();
         setLoading(true);
         setError('');
 
-        const res = await signIn('credentials', {
+        const result = await signIn('credentials', {
             redirect: false,
             email,
             password,
         });
 
-        if (res?.error) {
-            setError('ACCESS DENIED. INVALID CREDENTIALS.');
+        if (result?.error) {
+            setError('Invalid email or password. Please check the details and try again.');
             setLoading(false);
-
-            // Shake effect on error
-            gsap.to(cardRef.current, {
-                x: 10,
-                duration: 0.05,
-                repeat: 5,
-                yoyo: true,
-                onComplete: () => gsap.set(cardRef.current, { x: 0 })
-            });
-        } else {
-            const tl = gsap.timeline();
-            tl.to('.login-reveal', {
-                y: -20,
-                opacity: 0,
-                duration: 0.5,
-                stagger: 0.03,
-                ease: 'expo.in'
-            })
-                .to(cardRef.current, {
-                    scale: 1.05,
-                    opacity: 0,
-                    backdropFilter: 'blur(0px)',
-                    duration: 0.8,
-                    ease: 'expo.inOut',
-                    onComplete: () => router.push('/admin/dashboard')
-                }, "-=0.2");
+            return;
         }
+
+        router.push('/admin/dashboard');
     };
 
     return (
-        <div ref={containerRef} className="min-h-screen flex items-center justify-center bg-[#f7f7f7] relative overflow-hidden font-sans selection:bg-[#A67C52]/20">
+        <main className="admin-login-page">
+            <section className="admin-login-visual" aria-label="Cuts and Grooves architecture preview">
+                <Image
+                    src="/images/All-works-01.jpg"
+                    alt="Architectural building facade"
+                    fill
+                    priority
+                    sizes="(max-width: 900px) 100vw, 50vw"
+                    className="admin-login-visual-img"
+                />
+                <div className="admin-login-visual-overlay">
+                    <div>
+                        <span className="admin-login-eyebrow">Admin Studio</span>
+                        <h1>Cuts & Grooves</h1>
+                    </div>
+                    <p>Manage portfolio, studio content, media, and enquiries from one calm workspace.</p>
+                </div>
+            </section>
 
-            {/* ─── WebGL Geometrical Background ─── */}
-            <ArchitecturalBackground />
-
-            {/* ─── Interactive Glass Portal (Enhanced Transparency) ─── */}
-            <div className="w-full max-w-[500px] px-6 relative z-10">
-                <div
-                    ref={cardRef}
-                    className="relative group bg-white/[0.03] backdrop-blur-[4px] border border-black/[0.03] rounded-[2.5rem] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.06),0_10px_40px_-15px_rgba(0,0,0,0.04)] overflow-hidden transition-shadow duration-500 hover:shadow-[#A67C52]/10"
-                    style={{ padding: '4.5rem 3.5rem' }}
-                >
-                    {/* Inner Glow following cursor (Subtle on light) */}
-                    <div
-                        ref={glowRef}
-                        className="pointer-events-none absolute w-[300px] h-[300px] bg-[#A67C52]/5 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                        style={{ transform: 'translate(-50%, -50%)' }}
-                    />
-
-                    {/* Architectural decor lines */}
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-black/[0.03] to-transparent" />
-                    <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#A67C52]/20 to-transparent" />
-
-                    {/* Branding Header */}
-                    <div className="text-center mb-14">
-                        <h2 className="login-reveal text-4xl font-light text-[#001738] tracking-[0.2em] mb-4 leading-none"
-                            style={{ fontFamily: 'Cinzel, serif' }}>
-                            CUTS <span className="text-[#A67C52]">&</span> GROOVES
-                        </h2>
-                        <div className="login-reveal h-[0.5px] w-12 bg-[#A67C52]/40 mx-auto mb-4" />
-                        <p className="login-reveal text-[0.7rem] text-[#001738]/40 font-bold tracking-[0.4em] uppercase">
-                            Exclusive Entry
-                        </p>
+            <section className="admin-login-panel" aria-label="Admin sign in">
+                <div className="admin-login-card">
+                    <div className="admin-login-brand">
+                        <Image src="/images/logo.png" alt="Cuts & Grooves" width={78} height={78} priority />
+                        <div>
+                            <span className="admin-login-eyebrow">Secure Access</span>
+                            <h2>Sign in to Admin</h2>
+                        </div>
                     </div>
 
-                    {error && (
-                        <div className="login-reveal mb-8 py-3.5 px-4 text-[0.65rem] text-[#cc3333] border border-[#cc3333]/10 bg-[#cc3333]/5 text-center tracking-widest font-black uppercase">
-                            {error}
-                        </div>
-                    )}
+                    <form onSubmit={handleSubmit} className="admin-login-form">
+                        {error && <div className="admin-login-error">{error}</div>}
 
-                    <form onSubmit={handleSubmit} className="space-y-8">
-                        {/* User ID Field */}
-                        <div className="login-reveal space-y-3">
-                            <label className="block text-[0.6rem] font-black text-[#001738]/60 uppercase tracking-[0.3em] ml-1">
-                                User ID
-                            </label>
-                            <div className="relative group/input">
-                                <input
-                                    type="email"
-                                    required
-                                    className="w-full px-0 py-3 bg-transparent border-b border-black/[0.3] focus:border-[#A67C52] transition-all duration-500 text-[#001738] placeholder:text-gray-305 text-sm outline-none"
-                                    placeholder="E-mail ID"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    disabled={loading}
-                                />
-                                <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#A67C52] group-focus-within/input:w-full transition-all duration-700 ease-out" />
-                            </div>
-                        </div>
+                        <label>
+                            <span>Email Address</span>
+                            <input
+                                type="email"
+                                autoComplete="email"
+                                required
+                                placeholder="admin@cutsandgrooves.com"
+                                value={email}
+                                onChange={(event) => setEmail(event.target.value)}
+                                disabled={loading}
+                            />
+                        </label>
 
-                        {/* Password Field */}
-                        <div className="login-reveal space-y-3">
-                            <label className="block text-[0.6rem] font-black text-[#001738]/60 uppercase tracking-[0.3em] ml-1">
-                                Password
-                            </label>
-                            <div className="relative group/input">
+                        <label>
+                            <span>Password</span>
+                            <div className="admin-password-field">
                                 <input
                                     type={showPassword ? 'text' : 'password'}
+                                    autoComplete="current-password"
                                     required
-                                    className="w-full px-0 py-3 bg-transparent border-b border-black/[0.3] focus:border-[#A67C52] transition-all duration-500 text-[#001738] placeholder:text-gray-305 text-sm outline-none tracking-[0.4em]"
-                                    placeholder="••••••••"
+                                    placeholder="Enter your password"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(event) => setPassword(event.target.value)}
                                     disabled={loading}
                                 />
-                                <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#A67C52] group-focus-within/input:w-full transition-all duration-700 ease-out" />
-
                                 <button
                                     type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 text-black/10 hover:text-[#A67C52] transition-colors"
+                                    onClick={() => setShowPassword((value) => !value)}
+                                    disabled={loading}
                                 >
-                                    {showPassword ? (
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
-                                    ) : (
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
-                                    )}
+                                    {showPassword ? 'Hide' : 'Show'}
                                 </button>
                             </div>
-                        </div>
+                        </label>
 
-                        <div className="login-reveal mt-20 mb-8 flex justify-center">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="relative w-1/2 py-4 bg-[#001738] text-white font-black uppercase tracking-[0.3em] text-[0.7rem] rounded-full transition-all duration-500 active:scale-[0.98] shadow-sm hover:shadow-md hover:bg-[#A67C52] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading ? (
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                                        <span>Verifying</span>
-                                    </div>
-                                ) : (
-                                    <span>Sign In</span>
-                                )}
-                            </button>
-                        </div>
-
-                        {/* Internal Navigation Links */}
-                        <div className="login-reveal mt-12 pt-8 border-t border-black/[0.03] text-center space-y-3">
-                            <p className="text-[0.6rem] font-medium text-[#001738]/30 uppercase tracking-[0.2em]">
-                                Lost access? <a href="#" className="text-[#001738]/60 hover:text-[#A67C52] transition-all ml-2 font-black !no-underline">Recovery Portal</a>
-                            </p>
-                            <p className="text-[0.6rem] font-medium text-[#001738]/30 uppercase tracking-[0.2em]">
-                                Public Domain? <a href="/" className="text-[#001738]/60 hover:text-[#A67C52] transition-all ml-2 font-black !no-underline">Return Home</a>
-                            </p>
-                        </div>
+                        <button type="submit" className="admin-login-submit" disabled={loading}>
+                            {loading ? 'Signing in...' : 'Sign In'}
+                        </button>
                     </form>
-                </div>
-            </div>
 
-            {/* Custom Styles */}
-            <style jsx global>{`
-                @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
-                
-                body {
-                    background-color: #f7f7f7;
-                    color: #001738;
+                    <div className="admin-login-footer">
+                        <Link href="/">Return to Website</Link>
+                        <span>Authorized users only</span>
+                    </div>
+                </div>
+            </section>
+
+            <style jsx>{`
+                .admin-login-page {
+                    min-height: 100vh;
+                    min-height: 100svh;
+                    display: grid;
+                    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr);
+                    background: #f6f4ef;
+                    color: #111;
+                    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                    overflow-x: hidden;
                 }
-                
-                .perspective-1000 {
-                    perspective: 1000px;
+
+                .admin-login-visual {
+                    position: relative;
+                    min-height: 100vh;
+                    overflow: hidden;
+                    background: #e9e6df;
+                }
+
+                .admin-login-visual-img {
+                    object-fit: cover;
+                    filter: grayscale(1) contrast(1.05);
+                }
+
+                .admin-login-visual-overlay {
+                    position: absolute;
+                    inset: 0;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    padding: clamp(32px, 5vw, 72px);
+                    background: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.58));
+                    color: #fff;
+                }
+
+                .admin-login-eyebrow {
+                    display: block;
+                    margin-bottom: 12px;
+                    font-size: 12px;
+                    font-weight: 700;
+                    letter-spacing: 0.16em;
+                    text-transform: uppercase;
+                    color: rgba(0, 0, 0, 0.52);
+                }
+
+                .admin-login-visual .admin-login-eyebrow {
+                    color: rgba(255, 255, 255, 0.74);
+                }
+
+                .admin-login-visual h1 {
+                    margin: 0;
+                    font-family: var(--font-heading);
+                    font-size: clamp(3rem, 7vw, 7rem);
+                    font-weight: 400;
+                    line-height: 0.92;
+                    text-transform: uppercase;
+                    letter-spacing: 0.01em;
+                }
+
+                .admin-login-visual p {
+                    max-width: 520px;
+                    margin: 0;
+                    font-size: clamp(1rem, 1.4vw, 1.25rem);
+                    line-height: 1.65;
+                    color: rgba(255, 255, 255, 0.82);
+                }
+
+                .admin-login-panel {
+                    display: grid;
+                    place-items: center;
+                    min-width: 0;
+                    padding: clamp(20px, 5vw, 72px);
+                }
+
+                .admin-login-card {
+                    width: min(100%, 520px);
+                    min-width: 0;
+                    background: rgba(255, 255, 255, 0.82);
+                    border: 1px solid rgba(0, 0, 0, 0.08);
+                    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.08);
+                    padding: clamp(28px, 4vw, 48px);
+                    border-radius: 18px;
+                }
+
+                .admin-login-brand {
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                    margin-bottom: 40px;
+                    min-width: 0;
+                }
+
+                .admin-login-brand h2 {
+                    margin: 0;
+                    font-size: clamp(2rem, 3vw, 2.8rem);
+                    line-height: 1;
+                    font-family: var(--font-heading);
+                    font-weight: 400;
+                    letter-spacing: 0;
+                    overflow-wrap: anywhere;
+                }
+
+                .admin-login-form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 22px;
+                }
+
+                .admin-login-form label {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+
+                .admin-login-form label > span {
+                    font-size: 13px;
+                    font-weight: 700;
+                    letter-spacing: 0.08em;
+                    text-transform: uppercase;
+                    color: rgba(0, 0, 0, 0.58);
+                }
+
+                .admin-login-form input {
+                    width: 100%;
+                    height: 54px;
+                    border: 1px solid rgba(0, 0, 0, 0.14);
+                    border-radius: 10px;
+                    background: #fff;
+                    padding: 0 16px;
+                    font-size: 16px;
+                    color: #111;
+                    outline: none;
+                    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+                }
+
+                .admin-login-form input:focus {
+                    border-color: #111;
+                    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.06);
+                }
+
+                .admin-password-field {
+                    position: relative;
+                }
+
+                .admin-password-field input {
+                    padding-right: 82px;
+                }
+
+                .admin-password-field button {
+                    position: absolute;
+                    right: 8px;
+                    top: 8px;
+                    height: 38px;
+                    border: none;
+                    border-radius: 8px;
+                    background: #f2f2f2;
+                    padding: 0 14px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #111;
+                    cursor: pointer;
+                }
+
+                .admin-login-submit {
+                    height: 56px;
+                    margin-top: 8px;
+                    border: none;
+                    border-radius: 10px;
+                    background: #111;
+                    color: #fff;
+                    font-size: 14px;
+                    font-weight: 800;
+                    letter-spacing: 0.12em;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                    transition: transform 0.2s ease, background 0.2s ease;
+                }
+
+                .admin-login-submit:hover {
+                    background: #2a2a2a;
+                    transform: translateY(-1px);
+                }
+
+                .admin-login-submit:disabled,
+                .admin-login-form input:disabled,
+                .admin-password-field button:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+
+                .admin-login-error {
+                    border: 1px solid rgba(170, 36, 36, 0.18);
+                    background: rgba(170, 36, 36, 0.06);
+                    color: #8f1f1f;
+                    border-radius: 10px;
+                    padding: 14px 16px;
+                    font-size: 14px;
+                    line-height: 1.45;
+                }
+
+                .admin-login-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 18px;
+                    margin-top: 30px;
+                    padding-top: 22px;
+                    border-top: 1px solid rgba(0, 0, 0, 0.08);
+                    font-size: 13px;
+                    color: rgba(0, 0, 0, 0.55);
+                }
+
+                .admin-login-footer a {
+                    color: #111;
+                    font-weight: 700;
+                    text-decoration: none;
+                }
+
+                @media (max-width: 900px) {
+                    .admin-login-page {
+                        grid-template-columns: 1fr;
+                        min-height: auto;
+                    }
+
+                    .admin-login-visual {
+                        min-height: 240px;
+                        height: 34svh;
+                    }
+
+                    .admin-login-visual-overlay {
+                        padding: 28px;
+                    }
+
+                    .admin-login-visual p {
+                        display: none;
+                    }
+
+                    .admin-login-panel {
+                        align-items: start;
+                        padding: 28px;
+                    }
+                }
+
+                @media (max-width: 520px) {
+                    .admin-login-page {
+                        background: #fff;
+                    }
+
+                    .admin-login-visual {
+                        min-height: 168px;
+                        height: 28svh;
+                    }
+
+                    .admin-login-visual-overlay {
+                        padding: 20px;
+                    }
+
+                    .admin-login-visual h1 {
+                        font-size: clamp(2rem, 13vw, 3.4rem);
+                    }
+
+                    .admin-login-panel {
+                        padding: 0;
+                    }
+
+                    .admin-login-brand {
+                        align-items: flex-start;
+                        flex-direction: column;
+                        gap: 14px;
+                        margin-bottom: 28px;
+                    }
+
+                    .admin-login-brand img {
+                        width: 62px;
+                        height: 62px;
+                    }
+
+                    .admin-login-card {
+                        width: 100%;
+                        min-height: auto;
+                        border-radius: 0;
+                        border-left: none;
+                        border-right: none;
+                        border-bottom: none;
+                        box-shadow: none;
+                        padding: 24px 20px 28px;
+                    }
+
+                    .admin-login-form {
+                        gap: 18px;
+                    }
+
+                    .admin-login-form input,
+                    .admin-login-submit {
+                        height: 52px;
+                    }
+
+                    .admin-login-footer {
+                        flex-direction: column;
+                        gap: 10px;
+                    }
+                }
+
+                @media (max-width: 360px) {
+                    .admin-login-card {
+                        padding-left: 16px;
+                        padding-right: 16px;
+                    }
+
+                    .admin-password-field input {
+                        padding-right: 72px;
+                    }
+
+                    .admin-password-field button {
+                        padding: 0 10px;
+                    }
                 }
             `}</style>
-        </div>
+        </main>
     );
 }

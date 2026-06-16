@@ -42,7 +42,7 @@ export default function FloatingCTA() {
     const [isOpen, setIsOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(STEPS.NAME);
     const [messages, setMessages] = useState([
-        { type: 'bot', text: "Welcome to Cuts & Grooves Studio. May we have your name to begin?" }
+        { type: 'bot', text: "Welcome to Cuts & Grooves. May we know your name?" }
     ]);
     const [isTyping, setIsTyping] = useState(false);
     const [userData, setUserData] = useState({
@@ -165,11 +165,11 @@ export default function FloatingCTA() {
         setCurrentStep(option.next);
 
         if (option.next === STEPS.SCALE) {
-            addBotMessage("Exquisite choice. What is the approximate scale of this project?");
+            addBotMessage("Great choice. What scale are you envisioning for this project?");
         } else if (option.next === STEPS.LOCATION) {
-            addBotMessage("To visualize the context, where is the site located?");
+            addBotMessage("To understand the context better, where is the site located?");
         } else if (option.next === STEPS.FINAL) {
-            addBotMessage(`Thank you, ${userData.name || 'friend'}! Our studio will reach out to schedule an initial consultation soon.`);
+            addBotMessage(`Thank you, ${userData.name || 'friend'}! Our team will reach out to schedule a consultation soon.`);
         }
     };
 
@@ -195,28 +195,28 @@ export default function FloatingCTA() {
         if (currentStep === STEPS.NAME) {
             setUserData(prev => ({ ...prev, name: val }));
             setCurrentStep(STEPS.WHATSAPP);
-            addBotMessage(`Pleasure to meet you, ${val}! May we have your WhatsApp number to share our portfolio?`);
+            addBotMessage(`Lovely to meet you, ${val}! Could we have your WhatsApp number to share our portfolio?`);
         } else if (currentStep === STEPS.WHATSAPP) {
             setUserData(prev => ({ ...prev, whatsapp: val }));
             setCurrentStep(STEPS.DISCOVERY);
-            addBotMessage("Thank you. To help us understand your vision, what kind of space are you looking to craft?");
+            addBotMessage("Thank you. To understand your vision better, what kind of space are you looking to create?");
         } else if (currentStep === STEPS.LOCATION) {
             setUserData(prev => ({ ...prev, location: val }));
             setCurrentStep(STEPS.LAND_AREA);
-            addBotMessage("What is the approximate land area in Square Feet?");
+            addBotMessage("What is the approximate area of the site in square feet?");
         } else if (currentStep === STEPS.LAND_AREA) {
             setUserData(prev => ({ ...prev, area: val }));
             setCurrentStep(STEPS.SEGMENT);
-            addBotMessage("Which segment best describes your architectural ambition?");
+            addBotMessage("Which segment best describes your vision for this project?");
         }
     };
 
     const generateWhatsAppLink = () => {
         const base = "https://wa.me/+918015759988";
         const messageBody = [
-            `Hello Cuts & Grooves Studio,`,
+            `Hello Cuts & Grooves,`,
             ``,
-            `PROJECT INQUIRY DETAILS:`,
+            `NEW PROJECT INQUIRY:`,
             `Name: ${userData.name || 'N/A'}`,
             `WhatsApp: ${userData.whatsapp || 'N/A'}`,
             `Location: ${userData.location || 'N/A'}`,
@@ -231,7 +231,7 @@ export default function FloatingCTA() {
 
     return (
         <>
-            <div ref={chatWindowRef} className="chat-window" style={{ opacity: 0, transform: 'translateX(20px)' }} data-lenis-prevent>
+            <div ref={chatWindowRef} className="chat-window" style={{ opacity: 0, transform: 'translateX(20px)', visibility: isOpen ? 'visible' : 'hidden' }} data-lenis-prevent>
                 <div className="chat-header">
                     <span className="chat-header-title">Inquiry</span>
                     <button onClick={toggleChat} className="chat-close" suppressHydrationWarning={true}>CLOSE</button>
@@ -290,7 +290,7 @@ export default function FloatingCTA() {
                     {currentStep === STEPS.FINAL && !isTyping && (
                         <div className="chat-footer">
                             <a href={generateWhatsAppLink()} target="_blank" rel="noopener noreferrer" className="chat-cta-btn">
-                                Send To Architect/Engineer
+                                Send to Our Studio
                             </a>
                         </div>
                     )}
@@ -306,7 +306,7 @@ export default function FloatingCTA() {
                 aria-label="Chat on WhatsApp"
             >
                 <div className="whatsapp-label">
-                    Talk to an Architect <span style={{ fontSize: '1.1rem' }}>⚡</span>
+                    Talk to Our Studio <span style={{ fontSize: '1.1rem' }}>⚡</span>
                 </div>
                 <div className="whatsapp-icon-wrapper">
                     <svg className="whatsapp-icon" viewBox="0 0 24 24">

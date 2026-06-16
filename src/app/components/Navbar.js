@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -12,28 +13,13 @@ export default function Navbar() {
     const pathname = usePathname();
     const navRef = useRef(null);
     const [menuOpen, setMenuOpen] = useState(false);
-    const [currentTime, setCurrentTime] = useState('');
+
     const [isDark, setIsDark] = useState(false);
+    const drawerRef = useRef(null);
 
     useEffect(() => {
         setIsDark(pathname?.includes('/projects') || pathname?.includes('/process') || pathname?.includes('/studio') || pathname?.includes('/contact'));
     }, [pathname]);
-    const drawerRef = useRef(null);
-
-    // Live clock
-    useEffect(() => {
-        const updateTime = () => {
-            const now = new Date();
-            const hours = now.getHours();
-            const mins = now.getMinutes().toString().padStart(2, '0');
-            const period = hours >= 12 ? 'PM' : 'AM';
-            const h12 = hours % 12 || 12;
-            setCurrentTime(`${h12.toString().padStart(2, '0')}:${mins}${period}`);
-        };
-        updateTime();
-        const interval = setInterval(updateTime, 30000);
-        return () => clearInterval(interval);
-    }, []);
 
     // Entrance animation
     useEffect(() => {
@@ -139,30 +125,69 @@ export default function Navbar() {
 
     return (
         <>
-            <nav ref={navRef} className={`navbar ${isDark ? 'navbar--dark' : ''}`}>
+            <nav ref={navRef} className={`navbar ${isDark && !menuOpen ? 'navbar--dark' : ''}`}>
                 {/* ─── Left: Brand ─── */}
                 <Link href="/" className="nav-brand nav-item">
-                    CUTS &amp; GROOVES
+                    <Image
+                        src="/images/Blacklogo.png"
+                        alt="Cuts & Grooves"
+                        width={400}
+                        height={140}
+                        style={{
+                            width: 'auto',
+                            height: 'clamp(52px, 6vw, 90px)',
+                            filter: 'none',
+                            display: 'block',
+                        }}
+                        priority
+                    />
                 </Link>
 
                 {/* ─── Center-left: Nav links (comma separated) ─── */}
                 <div className="nav-links nav-item">
-                    <Link href="/projects" className="nav-link">Portfolio</Link>
+                    <Link href="/projects" className="nav-link">Our Work</Link>
                     <span className="nav-comma">,</span>
-                    <Link href="/process" className="nav-link">Process</Link>
+                    <Link href="/process" className="nav-link">Our Approach</Link>
                     <span className="nav-comma">,</span>
-                    <Link href="/studio" className="nav-link">Studio</Link>
+                    <Link href="/studio" className="nav-link">About Us</Link>
                 </div>
 
-                {/* ─── Right: Time, Location, Contact ─── */}
+                {/* ─── Right: Contact ─── */}
                 <div className="nav-right nav-item">
-                    <span className="nav-meta nav-time">
-                        {currentTime}
-                    </span>
-                    <span className="nav-meta nav-location">
-                        India
-                    </span>
-                    <Link href="/contact" className="nav-contact">
+                    <Link href="/contact" style={{
+                        fontFamily: 'var(--font-heading)',
+                        fontSize: 'clamp(0.75rem, 1vw, 0.85rem)',
+                        fontWeight: 500,
+                        color: isDark ? '#fff' : '#000',
+                        backgroundColor: isDark ? '#000' : 'transparent',
+                        border: isDark ? 'none' : '1px solid #000',
+                        textDecoration: 'none',
+                        padding: '10px 24px',
+                        borderRadius: '100px',
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        transition: 'all 0.3s ease',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        lineHeight: 1,
+                    }}
+                        onMouseEnter={e => {
+                            if (isDark) {
+                                e.currentTarget.style.backgroundColor = '#1a1a1a';
+                            } else {
+                                e.currentTarget.style.backgroundColor = '#000';
+                                e.currentTarget.style.color = '#fff';
+                            }
+                        }}
+                        onMouseLeave={e => {
+                            if (isDark) {
+                                e.currentTarget.style.backgroundColor = '#000';
+                            } else {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = '#000';
+                            }
+                        }}
+                    >
                         Contact
                     </Link>
                 </div>
@@ -184,9 +209,9 @@ export default function Navbar() {
                 <div className="drawer-content">
                     <div className="drawer-links">
                         <Link href="/" className="drawer-link" onClick={() => setMenuOpen(false)}>Home</Link>
-                        <Link href="/projects" className="drawer-link" onClick={() => setMenuOpen(false)}>Portfolio</Link>
-                        <Link href="/studio" className="drawer-link" onClick={() => setMenuOpen(false)}>Studio</Link>
-                        <Link href="/process" className="drawer-link" onClick={() => setMenuOpen(false)}>Process</Link>
+                        <Link href="/projects" className="drawer-link" onClick={() => setMenuOpen(false)}>Our Work</Link>
+                        <Link href="/studio" className="drawer-link" onClick={() => setMenuOpen(false)}>About Us</Link>
+                        <Link href="/process" className="drawer-link" onClick={() => setMenuOpen(false)}>Our Approach</Link>
                         <Link href="/contact" className="drawer-link" onClick={() => setMenuOpen(false)}>Contact</Link>
                     </div>
                     <div className="drawer-social">

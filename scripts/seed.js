@@ -67,12 +67,12 @@ const initialTestimonials = [
 ];
 
 const initialContent = [
-    { page: 'home', section: 'hero', key: 'title', value: 'We Make Your Livin\' Better', type: 'text' },
-    { page: 'home', section: 'hero', key: 'subtitle', value: 'Architectural Excellence & Interior Innovation', type: 'text' },
-    { page: 'home', section: 'hero', key: 'videoUrl', value: '/videos/hero-bg.mp4', type: 'text' },
+    { page: 'home', section: 'hero', key: 'title', value: 'Spaces Made for Living', type: 'text' },
+    { page: 'home', section: 'hero', key: 'subtitle', value: 'Architecture & Interior Design Studio', type: 'text' },
+    { page: 'home', section: 'hero', key: 'videoUrl', value: '/videos/luxury-interior.mp4', type: 'text' },
     { page: 'home', section: 'works', key: 'heading', value: 'Selected Works', type: 'text' },
     { page: 'home', section: 'testimonials', key: 'heading', value: 'Client Perspectives', type: 'text' },
-    { page: 'home', section: 'footer', key: 'address', value: '123 Cuts and Grooves.\nCumbum, Theni.\nTamilnadu.', type: 'text' },
+    { page: 'home', section: 'footer', key: 'address', value: 'Cumbum, Theni,\nTamil Nadu.', type: 'text' },
     { page: 'home', section: 'footer', key: 'phone', value: '+91 80157 59988', type: 'text' },
     { page: 'home', section: 'footer', key: 'email', value: 'hello@cutsandgrooves.com', type: 'text' }
 ];

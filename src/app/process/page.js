@@ -4,7 +4,52 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Footer from '../components/Footer';
-import PageNavigation from '../components/PageNavigation';
+gsap.registerPlugin(ScrollTrigger);
+
+const defaultContent = {
+    narrative: {
+        heading: "We believe the most resonant spaces are not designed — they are distilled. Every line, material, and shadow emerges from a process of deep inquiry, fearless iteration, and quiet mastery.",
+        subtext: "Our approach never follows a formula. Each project is a living dialogue — between light and material, tradition and innovation, the client's vision and the site's innate character. We listen first, design second, and refine until every detail feels inevitable. This is not rapid production; it is patient cultivation. The result is architecture that breathes, endures, and quietly transforms the way people inhabit space."
+    },
+    sustainability: {
+        label: "Sustainability",
+        heading: "We build not for the season, but for the generations that follow.",
+        image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1600&q=80"
+    },
+    initiatives: {
+        label: "Our Process",
+        heading: "Three movements, one conviction.",
+        items: [
+            {
+                title: "Immerse & Uncover",
+                subtitle: "Deep listening meets forensic curiosity.",
+                description: "Before a single line is drawn, we steep ourselves in the world of the project. We study how the sun travels across the site, how the wind moves through the corridors, how the existing architecture speaks. Conversations with you are not interviews — they are excavations of memory, desire, and instinct. This phase yields not a brief, but a belief system that will guide every decision that follows.",
+                image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80"
+            },
+            {
+                title: "Craft & Challenge",
+                subtitle: "The studio as an atelier of restless creativity.",
+                description: "Armed with insight, our studio becomes a workshop of possibilities. We sketch, model, test, and dismantle our own ideas with relentless honesty. Materials are touched, light is studied in motion, proportions are questioned. This is where intuition meets precision — where the raw energy of creativity is shaped into a coherent spatial language. We do not settle for the first beautiful answer; we search for the truest one.",
+                image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
+            },
+            {
+                title: "Deliver & Protect",
+                subtitle: "The gap between vision and reality is measured in care.",
+                description: "Execution is where most designs falter. We bridge the distance with obsessive attention to craft, coordination, and site presence. Every junction, finish, and tolerance is verified against the original intent. We work alongside artisans, engineers, and builders — not as overseers, but as collaborators who speak the language of both poetry and precision. The completed space is not a departure from the vision; it is the vision, realised.",
+                image: "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=1200&q=80"
+            }
+        ]
+    },
+    accreditations: {
+        items: [
+            "IIA — Bengaluru",
+            "LEED AP — BD+C",
+            "RIBA — Chartered",
+            "GRIHA — Accredited Professional",
+            "WELL AP — v2"
+        ]
+    }
+};
 
 export default function ProcessPage() {
     const containerRef = useRef(null);
@@ -17,15 +62,22 @@ export default function ProcessPage() {
                 const res = await fetch('/api/content?page=process');
                 if (res.ok) {
                     const data = await res.json();
-                    const contentMap = {};
-                    data.forEach(item => {
-                        if (!contentMap[item.section]) contentMap[item.section] = {};
-                        contentMap[item.section][item.key] = item.value;
-                    });
-                    setContent(contentMap);
+                    if (data && data.length > 0) {
+                        const contentMap = {};
+                        data.forEach(item => {
+                            if (!contentMap[item.section]) contentMap[item.section] = {};
+                            contentMap[item.section][item.key] = item.value;
+                        });
+                        setContent(contentMap);
+                    } else {
+                        setContent(defaultContent);
+                    }
+                } else {
+                    setContent(defaultContent);
                 }
             } catch (err) {
                 console.error('Failed to fetch process content:', err);
+                setContent(defaultContent);
             } finally {
                 setLoading(false);
             }
@@ -36,10 +88,7 @@ export default function ProcessPage() {
     useEffect(() => {
         if (loading || !content) return;
 
-        gsap.registerPlugin(ScrollTrigger);
-
         const ctx = gsap.context(() => {
-            // 1. Text Highlight Effect (Narrative)
             const highlightTexts = gsap.utils.toArray('.narrative-paragraph');
             highlightTexts.forEach((p) => {
                 const words = p.innerText.split(' ');
@@ -61,7 +110,6 @@ export default function ProcessPage() {
                 });
             });
 
-            // 2. Sticky Sustainability Section Effect
             ScrollTrigger.create({
                 trigger: '.sustainability-container',
                 start: 'top top',
@@ -70,7 +118,6 @@ export default function ProcessPage() {
                 pinSpacing: false
             });
 
-            // 3. Section reveals for initiatives
             gsap.utils.toArray('.initiative-card').forEach((card) => {
                 gsap.from(card, {
                     opacity: 0,
@@ -83,7 +130,6 @@ export default function ProcessPage() {
                     }
                 });
             });
-
         }, containerRef);
 
         return () => ctx.revert();
@@ -97,13 +143,13 @@ export default function ProcessPage() {
         );
     }
 
-    const narrative = content?.narrative || {};
-    const sustainability = content?.sustainability || {};
-    const initiatives = content?.initiatives || {};
-    const accreditations = content?.accreditations || {};
+    const narrative = { ...defaultContent.narrative, ...content?.narrative };
+    const sustainability = { ...defaultContent.sustainability, ...content?.sustainability };
+    const initiatives = { ...defaultContent.initiatives, ...content?.initiatives };
+    const accreditations = { ...defaultContent.accreditations, ...content?.accreditations };
 
-    const initiativeItems = initiatives.items || [];
-    const accreditationItems = accreditations.items || [];
+    const initiativeItems = initiatives?.items || defaultContent.initiatives.items;
+    const accreditationItems = accreditations?.items || defaultContent.accreditations.items;
 
     return (
         <main ref={containerRef} className="process-page bg-white text-black">
@@ -262,9 +308,6 @@ export default function ProcessPage() {
                 </div>
             </section>
 
-
-
-            <PageNavigation currentPath="/process" />
             <Footer />
         </main>
     );

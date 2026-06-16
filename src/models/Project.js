@@ -1,5 +1,10 @@
 import mongoose from 'mongoose';
 
+const GalleryItemSchema = new mongoose.Schema({
+    url: { type: String, required: true },
+    description: { type: String, default: '' },
+}, { _id: false });
+
 const ProjectSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -25,9 +30,7 @@ const ProjectSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide a main image URL.'],
     },
-    gallery: [{
-        type: String,
-    }],
+    gallery: [GalleryItemSchema],
     description: {
         type: String,
     },

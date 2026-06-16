@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -12,37 +13,26 @@ export default function SelectedWorks({ projects: initialProjects }) {
     const containerRef = useRef(null);
     const projects = initialProjects || [];
 
-    const heading = "Selected Works";
+    const heading = "Featured Projects";
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // 1. Cinematic Section Entrance (Heading + Count)
-            gsap.set(['.works-heading', '.works-count'], { y: 50, opacity: 0 });
-
+            // 1. Cinematic Section Entrance (Heading)
             const entranceTl = gsap.timeline({
                 scrollTrigger: {
                     trigger: '.works-header-side',
                     start: 'top 85%',
+                    toggleActions: 'play none none none',
                 },
             });
 
             entranceTl
-                .to('.works-heading', {
-                    y: 0,
-                    opacity: 1,
+                .from('.works-heading', {
+                    y: 50,
+                    opacity: 0,
                     duration: 1.2,
                     ease: 'power3.out',
-                })
-                .to(
-                    '.works-count',
-                    {
-                        y: 0,
-                        opacity: 1,
-                        duration: 1,
-                        ease: 'power3.out',
-                    },
-                    '-=1'
-                );
+                });
 
             // 2. Continuous Wave Animation (Small -> Full -> Small)
             const cards = gsap.utils.toArray('.work-card');
@@ -139,7 +129,6 @@ export default function SelectedWorks({ projects: initialProjects }) {
                 {/* Side Header */}
                 <div className="works-header-side">
                     <h2 className="works-heading">{heading}</h2>
-                    <span className="works-count">({projects.length})</span>
                     {/* Removed content?.subtext block */}
                 </div>
 
@@ -148,36 +137,38 @@ export default function SelectedWorks({ projects: initialProjects }) {
                     <div className="works-stack">
                         {projects.map((project, i) => (
                             <div key={i} className="work-card">
-                                <div className="work-card-inner">
-                                    <h3 className="work-title">
-                                        <span className="bracket-left" style={{ display: 'inline-block' }}>[</span>
-                                        <span className="title-text" style={{ padding: '0 10px', display: 'inline-block' }}>{project.title}</span>
-                                        <span className="bracket-right" style={{ display: 'inline-block' }}>]</span>
-                                    </h3>
-                                    <div className="work-image-container">
-                                        {project.mainImage ? (
-                                            <Image
-                                                src={project.mainImage}
-                                                alt={project.title}
-                                                width={2000}
-                                                height={1200}
-                                                style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                                                priority={i === 0}
-                                                unoptimized
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                                <span className="text-[10px] uppercase tracking-widest text-gray-300">Visual Asset Pending</span>
-                                            </div>
-                                        )}
-                                        <div className="work-overlay">
-                                            <div className="work-meta">
-                                                <span>{project.category}</span>
-                                                <span>{project.year}</span>
+                                <Link href={`/projects/${project.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                                    <div className="work-card-inner">
+                                        <h3 className="work-title">
+                                            <span className="bracket-left" style={{ display: 'inline-block' }}>[</span>
+                                            <span className="title-text" style={{ padding: '0 10px', display: 'inline-block' }}>{project.title}</span>
+                                            <span className="bracket-right" style={{ display: 'inline-block' }}>]</span>
+                                        </h3>
+                                        <div className="work-image-container">
+                                            {project.mainImage ? (
+                                                <Image
+                                                    src={project.mainImage}
+                                                    alt={project.title}
+                                                    width={2000}
+                                                    height={1200}
+                                                    style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                                                    priority={i === 0}
+                                                    unoptimized
+                                                />
+                                            ) : (
+                                                <div style={{ width: '100%', height: '100%', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.15em', color: '#d4d4d4' }}>Visuals in Progress</span>
+                                                </div>
+                                            )}
+                                            <div className="work-overlay">
+                                                <div className="work-meta">
+                                                    <span>{project.category}</span>
+                                                    <span>{project.year}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
                             </div>
                         ))}
                     </div>

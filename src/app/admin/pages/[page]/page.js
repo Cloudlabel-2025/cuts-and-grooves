@@ -109,38 +109,7 @@ export default function GenericPageEditor({ params }) {
                 </div>
             )}
 
-            {/* Preview Link */}
-            <div style={{ backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', padding: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                    <div style={{ fontSize: '32px' }}>👁</div>
-                    <div>
-                        <h4 style={{ fontSize: '12px', letterSpacing: '0.1em', fontWeight: '700', color: '#000000', textTransform: 'uppercase', margin: 0, marginBottom: '4px' }}>Preview</h4>
-                        <p style={{ fontSize: '11px', color: 'rgba(0,0,0,0.5)', letterSpacing: '0.05em', textTransform: 'uppercase', margin: 0 }}>View changes in real-time</p>
-                    </div>
-                </div>
-                <Link href={page === 'home' ? '/' : `/${page}`} target="_blank" style={{
-                    paddingLeft: '24px',
-                    paddingRight: '24px',
-                    paddingTop: '10px',
-                    paddingBottom: '10px',
-                    backgroundColor: '#000000',
-                    color: '#ffffff',
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    borderRadius: '6px',
-                    textDecoration: 'none',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer',
-                    border: 'none'
-                }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#000000'}
-                >
-                    Visit Site
-                </Link>
-            </div>
+
         </div>
     );
 }

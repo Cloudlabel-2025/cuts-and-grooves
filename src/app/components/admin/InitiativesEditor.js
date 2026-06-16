@@ -1,220 +1,231 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import CloudinaryUpload from '@/app/components/admin/CloudinaryUpload';
+import RichTextEditor from './RichTextEditor';
+import { Loader, EditorHeader, FieldCard, textareaStyle, inputStyle, focusIn, focusOut, primaryBtn } from './EditorShared';
+
+const stripHtml = (html) => {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').replace(/\s+/g, ' ').trim();
+};
+
+const charCount = (html) => stripHtml(html).length;
 
 export default function InitiativesEditor({ page = 'process', section = 'initiatives' }) {
-    const [content, setContent] = useState({
-        label: '',
-        heading: '',
-        items: []
-    });
-    const [stagedContent, setStagedContent] = useState({
-        label: '',
-        heading: '',
-        items: []
-    });
+    const [content, setContent] = useState({ label: '', heading: '', items: [] });
+    const [staged, setStaged] = useState({ label: '', heading: '', items: [] });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        fetchContent();
-    }, []);
+    useEffect(() => { fetchContent(); }, []);
 
     const fetchContent = async () => {
         try {
             const res = await fetch(`/api/content?page=${page}&section=${section}`);
-            if (!res.ok) throw new Error('Failed to fetch');
+            if (!res.ok) throw new Error();
             const data = await res.json();
-            const contentMap = {};
-            data.forEach(item => {
-                contentMap[item.key] = item.value;
-            });
-            const loadedContent = {
-                label: contentMap.label || '',
-                heading: contentMap.heading || '',
-                items: contentMap.items || []
-            };
-            setContent(loadedContent);
-            setStagedContent(loadedContent);
-        } catch (err) {
-            console.error('Failed to fetch content:', err);
-        } finally {
-            setLoading(false);
-        }
+            const map = {};
+            data.forEach(i => { map[i.key] = i.value; });
+            const loaded = { label: map.label || '', heading: map.heading || '', items: map.items || [] };
+            setContent(loaded);
+            setStaged(JSON.parse(JSON.stringify(loaded)));
+        } catch { /* silent */ } finally { setLoading(false); }
     };
 
-    const hasChanges = JSON.stringify(content) !== JSON.stringify(stagedContent);
+    const hasChanges = JSON.stringify(content) !== JSON.stringify(staged);
 
     const handleSave = async () => {
         setSaving(true);
         try {
-            const keys = Object.keys(stagedContent);
-            for (const key of keys) {
-                if (JSON.stringify(stagedContent[key]) !== JSON.stringify(content[key])) {
+            for (const key of Object.keys(staged)) {
+                if (JSON.stringify(staged[key]) !== JSON.stringify(content[key])) {
                     await fetch('/api/content', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            page,
-                            section,
-                            key,
-                            value: stagedContent[key],
-                        }),
+                        body: JSON.stringify({ page, section, key, value: staged[key] }),
                     });
                 }
             }
-            setContent(JSON.parse(JSON.stringify(stagedContent)));
-        } catch (err) {
-            console.error(err);
-            alert('Failed to save changes.');
-        } finally {
-            setSaving(false);
+            setContent(JSON.parse(JSON.stringify(staged)));
+        } catch { alert('Failed to save.'); } finally { setSaving(false); }
+    };
+
+    const handleKeyDown = useCallback((e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+            e.preventDefault();
+            if (hasChanges && !saving) handleSave();
         }
+        if (e.key === 'Escape' && hasChanges) {
+            e.preventDefault();
+            setStaged(JSON.parse(JSON.stringify(content)));
+        }
+    }, [hasChanges, saving, content]);
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleKeyDown]);
+
+    const updateItem = (i, field, val) => {
+        const items = [...staged.items];
+        items[i] = { ...items[i], [field]: val };
+        setStaged(s => ({ ...s, items }));
     };
 
-    const handleAddItem = () => {
-        const newItem = {
-            title: 'New Initiative',
-            subtitle: '',
-            image: '',
-            description: ''
-        };
-        setStagedContent({ ...stagedContent, items: [...stagedContent.items, newItem] });
-    };
+    const addItem = () => setStaged(s => ({ ...s, items: [...s.items, { title: 'New Initiative', subtitle: '', description: '', image: '' }] }));
+    const removeItem = i => setStaged(s => ({ ...s, items: s.items.filter((_, idx) => idx !== i) }));
 
-    const handleRemoveItem = (index) => {
-        const newItems = stagedContent.items.filter((_, i) => i !== index);
-        setStagedContent({ ...stagedContent, items: newItems });
-    };
+    const totalChars = staged.items.reduce((sum, item) => sum + charCount(item.subtitle) + charCount(item.description), 0);
 
-    const handleUpdateItem = (index, field, value) => {
-        const newItems = [...stagedContent.items];
-        newItems[index] = { ...newItems[index], [field]: value };
-        setStagedContent({ ...stagedContent, items: newItems });
-    };
-
-    if (loading) return <div className="p-8 opacity-30 uppercase text-[10px] tracking-widest">Loading Initiatives...</div>;
+    if (loading) return <Loader label="Initiatives" />;
 
     return (
-        <div className="space-y-12">
-            <div className="flex justify-between items-end border-bottom border-gray-100 pb-8">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            <EditorHeader
+                kicker="Initiatives Section"
+                title="Conviction-Driven Actions"
+                description={`${staged.items.length} initiative${staged.items.length !== 1 ? 's' : ''} · section label & heading`}
+                hasChanges={hasChanges}
+                saving={saving}
+                onReset={() => setStaged(JSON.parse(JSON.stringify(content)))}
+                onSave={handleSave}
+                saveLabel="Save Initiatives"
+            />
+
+            {/* Status Card */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+                <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Initiatives</span>
+                    <strong style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--admin-text)' }}>{staged.items.length}</strong>
+                </div>
+                <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Label</span>
+                    <strong style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--admin-text)' }}>{staged.label.length}</strong>
+                    <span style={{ fontSize: '12px', color: 'var(--admin-muted)', marginLeft: '4px' }}>chars</span>
+                </div>
+                <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Heading</span>
+                    <strong style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--admin-text)' }}>{staged.heading.length}</strong>
+                    <span style={{ fontSize: '12px', color: 'var(--admin-muted)', marginLeft: '4px' }}>chars</span>
+                </div>
+                <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Story Text</span>
+                    <strong style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--admin-text)' }}>{totalChars}</strong>
+                    <span style={{ fontSize: '12px', color: 'var(--admin-muted)', marginLeft: '4px' }}>chars</span>
+                </div>
+            </div>
+
+            {/* Section meta */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <FieldCard label="Section Label" hint="Small kicker">
+                    <input type="text" value={staged.label}
+                        onChange={e => setStaged(s => ({ ...s, label: e.target.value }))}
+                        style={inputStyle} onFocus={focusIn} onBlur={focusOut}
+                        placeholder="Our Initiatives" />
+                </FieldCard>
+                <FieldCard label="Main Heading" hint="Large title above the cards">
+                    <input type="text" value={staged.heading}
+                        onChange={e => setStaged(s => ({ ...s, heading: e.target.value }))}
+                        style={inputStyle} onFocus={focusIn} onBlur={focusOut}
+                        placeholder="Driven by conviction, proven through action." />
+                </FieldCard>
+            </div>
+
+            {/* Toolbar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)' }}>
                 <div>
-                    <h2 className="text-3xl font-light uppercase tracking-tight">Initiatives Section</h2>
-                    <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-2">Manage conviction-driven action items</p>
+                    <span className="admin-kicker" style={{ marginBottom: 0 }}>Initiative Registry</span>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--admin-muted)' }}>{staged.items.length} item{staged.items.length !== 1 ? 's' : ''}</p>
                 </div>
-                <div className="flex gap-4">
-                    {hasChanges && (
-                        <button
-                            onClick={() => setStagedContent(JSON.parse(JSON.stringify(content)))}
-                            className="px-6 py-2 text-[10px] uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-colors"
-                        >
-                            Reset
+                <button type="button" onClick={addItem} style={{ ...primaryBtn, padding: '10px 20px' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
+                    Add Initiative
+                </button>
+            </div>
+
+            {staged.items.length === 0 && (
+                <div style={{ padding: '48px', background: '#fff', borderRadius: '16px', border: '1px dashed var(--admin-border)', textAlign: 'center', color: 'var(--admin-muted)', fontSize: '13px' }}>
+                    No initiatives yet. Click &quot;Add Initiative&quot; to create one.
+                </div>
+            )}
+
+            {staged.items.map((item, i) => (
+                <div key={i} style={{ background: '#fff', borderRadius: '18px', border: '1px solid var(--admin-border)', boxShadow: '0 8px 28px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+                    {/* Card header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 22px', borderBottom: '1px solid var(--admin-border)', background: 'rgba(250,249,246,0.6)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--admin-accent)', display: 'grid', placeItems: 'center', color: '#fff', fontSize: '11px', fontWeight: '800' }}>
+                                {i + 1}
+                            </div>
+                            <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-text)' }}>{item.title || 'Untitled Initiative'}</span>
+                        </div>
+                        <button type="button" onClick={() => removeItem(i)} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 14px', borderRadius: '8px', border: '1px solid rgba(192,57,43,0.25)', background: 'rgba(192,57,43,0.04)', color: '#c0392b', cursor: 'pointer', fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M19 6l-1 14H6L5 6M9 6V4h6v2" /></svg>
+                            Remove
                         </button>
-                    )}
-                    <button
-                        onClick={handleSave}
-                        disabled={!hasChanges || saving}
-                        className={`px-8 py-2 text-[10px] uppercase tracking-widest transition-all ${hasChanges && !saving ? 'bg-black text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
-                    >
-                        {saving ? 'Saving...' : 'Save Initiatives'}
-                    </button>
-                </div>
-            </div>
+                    </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 max-w-4xl pb-12 border-bottom border-gray-50">
-                <div className="space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Section Label</label>
-                    <input
-                        type="text"
-                        className="w-full bg-gray-50 border border-gray-100 p-4 font-medium focus:bg-white focus:border-black outline-none transition-all"
-                        value={stagedContent.label}
-                        onChange={(e) => setStagedContent({ ...stagedContent, label: e.target.value })}
-                    />
-                </div>
-                <div className="space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Main Heading</label>
-                    <input
-                        type="text"
-                        className="w-full bg-gray-50 border border-gray-100 p-4 font-light text-xl focus:bg-white focus:border-black outline-none transition-all"
-                        value={stagedContent.heading}
-                        onChange={(e) => setStagedContent({ ...stagedContent, heading: e.target.value })}
-                    />
-                </div>
-            </div>
-
-            <div className="space-y-16">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-300 italic">Initiative Ledger</h3>
-                    <button
-                        onClick={handleAddItem}
-                        className="text-[10px] uppercase tracking-widest font-bold text-[#A67C52] hover:text-black transition-colors flex items-center gap-2"
-                    >
-                        <span className="text-lg">+</span> Register New Initiative
-                    </button>
-                </div>
-
-                <div className="grid grid-cols-1 gap-12">
-                    {stagedContent.items.map((item, index) => (
-                        <div key={index} className="bg-white border border-gray-100 p-12 rounded-[2rem] shadow-[0_30px_100px_-40px_rgba(0,0,0,0.03)] space-y-8 relative group">
-                            <button
-                                onClick={() => handleRemoveItem(index)}
-                                className="absolute top-8 right-8 text-gray-200 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 text-[10px] uppercase tracking-widest font-bold"
-                            >
-                                De-register
-                            </button>
-
-                            <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-12">
-                                <div className="space-y-6">
-                                    <div className="relative aspect-[4/5] bg-gray-50 rounded-xl overflow-hidden border border-gray-50">
-                                        {item.image ? (
-                                            <img src={item.image} className="w-full h-full object-cover" alt={item.title} />
-                                        ) : (
-                                            <div className="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-widest text-gray-300">No Registry Graphic</div>
-                                        )}
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm p-4">
-                                            <CloudinaryUpload
-                                                folder="process"
-                                                onUploadSuccess={(url) => handleUpdateItem(index, 'image', url)}
-                                            />
-                                        </div>
-                                    </div>
-                                    <p className="text-[8px] uppercase tracking-widest text-gray-300 text-center italic">Initiative Artifact</p>
-                                </div>
-
-                                <div className="space-y-8">
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] uppercase tracking-widest font-bold text-gray-400">Initiative Title</label>
-                                        <input
-                                            type="text"
-                                            className="w-full bg-gray-50 border-bottom border-gray-100 py-2 text-xl font-light focus:border-black outline-none transition-all"
-                                            value={item.title}
-                                            onChange={(e) => handleUpdateItem(index, 'title', e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] uppercase tracking-widest font-bold text-gray-400">Supporting Subtitle</label>
-                                        <textarea
-                                            className="w-full bg-gray-50 border border-gray-100 p-4 text-sm leading-relaxed focus:bg-white focus:border-black outline-none transition-all resize-none h-24"
-                                            value={item.subtitle}
-                                            onChange={(e) => handleUpdateItem(index, 'subtitle', e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] uppercase tracking-widest font-bold text-gray-400">Deep Narrative Description</label>
-                                        <textarea
-                                            className="w-full bg-gray-50 border border-gray-100 p-4 text-xs leading-relaxed opacity-60 focus:bg-white focus:border-black focus:opacity-100 outline-none transition-all resize-none h-32"
-                                            value={item.description}
-                                            onChange={(e) => handleUpdateItem(index, 'description', e.target.value)}
-                                        />
-                                    </div>
+                    {/* Card body */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '24px', padding: '24px' }}>
+                        {/* Image */}
+                        <div>
+                            <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-muted)', display: 'block', marginBottom: '10px' }}>Image</span>
+                            <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', aspectRatio: '4/5', background: '#f4f3ef', border: '1px solid var(--admin-border)' }}>
+                                {item.image
+                                    ? <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    : <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
+                                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+                                      </div>
+                                }
+                                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }}
+                                    onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                                    onMouseLeave={e => e.currentTarget.style.opacity = 0}
+                                >
+                                    <CloudinaryUpload folder="process" onUploadSuccess={url => updateItem(i, 'image', url)} />
                                 </div>
                             </div>
+                            {item.image && (
+                                <button type="button" onClick={() => updateItem(i, 'image', '')} style={{ display: 'block', width: '100%', marginTop: '8px', padding: '8px', borderRadius: '10px', border: '1px solid rgba(192,57,43,0.25)', background: 'rgba(192,57,43,0.04)', color: '#c0392b', cursor: 'pointer', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center' }}>
+                                    Remove
+                                </button>
+                            )}
                         </div>
-                    ))}
+
+                        {/* Fields */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div>
+                                <label style={labelStyle}>Title</label>
+                                <input type="text" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} style={inputStyle} onFocus={focusIn} onBlur={focusOut} placeholder="Sustainability Action Plan" />
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Subtitle</label>
+                                <RichTextEditor
+                                    value={item.subtitle}
+                                    onChange={(val) => updateItem(i, 'subtitle', val)}
+                                    placeholder="Driven by purpose and guided by values..."
+                                    minHeight="100px"
+                                />
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Description</label>
+                                <RichTextEditor
+                                    value={item.description}
+                                    onChange={(val) => updateItem(i, 'description', val)}
+                                    placeholder="We believe architecture & design can strengthen..."
+                                    minHeight="140px"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            ))}
         </div>
     );
 }
+
+const labelStyle = {
+    display: 'block', marginBottom: '7px',
+    fontSize: '12px', fontWeight: '800', letterSpacing: '0.08em',
+    textTransform: 'uppercase', color: 'var(--admin-muted)',
+};

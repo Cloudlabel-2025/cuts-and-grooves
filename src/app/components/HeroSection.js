@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -63,9 +63,18 @@ const MorphingLine = ({ children }) => {
 
 export default function HeroSection({ content }) {
     const sectionRef = useRef(null);
+    const videoRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(false);
 
-    const title = content?.title || "We Make your Livin' Better";
-    const subtitle = content?.subtitle || "An Architecture & Interior Design Studio";
+    useEffect(() => {
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
+
+    const title = content?.title || "Spaces Made for Living";
+    const subtitle = content?.subtitle || "Architecture & Interior Design Studio";
     const videoUrl = content?.videoUrl || "/videos/luxury-interior.mp4";
 
     useEffect(() => {
@@ -201,13 +210,23 @@ export default function HeroSection({ content }) {
         <section ref={sectionRef} className="hero-section" data-nav-theme="dark" style={{ position: 'relative', zIndex: 10 }}>
             <div id="hero-pin-container" style={{ width: '100%', height: '100%' }}>
                 <div className="hero-clip-wrapper">
-                    {isVideo(videoUrl) ? (
+                    {isMobile ? (
+                        <img
+                            src="/images/hero-poster.jpg"
+                            alt={title}
+                            className="hero-video object-cover"
+                            style={{ width: '100%', height: '110%' }}
+                        />
+                    ) : isVideo(videoUrl) ? (
                         <video
+                            ref={videoRef}
                             className="hero-video"
                             autoPlay
                             muted
                             loop
                             playsInline
+                            preload="auto"
+                            poster="/images/hero-poster.jpg"
                             key={videoUrl}
                         >
                             <source src={videoUrl} type="video/mp4" />

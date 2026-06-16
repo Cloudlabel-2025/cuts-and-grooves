@@ -102,9 +102,9 @@ export default function ProjectDetail() {
                 { opacity: 1, y: 0, duration: 1, delay: 1, ease: 'power3.out' }
             );
 
-            // Hide fixed button when reaching the next project section
+            // Hide fixed button when reaching the footer (so it doesn't collide with nav links)
             ScrollTrigger.create({
-                trigger: '.next-project-teaser',
+                trigger: 'footer',
                 start: 'top bottom',
                 onEnter: () => gsap.to('.fixed-back-button', { opacity: 0, scale: 0.9, duration: 0.4 }),
                 onLeaveBack: () => gsap.to('.fixed-back-button', { opacity: 1, scale: 1, duration: 0.4 })
@@ -216,24 +216,41 @@ export default function ProjectDetail() {
                 style={{ padding: '0 4% 80px' }}
             >
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4vw', alignItems: 'start' }}>
-                    {project.gallery && project.gallery.map((img, i) => (
-                        <div
-                            key={i}
-                            className="gallery-img-wrapper"
-                            style={{
-                                gridColumn: i === 0 ? 'span 2' : 'span 1',
-                                marginBottom: '4vw',
-                                overflow: 'hidden',
-                                borderRadius: '2px'
-                            }}
-                        >
-                            <img
-                                src={img}
-                                alt={`${project.title} detail ${i}`}
-                                style={{ width: '100%', height: 'auto', display: 'block' }}
-                            />
-                        </div>
-                    ))}
+                    {project.gallery && project.gallery.map((item, i) => {
+                        const imgUrl = typeof item === 'string' ? item : item.url;
+                        const desc = typeof item === 'string' ? '' : item.description;
+                        return (
+                            <div
+                                key={i}
+                                className="gallery-img-wrapper"
+                                style={{
+                                    gridColumn: i === 0 ? 'span 2' : 'span 1',
+                                    marginBottom: '4vw',
+                                    overflow: 'hidden',
+                                    borderRadius: '2px'
+                                }}
+                            >
+                                <img
+                                    src={imgUrl}
+                                    alt={`${project.title} detail ${i}`}
+                                    style={{ width: '100%', height: 'auto', display: 'block' }}
+                                />
+                                {desc && (
+                                    <p style={{
+                                        margin: '16px 0 0',
+                                        fontSize: 'clamp(0.85rem, 1vw, 1.1rem)',
+                                        lineHeight: 1.6,
+                                        color: 'rgba(0,0,0,0.65)',
+                                        fontFamily: 'var(--font-body)',
+                                        fontWeight: 300,
+                                        maxWidth: '640px'
+                                    }}>
+                                        {desc}
+                                    </p>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </section>
 
@@ -296,28 +313,61 @@ export default function ProjectDetail() {
                     bottom: '40px',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    zIndex: 1000,
-                    pointerEvents: 'auto'
+                    zIndex: 999,
+                    pointerEvents: 'auto',
+                    display: 'flex',
+                    gap: '10px',
+                    alignItems: 'center',
                 }}
             >
                 <Link
-                    href="/projects"
+                    href="/"
                     style={{
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '10px',
+                        justifyContent: 'center',
+                        gap: '8px',
                         backgroundColor: '#000',
                         color: '#fff',
-                        padding: '10px 20px',
+                        padding: '10px 18px',
                         borderRadius: '6px',
                         textDecoration: 'none',
-                        fontSize: '0.85rem',
+                        fontSize: '0.75rem',
                         fontWeight: 500,
                         letterSpacing: '0.01em',
                         transition: 'all 0.3s ease',
                         boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
                         fontFamily: 'sans-serif',
-                        whiteSpace: 'nowrap'
+                        whiteSpace: 'nowrap',
+                        lineHeight: 1,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.backgroundColor = '#222'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.backgroundColor = '#000'; }}
+                >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 12l9-9 9 9" /><path d="M5 10v9a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1v-9" />
+                    </svg>
+                    Home
+                </Link>
+                <Link
+                    href="/projects"
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        backgroundColor: '#000',
+                        color: '#fff',
+                        padding: '10px 18px',
+                        borderRadius: '6px',
+                        textDecoration: 'none',
+                        fontSize: '0.75rem',
+                        fontWeight: 500,
+                        letterSpacing: '0.01em',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                        fontFamily: 'sans-serif',
+                        whiteSpace: 'nowrap',
+                        lineHeight: 1,
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.backgroundColor = '#222'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.backgroundColor = '#000'; }}

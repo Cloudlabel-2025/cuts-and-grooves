@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import Link from 'next/link';
 import Footer from '../components/Footer';
-import PageNavigation from '../components/PageNavigation';
+
 
 const DEFAULT_CONTENT = {
     hero: {
@@ -214,6 +214,7 @@ export default function ContactPage() {
                 <div className="contact-map" style={{ width: '100%', height: '100%', minHeight: '400px', backgroundColor: '#f0f0f0', display: 'flex' }}>
                     <iframe
                         src={mapIframe}
+                        title="Studio Location Map"
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}
@@ -225,7 +226,6 @@ export default function ContactPage() {
             </div>
 
             {/* FOOTER */}
-            <PageNavigation currentPath="/contact" />
             <Footer />
         </main>
     );
@@ -236,6 +236,21 @@ function ContactForm() {
     const [values, setValues] = useState({ name: '', phone: '', message: '' });
     const nameRef = useRef(null);
     const phoneRef = useRef(null);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const base = 'https://wa.me/+918015759988';
+        const messageBody = [
+            `Hello Cuts & Grooves Studio,`,
+            ``,
+            `CONTACT FORM INQUIRY:`,
+            `Name: ${values.name || 'N/A'}`,
+            `Phone: ${values.phone || 'N/A'}`,
+            `Message: ${values.message || 'N/A'}`
+        ].join('\n');
+        const url = `${base}?text=${encodeURIComponent(messageBody)}`;
+        window.open(url, '_blank');
+    };
 
     const handleChange = (field, e) => {
         setValues(prev => ({ ...prev, [field]: e.target.value }));
@@ -265,7 +280,7 @@ function ContactForm() {
 
 
     return (
-        <form className="narrative-form mt-12 w-full max-w-5xl">
+        <form className="narrative-form mt-12 w-full max-w-5xl" onSubmit={handleSubmit}>
             <div className="form-content">
                 <span className="text-segment">Hello, my name is</span>
 
@@ -317,7 +332,7 @@ function ContactForm() {
             </div>
 
             <button type="submit" className="submit-btn group" suppressHydrationWarning>
-                <span className="btn-text" suppressHydrationWarning>Send Request</span>
+                <span className="btn-text" suppressHydrationWarning>Send via WhatsApp</span>
                 <span className="btn-line"></span>
                 <span className="btn-arrow">&rarr;</span>
             </button>
@@ -390,6 +405,10 @@ function ContactForm() {
                     color: #d4d4d4;
                     font-weight: 200;
                     opacity: 1;
+                    -webkit-text-fill-color: #d4d4d4;
+                }
+                input:focus::placeholder, textarea:focus::placeholder {
+                    -webkit-text-fill-color: #c0c0c0;
                 }
 
                 /* BUTTON */

@@ -4,38 +4,38 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Footer from '../components/Footer';
-import PageNavigation from '../components/PageNavigation';
+
 
 const DEFAULT_CONTENT = {
     narrative: {
-        heading: 'Cuts & Grooves is a India based architecture & interior design studio.',
-        quote: '“Each project embodies the vision and expertise of our designers — transforming ideas into purposeful, enduring spaces.”',
-        valuesText: 'We deliver a highly personalised service with direct involvement at every stage of the project.Our work is grounded in a deep understanding of context, client priorities, and user experience — ensuring each building is purposeful, enduring, and relevant over time.'
+        heading: 'Cuts & Grooves is an India-based architecture and interior design studio — a practice built on the conviction that the most resonant spaces are not imposed, but revealed.',
+        quote: '“Every project is a quiet conversation between what is and what could be. We listen to the land, the light, and the unspoken aspirations of those who will inhabit the space. Our work is not about stamping a signature — it is about arriving at a truth that belongs to the project alone.”',
+        valuesText: 'We believe architecture is a practice of attention. Attention to context, craft, and the lived experience of every person who moves through a space. Our process is intimate and immersive — we do not rush toward solutions, but dwell in the questions long enough for the right answers to surface. Each project, regardless of scale, receives the same rigour: a deep respect for material honesty, a sensitivity to natural light and landscape, and a refusal to compromise on the quiet details that separate the ordinary from the inevitable.'
     },
     team: {
         members: [
-            { name: "Morgan Jenkins", role: "Director", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80" },
-            { name: "Clara Mcdonald", role: "Associate", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80" },
-            { name: "Ethan Hunt", role: "Senior Architect", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80" },
-            { name: "Sarah Connor", role: "Interior Designer", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" },
-            { name: "John Wick", role: "Graduate Architect", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80" },
+            { name: "Arjun Mehta", role: "Principal Architect", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80" },
+            { name: "Priya Kapoor", role: "Associate Director", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80" },
+            { name: "Rohan Desai", role: "Senior Architect", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80" },
+            { name: "Ananya Sharma", role: "Interior Designer", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" },
+            { name: "Vikram Singh", role: "Graduate Architect", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80" },
         ]
     },
     vision: {
         items: [
             {
                 title: "Design Integrity",
-                text: "Our design aesthetic is established through a consistent process and a detailed concept brief, which considers client needs, site context, and the future occupiers. We combine and test these elements to create a singular design vision concealing many influencing layers. This singular vision, like a piece of artwork, is unique and individual. We believe the principles of design quality should always be present no matter the project brief or building scale.",
+                text: "Integrity is not a stylistic choice — it is the floor beneath every decision we make. We resist the temptation of novelty for its own sake, seeking instead a clarity that endures. Each line, each junction, each material seam is tested against a single question: does it serve the idea? Our design process is one of distillation — removing what is unnecessary until only the essential remains. The result is architecture that does not shout for attention, but earns it through poise, proportion, and an almost invisible rightness.",
                 image: "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=1200&q=80"
             },
             {
                 title: "Innovation",
-                text: "Cuts and Grooves embraces innovation as a disciplined pursuit, grounded in research and informed by evolving technology. We challenge conventions, explore new methodologies, and contribute fresh thinking to the built environment.Technology is integral to our process — a powerful tool that sharpens precision and expands possibility. Yet creativity remains human at its core. Insight, intuition, and critical thinking guide every decision we make.",
+                text: "We pursue innovation not as a spectacle, but as a quiet discipline — a willingness to question inherited assumptions and to search for better ways of making and meaning. Technology, for us, is a means of sharpening intent, not a end in itself. We study emerging materials, construction methods, and environmental strategies, but we deploy them only when they deepen the narrative of a project. True innovation, we believe, is invisible: it is the smarter plan, the more efficient structure, the space that breathes more lightly on the land.",
                 image: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1200&q=80"
             },
             {
                 title: "Enhanced Living",
-                text: "We believe enhanced user experience and well-being should be at the forefront of design. We constantly consider the impact of design on the end user to ensure our designs promote positive human interaction and encourage healthier, enriched experiences.",
+                text: "Architecture, at its best, is a stage for life. We design not for cameras or critics, but for the quiet rituals of daily existence — the morning light falling across a breakfast table, the breeze that moves through a corridor on a warm afternoon, the sense of arrival as one steps through a threshold. Every spatial decision we make is measured against its impact on human experience. We believe that well-crafted spaces have the power to heal, to inspire, and to connect us more deeply to one another and to the world around us.",
                 image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80"
             }
         ]
@@ -45,32 +45,34 @@ const DEFAULT_CONTENT = {
             {
                 year: "2025",
                 items: [
-                    { project: "PNG Waterfront Residences", contest: "Architizer Vision Awards", distinction: "Vision for Localism: Finalist" },
-                    { project: "Ormond House", contest: "Houses Awards", distinction: "House Alteration and Addition over 200sqm: Shortlisted" }
+                    { project: "Shamiana Luxury Residences", contest: "World Architecture Festival", distinction: "Residential — Completed: Finalist" },
+                    { project: "The Verandah House", contest: "Indian Institute of Architects Awards", distinction: "Excellence in Residential Design: Commended" }
                 ]
             },
             {
                 year: "2024",
                 items: [
-                    { project: "The Saint Hotel", contest: "Australian Interior Design Awards", distinction: "Hospitality Design: Shortlisted" },
-                    { project: "The Saint Hotel", contest: "Eat Drink Design Awards", distinction: "Best Restaurant design" }
+                    { project: "Bungalow 47", contest: "ArchDaily Interior Design Awards", distinction: "Hospitality Interior: Shortlisted" },
+                    { project: "Terraced Retreat", contest: "Dezeen Awards", distinction: "Rural House of the Year: Longlisted" }
                 ]
             }
         ]
     },
     careers: {
-        heading: 'We are looking for motivated, curious and dedicated talent who want to contribute to our growth while sharing our values.',
+        heading: 'We are always looking for curious minds and dedicated hands — people who share our belief that architecture is a craft of patience, rigour, and quiet ambition.',
         jobs: [
-            { title: "Graduate Architect", type: "Full-time", location: "Melbourne" },
-            { title: "Interior Designer", type: "Full-time", location: "Melbourne" }
+            { title: "Graduate Architect", type: "Full-time", location: "Bengaluru" },
+            { title: "Interior Designer", type: "Full-time", location: "Bengaluru" }
         ]
     }
 };
 
+const STUDIO_BUILDING_IMAGE = '/images/All-works-01.jpg';
+
 export default function StudioPage() {
     const containerRef = useRef(null);
     const teamContainerRef = useRef(null);
-    const [hoveredIndex, setHoveredIndex] = useState(0);
+    const [hoveredIndex, setHoveredIndex] = useState(null);
     const [activeVisionIndex, setActiveVisionIndex] = useState(null);
     const [content, setContent] = useState(DEFAULT_CONTENT);
     const [loading, setLoading] = useState(true);
@@ -169,14 +171,20 @@ export default function StudioPage() {
         );
     }
 
-    const teamMembers = content?.team?.members || DEFAULT_CONTENT.team.members;
-    const visionItems = content?.vision?.items || DEFAULT_CONTENT.vision.items;
-    const awards = content?.awards?.items || DEFAULT_CONTENT.awards.items;
-    const jobOffers = content?.careers?.jobs || DEFAULT_CONTENT.careers.jobs;
-    const introHeading = content?.narrative?.heading || DEFAULT_CONTENT.narrative.heading;
-    const quote = content?.narrative?.quote || DEFAULT_CONTENT.narrative.quote;
-    const valuesText = content?.narrative?.valuesText || DEFAULT_CONTENT.narrative.valuesText;
-    const careersHeading = content?.careers?.heading || DEFAULT_CONTENT.careers.heading;
+    const narrative = { ...DEFAULT_CONTENT.narrative, ...content?.narrative };
+    const team = { ...DEFAULT_CONTENT.team, ...content?.team };
+    const vision = { ...DEFAULT_CONTENT.vision, ...content?.vision };
+    const awardsData = { ...DEFAULT_CONTENT.awards, ...content?.awards };
+    const careers = { ...DEFAULT_CONTENT.careers, ...content?.careers };
+
+    const teamMembers = team.members || DEFAULT_CONTENT.team.members;
+    const visionItems = vision.items || DEFAULT_CONTENT.vision.items;
+    const awards = awardsData.items || DEFAULT_CONTENT.awards.items;
+    const jobOffers = careers.jobs || DEFAULT_CONTENT.careers.jobs;
+    const introHeading = narrative.heading;
+    const quote = narrative.quote;
+    const valuesText = narrative.valuesText;
+    const careersHeading = careers.heading;
 
     return (
         <main ref={containerRef} className="studio-page bg-white text-black pt-48" data-nav-theme="light">
@@ -249,7 +257,7 @@ export default function StudioPage() {
 
                         <div
                             className="team-list"
-                            onMouseLeave={() => setHoveredIndex(0)}
+                            onMouseLeave={() => setHoveredIndex(null)}
                         >
                             {teamMembers.map((member, i) => (
                                 <div
@@ -307,19 +315,17 @@ export default function StudioPage() {
                                 marginBottom: '20px',
                                 overflow: 'hidden'
                             }}>
-                                {teamMembers[hoveredIndex] && (
-                                    <img
-                                        src={teamMembers[hoveredIndex].image}
-                                        alt="Team Member"
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover',
-                                            transition: 'opacity 0.4s ease',
-                                            display: 'block'
-                                        }}
-                                    />
-                                )}
+                                <img
+                                    src={hoveredIndex === null ? STUDIO_BUILDING_IMAGE : teamMembers[hoveredIndex]?.image}
+                                    alt={hoveredIndex === null ? 'Architectural building facade' : teamMembers[hoveredIndex]?.name}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        transition: 'opacity 0.4s ease',
+                                        display: 'block'
+                                    }}
+                                />
                             </div>
                             <div style={{
                                 display: 'flex',
@@ -328,9 +334,11 @@ export default function StudioPage() {
                                 paddingBottom: '10px',
                                 borderBottom: '1px solid #000'
                             }}>
-                                <span style={{ fontSize: '0.9rem', opacity: 0.6 }}>[ Role ]</span>
+                                <span style={{ fontSize: '0.9rem', opacity: 0.6 }}>
+                                    {hoveredIndex === null ? '[ Studio ]' : '[ Role ]'}
+                                </span>
                                 <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>
-                                    {teamMembers[hoveredIndex]?.role}
+                                    {hoveredIndex === null ? 'Architecture & Interior Design' : teamMembers[hoveredIndex]?.role}
                                 </span>
                             </div>
                         </div>
@@ -480,7 +488,6 @@ export default function StudioPage() {
                 </div>
             </section >
 
-            <PageNavigation currentPath="/studio" />
             <Footer />
         </main >
     );

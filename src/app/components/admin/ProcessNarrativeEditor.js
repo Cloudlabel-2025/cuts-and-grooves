@@ -1,121 +1,126 @@
-'use client';
+﻿'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import RichTextEditor from './RichTextEditor';
+import { Loader, EditorHeader, FieldCard } from './EditorShared';
+
+const stripHtml = (html) => {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').replace(/\s+/g, ' ').trim();
+};
+
+const charCount = (html) => stripHtml(html).length;
+const wordCount = (html) => {
+  const text = stripHtml(html);
+  return text ? text.split(/\s+/).length : 0;
+};
 
 export default function ProcessNarrativeEditor({ page = 'process', section = 'narrative' }) {
-    const [content, setContent] = useState({
-        heading: '',
-        subtext: ''
-    });
-    const [stagedContent, setStagedContent] = useState({
-        heading: '',
-        subtext: ''
-    });
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
+  const [content, setContent] = useState({ heading: '', subtext: '' });
+  const [staged, setStaged] = useState({ heading: '', subtext: '' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        fetchContent();
-    }, []);
+  useEffect(() => { fetchContent(); }, []);
 
-    const fetchContent = async () => {
-        try {
-            const res = await fetch(`/api/content?page=${page}&section=${section}`);
-            if (!res.ok) throw new Error('Failed to fetch');
-            const data = await res.json();
-            const contentMap = {};
-            data.forEach(item => {
-                contentMap[item.key] = item.value;
-            });
-            const loadedContent = {
-                heading: contentMap.heading || '',
-                subtext: contentMap.subtext || ''
-            };
-            setContent(loadedContent);
-            setStagedContent(loadedContent);
-        } catch (err) {
-            console.error('Failed to fetch content:', err);
-        } finally {
-            setLoading(false);
+  const fetchContent = async () => {
+    try {
+      const res = await fetch(`/api/content?page=${page}&section=${section}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const map = {};
+      data.forEach(i => { map[i.key] = i.value; });
+      const loaded = { heading: map.heading || '', subtext: map.subtext || '' };
+      setContent(loaded);
+      setStaged(loaded);
+    } catch { /* silent */ } finally { setLoading(false); }
+  };
+
+  const hasChanges = JSON.stringify(content) !== JSON.stringify(staged);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      for (const key of Object.keys(staged)) {
+        if (staged[key] !== content[key]) {
+          await fetch('/api/content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page, section, key, value: staged[key] }),
+          });
         }
-    };
+      }
+      setContent({ ...staged });
+    } catch { alert('Failed to save.'); } finally { setSaving(false); }
+  };
 
-    const hasChanges = JSON.stringify(content) !== JSON.stringify(stagedContent);
+  const handleKeyDown = useCallback((e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+      e.preventDefault();
+      if (hasChanges && !saving) handleSave();
+    }
+    if (e.key === 'Escape' && hasChanges) {
+      e.preventDefault();
+      setStaged({ ...content });
+    }
+  }, [hasChanges, saving, content]);
 
-    const handleSave = async () => {
-        setSaving(true);
-        try {
-            const keys = Object.keys(stagedContent);
-            for (const key of keys) {
-                if (stagedContent[key] !== content[key]) {
-                    await fetch('/api/content', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            page,
-                            section,
-                            key,
-                            value: stagedContent[key],
-                        }),
-                    });
-                }
-            }
-            setContent(stagedContent);
-        } catch (err) {
-            console.error(err);
-            alert('Failed to save changes.');
-        } finally {
-            setSaving(false);
-        }
-    };
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
-    if (loading) return <div className="p-8 opacity-30 uppercase text-[10px] tracking-widest">Loading Narrative...</div>;
+  if (loading) return <Loader label="Narrative" />;
 
-    return (
-        <div className="space-y-12">
-            <div className="flex justify-between items-end border-bottom border-gray-100 pb-8">
-                <div>
-                    <h2 className="text-3xl font-light uppercase tracking-tight">Narrative Section</h2>
-                    <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-2">Manage introductory text blocks</p>
-                </div>
-                <div className="flex gap-4">
-                    {hasChanges && (
-                        <button
-                            onClick={() => setStagedContent(content)}
-                            className="px-6 py-2 text-[10px] uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-colors"
-                        >
-                            Reset
-                        </button>
-                    )}
-                    <button
-                        onClick={handleSave}
-                        disabled={!hasChanges || saving}
-                        className={`px-8 py-2 text-[10px] uppercase tracking-widest transition-all ${hasChanges && !saving ? 'bg-black text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
-                    >
-                        {saving ? 'Saving...' : 'Save Narrative'}
-                    </button>
-                </div>
-            </div>
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+      <EditorHeader
+        kicker="Narrative Section"
+        title="Intro Text"
+        description="Main heading and supporting subtext shown at the top of the process page."
+        hasChanges={hasChanges}
+        saving={saving}
+        onReset={() => setStaged({ ...content })}
+        onSave={handleSave}
+        saveLabel="Save Narrative"
+      />
 
-            <div className="grid grid-cols-1 gap-12 max-w-4xl">
-                <div className="space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Main Heading (Narrative)</label>
-                    <textarea
-                        className="w-full bg-gray-50 border border-gray-100 p-6 text-xl font-light focus:bg-white focus:border-black outline-none transition-all resize-none min-height-[120px]"
-                        value={stagedContent.heading}
-                        onChange={(e) => setStagedContent({ ...stagedContent, heading: e.target.value })}
-                    />
-                </div>
-                <div className="space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Supporting Subtext</label>
-                    <textarea
-                        className="w-full bg-gray-50 border border-gray-100 p-6 text-sm leading-relaxed focus:bg-white focus:border-black outline-none transition-all resize-none min-height-[200px]"
-                        value={stagedContent.subtext}
-                        onChange={(e) => setStagedContent({ ...stagedContent, subtext: e.target.value })}
-                    />
-                </div>
-            </div>
+      {/* Status Card */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+        <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+          <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Heading</span>
+          <strong style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--admin-text)' }}>{charCount(staged.heading)}</strong>
+          <span style={{ fontSize: '12px', color: 'var(--admin-muted)', marginLeft: '4px' }}>chars</span>
         </div>
-    );
+        <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+          <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Subtext</span>
+          <strong style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--admin-text)' }}>{charCount(staged.subtext)}</strong>
+          <span style={{ fontSize: '12px', color: 'var(--admin-muted)', marginLeft: '4px' }}>chars</span>
+        </div>
+        <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+          <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Total Words</span>
+          <strong style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--admin-text)' }}>{wordCount(staged.heading) + wordCount(staged.subtext)}</strong>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <FieldCard label="Main Heading" hint="Large pull-quote shown at page top">
+          <RichTextEditor
+            value={staged.heading}
+            onChange={(val) => setStaged(s => ({ ...s, heading: val }))}
+            placeholder={'"Each element informs the other..."'}
+            minHeight="120px"
+          />
+        </FieldCard>
+        <FieldCard label="Supporting Subtext" hint="Paragraph below the heading">
+          <RichTextEditor
+            value={staged.subtext}
+            onChange={(val) => setStaged(s => ({ ...s, subtext: val }))}
+            placeholder="We believe architecture has the power to..."
+            minHeight="200px"
+          />
+        </FieldCard>
+      </div>
+    </div>
+  );
 }

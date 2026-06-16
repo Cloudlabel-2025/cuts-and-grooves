@@ -1,43 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Loader, EditorHeader } from './EditorShared';
 
 export default function AwardsEditor({ page = 'studio', section = 'awards' }) {
-    const [content, setContent] = useState({
-        items: []
-    });
-    const [stagedContent, setStagedContent] = useState({
-        items: []
-    });
+    const [content, setContent] = useState({ items: [] });
+    const [staged, setStaged] = useState({ items: [] });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        fetchContent();
-    }, []);
+    useEffect(() => { fetchContent(); }, []);
 
     const fetchContent = async () => {
         try {
             const res = await fetch(`/api/content?page=${page}&section=${section}`);
-            if (!res.ok) throw new Error('Failed to fetch');
+            if (!res.ok) throw new Error();
             const data = await res.json();
-            const contentMap = {};
-            data.forEach(item => {
-                contentMap[item.key] = item.value;
-            });
-            const loadedContent = {
-                items: contentMap.items || []
-            };
-            setContent(loadedContent);
-            setStagedContent(loadedContent);
-        } catch (err) {
-            console.error('Failed to fetch content:', err);
-        } finally {
-            setLoading(false);
-        }
+            const map = {};
+            data.forEach(i => { map[i.key] = i.value; });
+            const loaded = { items: map.items || [] };
+            setContent(loaded);
+            setStaged(JSON.parse(JSON.stringify(loaded)));
+        } catch { /* silent */ } finally { setLoading(false); }
     };
 
-    const hasChanges = JSON.stringify(content) !== JSON.stringify(stagedContent);
+    const hasChanges = JSON.stringify(content) !== JSON.stringify(staged);
 
     const handleSave = async () => {
         setSaving(true);
@@ -45,165 +32,140 @@ export default function AwardsEditor({ page = 'studio', section = 'awards' }) {
             await fetch('/api/content', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    page,
-                    section,
-                    key: 'items',
-                    value: stagedContent.items,
-                }),
+                body: JSON.stringify({ page, section, key: 'items', value: staged.items }),
             });
-            setContent(JSON.parse(JSON.stringify(stagedContent)));
-        } catch (err) {
-            console.error(err);
-            alert('Failed to save changes.');
-        } finally {
-            setSaving(false);
-        }
+            setContent(JSON.parse(JSON.stringify(staged)));
+        } catch { alert('Failed to save.'); } finally { setSaving(false); }
     };
 
-    const handleAddYearGroup = () => {
-        const newGroup = {
-            year: new Date().getFullYear().toString(),
-            items: [{ project: 'New Project', contest: '', distinction: '' }]
-        };
-        setStagedContent({ ...stagedContent, items: [newGroup, ...stagedContent.items] });
+    const handleKeyDown = useCallback((e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); if (hasChanges && !saving) handleSave(); }
+        if (e.key === 'Escape' && hasChanges) { e.preventDefault(); setStaged(JSON.parse(JSON.stringify(content))); }
+    }, [hasChanges, saving, content]);
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleKeyDown]);
+
+    const totalAwards = staged.items.reduce((sum, g) => sum + g.items.length, 0);
+
+    const addYearGroup = () => setStaged(s => ({ ...s, items: [{ year: new Date().getFullYear().toString(), items: [{ project: 'New Project', contest: '', distinction: '' }] }, ...s.items] }));
+    const removeYearGroup = (i) => setStaged(s => ({ ...s, items: s.items.filter((_, idx) => idx !== i) }));
+    const updateYear = (i, val) => {
+        const items = [...staged.items];
+        items[i] = { ...items[i], year: val };
+        setStaged(s => ({ ...s, items }));
+    };
+    const addItemToYear = (gi) => {
+        const items = [...staged.items];
+        items[gi].items.push({ project: '', contest: '', distinction: '' });
+        setStaged(s => ({ ...s, items }));
+    };
+    const removeItemFromYear = (gi, ii) => {
+        const items = [...staged.items];
+        items[gi].items = items[gi].items.filter((_, idx) => idx !== ii);
+        setStaged(s => ({ ...s, items }));
+    };
+    const updateItem = (gi, ii, field, val) => {
+        const items = [...staged.items];
+        items[gi].items[ii] = { ...items[gi].items[ii], [field]: val };
+        setStaged(s => ({ ...s, items }));
     };
 
-    const handleRemoveYearGroup = (index) => {
-        const newGroups = stagedContent.items.filter((_, i) => i !== index);
-        setStagedContent({ ...stagedContent, items: newGroups });
-    };
-
-    const handleUpdateYear = (index, value) => {
-        const newGroups = [...stagedContent.items];
-        newGroups[index] = { ...newGroups[index], year: value };
-        setStagedContent({ ...stagedContent, items: newGroups });
-    };
-
-    const handleAddItemToYear = (yearIndex) => {
-        const newGroups = [...stagedContent.items];
-        newGroups[yearIndex].items.push({ project: '', contest: '', distinction: '' });
-        setStagedContent({ ...stagedContent, items: newGroups });
-    };
-
-    const handleRemoveItemFromYear = (yearIndex, itemIndex) => {
-        const newGroups = [...stagedContent.items];
-        newGroups[yearIndex].items = newGroups[yearIndex].items.filter((_, i) => i !== itemIndex);
-        setStagedContent({ ...stagedContent, items: newGroups });
-    };
-
-    const handleUpdateItem = (yearIndex, itemIndex, field, value) => {
-        const newGroups = [...stagedContent.items];
-        newGroups[yearIndex].items[itemIndex] = { ...newGroups[yearIndex].items[itemIndex], [field]: value };
-        setStagedContent({ ...stagedContent, items: newGroups });
-    };
-
-    if (loading) return <div className="p-8 opacity-30 uppercase text-[10px] tracking-widest">Loading Awards...</div>;
+    if (loading) return <Loader label="Awards" />;
 
     return (
-        <div className="space-y-12">
-            <div className="flex justify-between items-end border-bottom border-gray-100 pb-8">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            <EditorHeader
+                kicker="Awards Section"
+                title="Awards & Distinctions"
+                description={`${staged.items.length} year group${staged.items.length !== 1 ? 's' : ''} · ${totalAwards} total entr${totalAwards !== 1 ? 'ies' : 'y'}`}
+                hasChanges={hasChanges}
+                saving={saving}
+                onReset={() => setStaged(JSON.parse(JSON.stringify(content)))}
+                onSave={handleSave}
+                saveLabel="Save Awards"
+            />
+
+            {/* Status Card */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Year Groups</span>
+                    <strong style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--admin-text)' }}>{staged.items.length}</strong>
+                </div>
+                <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Total Entries</span>
+                    <strong style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--admin-text)' }}>{totalAwards}</strong>
+                </div>
+                <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Status</span>
+                    <strong style={{ fontSize: '1rem', fontWeight: '700', color: hasChanges ? 'var(--admin-accent)' : '#22c55e' }}>{hasChanges ? 'Unsaved' : 'Saved'}</strong>
+                </div>
+            </div>
+
+            {/* Toolbar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)' }}>
                 <div>
-                    <h2 className="text-3xl font-light uppercase tracking-tight">Awards & Distinctions</h2>
-                    <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-2">Manage industry recognitions by year</p>
+                    <span className="admin-kicker" style={{ marginBottom: 0 }}>Accolade Ledger</span>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--admin-muted)' }}>{staged.items.length} year group{staged.items.length !== 1 ? 's' : ''}</p>
                 </div>
-                <div className="flex gap-4">
-                    {hasChanges && (
-                        <button
-                            onClick={() => setStagedContent(JSON.parse(JSON.stringify(content)))}
-                            className="px-6 py-2 text-[10px] uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-colors"
-                        >
-                            Reset
-                        </button>
-                    )}
-                    <button
-                        onClick={handleSave}
-                        disabled={!hasChanges || saving}
-                        className={`px-8 py-2 text-[10px] uppercase tracking-widest transition-all ${hasChanges && !saving ? 'bg-black text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
-                    >
-                        {saving ? 'Saving...' : 'Save Awards'}
-                    </button>
-                </div>
+                <button type="button" onClick={addYearGroup} style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '10px 20px', borderRadius: '999px', border: 'none', background: 'var(--admin-text)', color: '#fff', cursor: 'pointer', fontSize: '12px', fontWeight: '800', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
+                    Add Year
+                </button>
             </div>
 
-            <div className="space-y-16">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-300 italic">Accolade Ledger</h3>
-                    <button
-                        onClick={handleAddYearGroup}
-                        className="text-[10px] uppercase tracking-widest font-bold text-[#A67C52] hover:text-black transition-colors flex items-center gap-2"
-                    >
-                        <span className="text-lg">+</span> Register New Year
-                    </button>
+            {staged.items.length === 0 && (
+                <div style={{ padding: '48px', background: '#fff', borderRadius: '16px', border: '1px dashed var(--admin-border)', textAlign: 'center', color: 'var(--admin-muted)', fontSize: '13px' }}>
+                    No award entries yet. Click &quot;Add Year&quot; to create one.
                 </div>
+            )}
 
-                <div className="space-y-12 max-w-5xl">
-                    {stagedContent.items.map((group, yearIndex) => (
-                        <div key={yearIndex} className="bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm">
-                            <div className="bg-gray-50/50 p-6 flex justify-between items-center border-bottom border-gray-100">
-                                <input
-                                    type="text"
-                                    className="bg-transparent text-xl font-bold tracking-tight outline-none w-24 border-bottom border-transparent focus:border-black"
-                                    value={group.year}
-                                    onChange={(e) => handleUpdateYear(yearIndex, e.target.value)}
-                                />
-                                <button
-                                    onClick={() => handleRemoveYearGroup(yearIndex)}
-                                    className="text-[9px] uppercase tracking-widest text-gray-300 hover:text-red-500 font-bold transition-colors"
-                                >
-                                    Delete Year Block
-                                </button>
+            {staged.items.map((group, gi) => (
+                <div key={gi} style={{ background: '#fff', borderRadius: '18px', border: '1px solid var(--admin-border)', boxShadow: '0 8px 28px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+                    {/* Card header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 22px', borderBottom: '1px solid var(--admin-border)', background: 'rgba(250,249,246,0.6)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--admin-accent)', display: 'grid', placeItems: 'center', color: '#fff', fontSize: '11px', fontWeight: '800' }}>
+                                {gi + 1}
                             </div>
-                            <div className="p-8 space-y-6">
-                                {group.items.map((item, itemIndex) => (
-                                    <div key={itemIndex} className="grid grid-cols-1 md:grid-cols-[1.5fr_1.5fr_2fr_40px] gap-6 items-end pb-6 border-bottom border-gray-50 last:border-0 last:pb-0">
-                                        <div className="space-y-2">
-                                            <label className="text-[8px] uppercase tracking-widest font-bold text-gray-400">Project</label>
-                                            <input
-                                                type="text"
-                                                className="w-full bg-transparent border-bottom border-gray-100 py-1 text-sm outline-none focus:border-black transition-all"
-                                                value={item.project}
-                                                onChange={(e) => handleUpdateItem(yearIndex, itemIndex, 'project', e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[8px] uppercase tracking-widest font-bold text-gray-400">Contest / Body</label>
-                                            <input
-                                                type="text"
-                                                className="w-full bg-transparent border-bottom border-gray-100 py-1 text-sm outline-none focus:border-black transition-all"
-                                                value={item.contest}
-                                                onChange={(e) => handleUpdateItem(yearIndex, itemIndex, 'contest', e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[8px] uppercase tracking-widest font-bold text-gray-400">Distinction</label>
-                                            <input
-                                                type="text"
-                                                className="w-full bg-transparent border-bottom border-gray-100 py-1 text-sm outline-none focus:border-black transition-all italic text-gray-400"
-                                                value={item.distinction}
-                                                onChange={(e) => handleUpdateItem(yearIndex, itemIndex, 'distinction', e.target.value)}
-                                            />
-                                        </div>
-                                        <button
-                                            onClick={() => handleRemoveItemFromYear(yearIndex, itemIndex)}
-                                            className="text-gray-200 hover:text-red-500 transition-colors p-2 text-xl"
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                ))}
-                                <button
-                                    onClick={() => handleAddItemToYear(yearIndex)}
-                                    className="w-full py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 border border-dashed border-gray-100 rounded-xl hover:bg-gray-50 hover:text-black transition-all"
-                                >
-                                    + Add Item to {group.year}
-                                </button>
-                            </div>
+                            <input type="text" value={group.year} onChange={e => updateYear(gi, e.target.value)} style={{ fontSize: '14px', fontWeight: '700', color: 'var(--admin-text)', border: 'none', background: 'transparent', outline: 'none', width: '60px', fontFamily: 'inherit' }} />
+                            <span style={{ fontSize: '12px', color: 'var(--admin-muted)' }}>{group.items.length} entr{group.items.length !== 1 ? 'ies' : 'y'}</span>
                         </div>
-                    ))}
+                        <button type="button" onClick={() => removeYearGroup(gi)} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 14px', borderRadius: '8px', border: '1px solid rgba(192,57,43,0.25)', background: 'rgba(192,57,43,0.04)', color: '#c0392b', cursor: 'pointer', fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M19 6l-1 14H6L5 6M9 6V4h6v2" /></svg>
+                            Remove
+                        </button>
+                    </div>
+
+                    {/* Card body */}
+                    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {group.items.map((item, ii) => (
+                            <div key={ii} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1.5fr 40px', gap: '12px', alignItems: 'start', padding: '16px', background: '#fafaf8', borderRadius: '12px', border: '1px solid var(--admin-border)' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '10px', fontWeight: '800', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Project</label>
+                                    <input type="text" value={item.project} onChange={e => updateItem(gi, ii, 'project', e.target.value)} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid var(--admin-border)', borderRadius: '8px', background: '#fff', fontSize: '13px', outline: 'none', fontFamily: 'inherit', color: 'var(--admin-text)' }} placeholder="Project name" />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '10px', fontWeight: '800', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Contest</label>
+                                    <input type="text" value={item.contest} onChange={e => updateItem(gi, ii, 'contest', e.target.value)} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid var(--admin-border)', borderRadius: '8px', background: '#fff', fontSize: '13px', outline: 'none', fontFamily: 'inherit', color: 'var(--admin-text)' }} placeholder="Award body" />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '10px', fontWeight: '800', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Distinction</label>
+                                    <input type="text" value={item.distinction} onChange={e => updateItem(gi, ii, 'distinction', e.target.value)} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid var(--admin-border)', borderRadius: '8px', background: '#fff', fontSize: '13px', outline: 'none', fontFamily: 'inherit', color: 'var(--admin-text)' }} placeholder="Finalist / Shortlisted" />
+                                </div>
+                                <button type="button" onClick={() => removeItemFromYear(gi, ii)} style={{ marginTop: '20px', width: '36px', height: '36px', borderRadius: '8px', border: '1px solid rgba(192,57,43,0.25)', background: 'rgba(192,57,43,0.04)', color: '#c0392b', cursor: 'pointer', display: 'grid', placeItems: 'center', fontSize: '14px' }}>
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                        <button type="button" onClick={() => addItemToYear(gi)} style={{ padding: '12px', borderRadius: '12px', border: '1px dashed var(--admin-border)', background: 'transparent', color: 'var(--admin-muted)', cursor: 'pointer', fontSize: '12px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase', transition: 'all 0.2s' }}>
+                            + Add Entry to {group.year}
+                        </button>
+                    </div>
                 </div>
-            </div>
+            ))}
         </div>
     );
 }

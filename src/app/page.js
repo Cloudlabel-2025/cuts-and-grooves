@@ -7,7 +7,6 @@ import SelectedWorks from './components/SelectedWorks';
 import AllWorkScatter from './components/AllWorkScatter';
 import Testimonials from './components/Testimonials';
 import Footer from './components/Footer';
-import PageNavigation from './components/PageNavigation';
 
 async function getHomeData() {
   await dbConnect();
@@ -36,10 +35,9 @@ export default async function Home() {
   return (
     <main>
       <HeroSection content={content.hero} />
-      <SelectedWorks projects={projects} />
+      <SelectedWorks projects={projects.filter(p => p.isFeatured)} />
       <AllWorkScatter projects={projects} content={content['all-works']} />
       <Testimonials testimonials={testimonials} content={content.testimonials} />
-      <PageNavigation currentPath="/" />
       <Footer content={content.footer} />
     </main>
   );

@@ -42,7 +42,7 @@ export default function StudioPrinciples() {
                     ref={pillarsRef}
                     className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 mb-24 md:mb-32 border-b border-black/10 pb-12"
                 >
-                    {['Design integrity', 'Innovation', 'Enhanced living'].map((item, i) => (
+                    {['Design Integrity', 'Innovation', 'Enhanced Living'].map((item, i) => (
                         <div key={i} className="flex flex-col">
                             <h3
                                 className="text-2xl md:text-3xl font-light tracking-tight"
@@ -67,7 +67,7 @@ export default function StudioPrinciples() {
                     {/* Middle: Scope Text */}
                     <div className="col-span-1 md:col-span-6">
                         <p className="text-xl md:text-2xl font-light leading-relaxed text-neutral-800">
-                            The scope of our Studio covers all stages within Architecture and Interior Design. We offer an end to end level of service from early concepts through to practical completion.
+                            We guide every project from first conversation to final handover. From early sketches and design development to construction documentation and site supervision, our studio offers a complete arc of service — ensuring that what is envisioned is what gets built.
                         </p>
 
                         {/* LINKS */}
@@ -83,8 +83,21 @@ export default function StudioPrinciples() {
                         </div>
                     </div>
 
-                    {/* Right: Empty or image could go here later */}
-                    <div className="col-span-1 md:col-span-3"></div>
+                    {/* Right: Architectural panel */}
+                    <div className="col-span-1 md:col-span-3">
+                        <div className="relative aspect-[4/5] overflow-hidden bg-neutral-200">
+                            <img
+                                src="/images/All-works-01.jpg"
+                                alt="Architectural building facade"
+                                className="h-full w-full object-cover grayscale contrast-105"
+                                loading="lazy"
+                            />
+                            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/55 to-transparent p-5 text-white">
+                                <span className="text-[10px] uppercase tracking-[0.22em] opacity-75">Built Form</span>
+                                <span className="text-[10px] uppercase tracking-[0.22em] opacity-75">C&G</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

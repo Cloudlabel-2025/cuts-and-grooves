@@ -75,7 +75,7 @@ export default function CloudinaryUpload({ onUploadSuccess, folder = 'projects' 
     };
 
     return (
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="admin-upload-actions" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             {/* Local Upload */}
             <label style={{
                 cursor: uploading ? 'not-allowed' : 'pointer',

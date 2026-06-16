@@ -1,6 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import RichTextEditor from '@/app/components/admin/RichTextEditor';
+import { useUnsavedChanges } from '@/app/components/admin/useUnsavedChanges';
+import { useKeyboardShortcut } from '@/app/components/admin/useKeyboardShortcut';
+import { EditorHeader, FieldCard, Loader, inputStyle, focusIn, focusOut } from '@/app/components/admin/EditorShared';
 
 export default function ContactEditor({ page = 'contact' }) {
     const [content, setContent] = useState({
@@ -66,6 +70,10 @@ export default function ContactEditor({ page = 'contact' }) {
 
     const hasChanges = JSON.stringify(content) !== JSON.stringify(stagedContent);
 
+    useUnsavedChanges(hasChanges, 'draft_contact');
+    useKeyboardShortcut('s', true, () => { if (hasChanges) handleSave(); });
+    useKeyboardShortcut('Escape', false, () => { if (hasChanges) handleReset(); });
+
     const handleSave = async () => {
         setSaving(true);
         try {
@@ -95,13 +103,18 @@ export default function ContactEditor({ page = 'contact' }) {
                     }),
                 });
             }
-            setContent(stagedContent);
+            setContent({ ...stagedContent });
+            try { localStorage.removeItem('draft_contact'); } catch {}
         } catch (err) {
             console.error(err);
             alert('Failed to save changes.');
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleReset = () => {
+        setStagedContent({ ...content });
     };
 
     const addLocation = () => {
@@ -120,145 +133,172 @@ export default function ContactEditor({ page = 'contact' }) {
         });
     };
 
-    if (loading) return <div className="p-8 opacity-30 uppercase text-[10px] tracking-widest">Loading Contact Details...</div>;
+    if (loading) return <Loader label="Contact Details" />;
 
     return (
-        <div className="space-y-16">
-            {/* Header */}
-            <div className="flex justify-between items-end border-bottom border-gray-100 pb-8">
-                <div>
-                    <h2 className="text-3xl font-light uppercase tracking-tight">Contact Page</h2>
-                    <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-2">Manage contact info and studio locations</p>
-                </div>
-                <div className="flex gap-4">
-                    {hasChanges && (
-                        <button
-                            onClick={() => setStagedContent(content)}
-                            className="px-6 py-2 text-[10px] uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-colors"
-                        >
-                            Reset
-                        </button>
-                    )}
-                    <button
-                        onClick={handleSave}
-                        disabled={!hasChanges || saving}
-                        className={`px-8 py-2 text-[10px] uppercase tracking-widest transition-all ${hasChanges && !saving ? 'bg-black text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
-                    >
-                        {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
-                </div>
-            </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            <EditorHeader
+                kicker="Contact Page"
+                title="Contact Details & Locations"
+                description="Manage studio address, contact info, locations, and interactive map."
+                hasChanges={hasChanges}
+                saving={saving}
+                onReset={handleReset}
+                onSave={handleSave}
+                saveLabel="Save Contact Details"
+            />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <FieldCard label="Hero Narrative" hint="Main statement shown on the contact page">
+                    <RichTextEditor
+                        value={stagedContent.heroText}
+                        onChange={(val) => setStagedContent(s => ({ ...s, heroText: val }))}
+                        placeholder="Enter main statement..."
+                        minHeight="120px"
+                    />
+                </FieldCard>
 
-                {/* HERO SECTION */}
-                <div className="space-y-12">
-                    <h3 className="text-xl font-medium border-bottom pb-4 border-gray-50">Hero Narrative</h3>
-
-                    <div className="space-y-4">
-                        <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Main Statement</label>
-                        <textarea
-                            className="w-full bg-gray-50 border border-gray-100 p-6 text-xl font-light focus:bg-white focus:border-black outline-none transition-all resize-none min-h-[120px]"
-                            value={stagedContent.heroText}
-                            onChange={(e) => setStagedContent({ ...stagedContent, heroText: e.target.value })}
-                        />
-                    </div>
-
-                    <div className="space-y-4">
-                        <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Operational Locations</label>
-                        <div className="flex gap-2 mb-4">
+                <FieldCard label="Operational Locations" hint="Add cities where the studio operates">
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+                        <div style={{ flex: 1, position: 'relative' }}>
                             <input
                                 type="text"
-                                className="flex-1 bg-gray-50 border border-gray-100 p-2 text-xs outline-none focus:bg-white"
-                                placeholder="Add location..."
+                                style={inputStyle}
+                                placeholder="Add a new location (e.g. London)"
                                 value={newLocation}
                                 onChange={(e) => setNewLocation(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && addLocation()}
+                                onFocus={focusIn}
+                                onBlur={focusOut}
                             />
-                            <button onClick={addLocation} className="px-4 py-2 bg-gray-100 text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-colors">Add</button>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            {stagedContent.locations.map((loc, i) => (
-                                <div key={i} className="group flex items-center gap-2 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-full">
-                                    <span className="text-xs">{loc}</span>
-                                    <button
-                                        onClick={() => removeLocation(i)}
-                                        className="text-gray-400 hover:text-red-500 transition-colors text-[10px]"
-                                    >×</button>
-                                </div>
-                            ))}
-                        </div>
+                        <button 
+                            onClick={addLocation} 
+                            disabled={!newLocation.trim()}
+                            style={{
+                                padding: '0 20px', borderRadius: '12px', border: 'none',
+                                background: newLocation.trim() ? 'var(--admin-text)' : 'var(--admin-border)', 
+                                color: newLocation.trim() ? '#fff' : 'var(--admin-muted)', 
+                                cursor: newLocation.trim() ? 'pointer' : 'not-allowed',
+                                fontSize: '12px', fontWeight: '800', letterSpacing: '0.06em', textTransform: 'uppercase',
+                                transition: 'all 0.2s ease',
+                            }}
+                        >
+                            Add
+                        </button>
                     </div>
-                </div>
+                    
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                        {stagedContent.locations.map((loc, i) => (
+                            <div key={i} style={{
+                                display: 'flex', alignItems: 'center', gap: '8px',
+                                padding: '6px 14px', borderRadius: '999px',
+                                background: '#fafaf8', border: '1px solid var(--admin-border)',
+                                fontSize: '12px', color: 'var(--admin-text)',
+                            }}>
+                                <span>{loc}</span>
+                                <button
+                                    onClick={() => removeLocation(i)}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        width: '18px', height: '18px', borderRadius: '50%',
+                                        background: 'rgba(0,0,0,0.05)', border: 'none',
+                                        color: 'var(--admin-muted)', cursor: 'pointer',
+                                        fontSize: '14px', lineHeight: 1, padding: 0,
+                                    }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; e.currentTarget.style.color = 'var(--admin-muted)'; }}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                        {stagedContent.locations.length === 0 && (
+                            <span style={{ fontSize: '13px', color: 'var(--admin-muted)', fontStyle: 'italic' }}>No locations added yet.</span>
+                        )}
+                    </div>
+                </FieldCard>
 
-                {/* DETAILS SECTION */}
-                <div className="space-y-12">
-                    <h3 className="text-xl font-medium border-bottom pb-4 border-gray-50">Studio Details</h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                            <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Instagram URL</label>
+                <FieldCard label="Contact Information" hint="Public email and phone number">
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Public Email</label>
                             <input
-                                type="text"
-                                className="w-full bg-gray-50 border border-gray-100 p-3 text-xs outline-none focus:bg-white"
-                                value={stagedContent.instagram}
-                                onChange={(e) => setStagedContent({ ...stagedContent, instagram: e.target.value })}
-                            />
-                        </div>
-                        <div className="space-y-4">
-                            <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">LinkedIn URL</label>
-                            <input
-                                type="text"
-                                className="w-full bg-gray-50 border border-gray-100 p-3 text-xs outline-none focus:bg-white"
-                                value={stagedContent.linkedin}
-                                onChange={(e) => setStagedContent({ ...stagedContent, linkedin: e.target.value })}
-                            />
-                        </div>
-                        <div className="space-y-4">
-                            <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Public Email</label>
-                            <input
-                                type="text"
-                                className="w-full bg-gray-50 border border-gray-100 p-3 text-xs outline-none focus:bg-white"
+                                type="email"
+                                style={inputStyle}
                                 value={stagedContent.email}
-                                onChange={(e) => setStagedContent({ ...stagedContent, email: e.target.value })}
+                                onChange={(e) => setStagedContent(s => ({ ...s, email: e.target.value }))}
+                                onFocus={focusIn}
+                                onBlur={focusOut}
                             />
                         </div>
-                        <div className="space-y-4">
-                            <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Phone Number</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Phone Number</label>
                             <input
-                                type="text"
-                                className="w-full bg-gray-50 border border-gray-100 p-3 text-xs outline-none focus:bg-white"
+                                type="tel"
+                                style={inputStyle}
                                 value={stagedContent.phone}
-                                onChange={(e) => setStagedContent({ ...stagedContent, phone: e.target.value })}
+                                onChange={(e) => setStagedContent(s => ({ ...s, phone: e.target.value }))}
+                                onFocus={focusIn}
+                                onBlur={focusOut}
                             />
                         </div>
                     </div>
+                </FieldCard>
 
-                    <div className="space-y-4">
-                        <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Studio Address</label>
-                        <textarea
-                            className="w-full bg-gray-50 border border-gray-100 p-6 text-sm outline-none focus:bg-white transition-all resize-none min-h-[100px]"
-                            value={stagedContent.studio}
-                            onChange={(e) => setStagedContent({ ...stagedContent, studio: e.target.value })}
-                        />
+                <FieldCard label="Social Links" hint="Links to social media profiles">
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Instagram URL</label>
+                            <input
+                                type="url"
+                                style={inputStyle}
+                                value={stagedContent.instagram}
+                                onChange={(e) => setStagedContent(s => ({ ...s, instagram: e.target.value }))}
+                                onFocus={focusIn}
+                                onBlur={focusOut}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>LinkedIn URL</label>
+                            <input
+                                type="url"
+                                style={inputStyle}
+                                value={stagedContent.linkedin}
+                                onChange={(e) => setStagedContent(s => ({ ...s, linkedin: e.target.value }))}
+                                onFocus={focusIn}
+                                onBlur={focusOut}
+                            />
+                        </div>
                     </div>
-                    <div className="space-y-4">
-                        <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Location Map Embed URL</label>
-                        <p className="text-xs text-gray-500 mb-2">
-                            To get this link: Go to Google Maps {'->'} Click 'Share' {'->'} Click 'Embed a map' {'->'} Copy the link inside the <code className="bg-gray-100 px-1 rounded">src="..."</code> attribute.
-                            <br /><span className="text-red-400">Do not use regular "Share Link" (maps.app.goo.gl).</span>
+                </FieldCard>
+
+                <FieldCard label="Studio Address" hint="Full address details">
+                    <RichTextEditor
+                        value={stagedContent.studio}
+                        onChange={(val) => setStagedContent(s => ({ ...s, studio: val }))}
+                        placeholder="Enter studio address..."
+                        minHeight="100px"
+                    />
+                </FieldCard>
+
+                <FieldCard label="Location Map Embed URL" hint="Google Maps embed link">
+                    <div style={{ marginBottom: '12px', padding: '12px 16px', background: '#fafaf8', borderRadius: '10px', border: '1px solid var(--admin-border)' }}>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--admin-muted)', lineHeight: 1.5 }}>
+                            To get this link: Go to Google Maps → Click 'Share' → Click 'Embed a map' → Copy the link inside the <code style={{ background: 'rgba(0,0,0,0.05)', padding: '2px 4px', borderRadius: '4px' }}>src="..."</code> attribute.
+                            <br /><span style={{ color: '#ef4444', fontWeight: '600' }}>Do not use regular "Share Link" (maps.app.goo.gl).</span>
                         </p>
-                        <input
-                            type="text"
-                            className="w-full bg-gray-50 border border-gray-100 p-3 text-xs outline-none focus:bg-white"
-                            placeholder="https://www.google.com/maps/embed?pb=..."
-                            value={stagedContent.mapIframe}
-                            onChange={(e) => setStagedContent({ ...stagedContent, mapIframe: e.target.value })}
-                        />
                     </div>
-                </div>
-
+                    <input
+                        type="url"
+                        style={inputStyle}
+                        placeholder="https://www.google.com/maps/embed?pb=..."
+                        value={stagedContent.mapIframe}
+                        onChange={(e) => setStagedContent(s => ({ ...s, mapIframe: e.target.value }))}
+                        onFocus={focusIn}
+                        onBlur={focusOut}
+                    />
+                </FieldCard>
             </div>
         </div>
     );

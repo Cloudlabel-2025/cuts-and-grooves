@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Preloader from './Preloader';
 import FloatingCTA from './FloatingCTA';
+import FloatingPageNav from './FloatingPageNav';
 import SmoothScroll from './SmoothScroll';
 
 export default function ClientLayout({ children }) {
@@ -24,6 +25,7 @@ export default function ClientLayout({ children }) {
       {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
       <Navbar />
       <main>{children}</main>
+      <FloatingPageNav />
       <FloatingCTA />
     </SmoothScroll>
   );

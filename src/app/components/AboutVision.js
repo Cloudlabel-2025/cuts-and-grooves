@@ -51,11 +51,11 @@ export default function AboutVision() {
                     </blockquote>
 
                     <p className="about-description">
-                        Cuts &amp; Grooves is a design studio crafting bespoke interiors and
-                        architecture. With experience covering residential, hospitality,
-                        commercial, and cultural spaces, we believe human touch must drive
-                        creativity. Our lasting impact will be thoughtful, context-led spaces
-                        that honour their histories and stand as enduring contributions.
+                        Cuts &amp; Grooves is a design studio rooted in craft, context, and
+                        care. Across residential, hospitality, commercial, and cultural
+                        projects, we bring a human sensibility to every space we shape.
+                        Our work honours the stories embedded in place — creating interiors
+                        and architecture that feel timeless, grounded, and genuinely lived-in.
                     </p>
                 </div>
 
@@ -63,22 +63,25 @@ export default function AboutVision() {
                     <div className="value-item">
                         <h3>Design Integrity</h3>
                         <p>
-                            A consistent process and detailed concept brief that considers
-                            client needs, site context, and future occupiers.
+                            Every project begins with a clear brief and a deep reading of
+                            site, context, and client needs. Our process is thorough,
+                            transparent, and guided by purpose.
                         </p>
                     </div>
                     <div className="value-item">
                         <h3>Innovation</h3>
                         <p>
-                            We welcome innovation through research and technology while
-                            believing human touch must drive creativity.
+                            We embrace new tools and ideas, but never at the cost of
+                            human warmth. The best innovations are quiet — they make
+                            spaces work better without calling attention to themselves.
                         </p>
                     </div>
                     <div className="value-item">
                         <h3>Enhanced Living</h3>
                         <p>
-                            Well-being at the forefront — designs that promote positive
-                            interaction and encourage enriched experiences.
+                            Well-being shapes every decision we make. Our designs foster
+                            connection, comfort, and calm — creating environments where
+                            life can unfold naturally.
                         </p>
                     </div>
                 </div>

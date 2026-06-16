@@ -7,8 +7,13 @@ import Image from 'next/image';
 export default function Preloader({ onComplete }) {
     const preloaderRef = useRef(null);
     const counterRef = useRef(null);
-    const textRef = useRef(null);
-    const columnRefs = useRef([]);
+    const progressRef = useRef(null);
+    const brandRef = useRef(null);
+    const sketchRef = useRef(null);
+    const lineRefs = useRef([]);
+    const panelRefs = useRef([]);
+    const onCompleteRef = useRef(onComplete);
+    onCompleteRef.current = onComplete;
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -17,95 +22,155 @@ export default function Preloader({ onComplete }) {
             const tl = gsap.timeline({
                 onComplete: () => {
                     document.body.style.overflow = '';
-                    if (onComplete) onComplete();
+                    if (onCompleteRef.current) onCompleteRef.current();
                 },
             });
 
-            // Initial state
-            gsap.set(columnRefs.current, { yPercent: 0 });
-            gsap.set(textRef.current, { yPercent: 100, autoAlpha: 1 }); // Start below
-            gsap.set(counterRef.current, { autoAlpha: 1 });
+            gsap.set(panelRefs.current, { yPercent: 0 });
+            gsap.set(brandRef.current, { y: 34, autoAlpha: 0 });
+            gsap.set(sketchRef.current, { autoAlpha: 0, scale: 0.96 });
+            gsap.set(lineRefs.current, { scaleX: 0, transformOrigin: 'left center' });
+            gsap.set(progressRef.current, { scaleX: 0, transformOrigin: 'left center' });
+            gsap.set('.preloader-measure-tick', { autoAlpha: 0, y: 8 });
+            gsap.set(counterRef.current, { innerText: 0, autoAlpha: 0 });
 
-            // 1. Counter (0 -> 100)
+            tl.to(sketchRef.current, {
+                autoAlpha: 1,
+                scale: 1,
+                duration: 0.9,
+                ease: 'power3.out',
+            });
+
+            tl.to(lineRefs.current, {
+                scaleX: 1,
+                duration: 1.35,
+                stagger: 0.08,
+                ease: 'power3.inOut',
+            }, '-=0.55');
+
+            tl.to(brandRef.current, {
+                y: 0,
+                autoAlpha: 1,
+                duration: 1,
+                ease: 'power4.out',
+            }, '-=1.05');
+
+            tl.to(counterRef.current, {
+                autoAlpha: 1,
+                duration: 0.4,
+                ease: 'power2.out',
+            }, '-=0.8');
+
+            tl.to(progressRef.current, {
+                scaleX: 1,
+                duration: 2.1,
+                ease: 'power2.inOut',
+            }, '-=0.65');
+
             tl.to(counterRef.current, {
                 innerText: 100,
-                duration: 2.2,
+                duration: 2.1,
                 ease: 'power2.inOut',
                 snap: { innerText: 1 },
                 onUpdate: function () {
                     if (counterRef.current) {
-                        counterRef.current.textContent = Math.round(this.targets()[0].innerText);
+                        const value = Math.round(this.targets()[0].innerText).toString().padStart(2, '0');
+                        counterRef.current.textContent = `${value}%`;
                     }
                 },
-            });
+            }, '<');
 
-            // 2. Brand Name Reveal (Mask Up)
-            tl.to(textRef.current, {
-                yPercent: 0,
-                duration: 1.2,
-                ease: 'power3.out',
-            }, '-=1.8');
+            tl.to('.preloader-measure-tick', {
+                autoAlpha: 1,
+                y: 0,
+                duration: 0.45,
+                stagger: 0.06,
+                ease: 'power2.out',
+            }, '-=1.2');
 
-            // Hold
-            tl.to({}, { duration: 0.5 });
+            tl.to({}, { duration: 0.35 });
 
-            // 3. Exit: Text & Counter Fade Out
-            tl.to([textRef.current, counterRef.current], {
-                yPercent: -100, // Move up and out
+            tl.to([brandRef.current, sketchRef.current, counterRef.current, '.preloader-progress-wrap'], {
+                y: -30,
                 autoAlpha: 0,
-                duration: 0.8,
-                ease: 'power3.in',
+                duration: 0.65,
+                ease: 'power3.inOut',
             });
 
-            // 4. Exit: Columns Stagger Reveal (The "Groove")
-            tl.to(columnRefs.current, {
+            tl.set(preloaderRef.current, {
+                backgroundColor: 'transparent',
+            });
+
+            tl.to(panelRefs.current, {
                 yPercent: -100,
-                duration: 1.2,
+                duration: 1.05,
                 stagger: {
-                    each: 0.1,
-                    from: 'random',
+                    each: 0.07,
+                    from: 'center',
                 },
                 ease: 'power4.inOut',
-            }, '-=0.4');
-
+            }, '-=0.25');
         }, preloaderRef);
 
         return () => ctx.revert();
-    }, [onComplete]);
+    }, []);
 
     return (
         <div ref={preloaderRef} className="preloader">
-            {/* Background Columns */}
-            <div className="preloader-columns">
-                {[...Array(7)].map((_, i) => (
+            <div className="preloader-panels">
+                {[...Array(5)].map((_, i) => (
                     <div
                         key={i}
-                        ref={el => columnRefs.current[i] = el}
-                        className="preloader-column"
+                        ref={(el) => { panelRefs.current[i] = el; }}
+                        className="preloader-panel"
                     ></div>
                 ))}
             </div>
 
-            {/* Content Override */}
+            <div className="preloader-plan-grid" aria-hidden="true"></div>
+
             <div className="preloader-content-wrapper">
-                <div className="preloader-brand-mask">
-                    <div ref={textRef} className="preloader-logo-wrapper">
+                <div ref={sketchRef} className="preloader-sketch" aria-hidden="true">
+                    <span className="preloader-plan-label">01 / Studio Plan</span>
+                    <span className="preloader-north-mark">N</span>
+                    <span ref={(el) => { lineRefs.current[0] = el; }} className="preloader-cut-line preloader-cut-line--top"></span>
+                    <span ref={(el) => { lineRefs.current[1] = el; }} className="preloader-cut-line preloader-cut-line--middle"></span>
+                    <span ref={(el) => { lineRefs.current[2] = el; }} className="preloader-cut-line preloader-cut-line--bottom"></span>
+                    <span ref={(el) => { lineRefs.current[3] = el; }} className="preloader-groove-line preloader-groove-line--left"></span>
+                    <span ref={(el) => { lineRefs.current[4] = el; }} className="preloader-groove-line preloader-groove-line--right"></span>
+                    <span className="preloader-plan-block preloader-plan-block--large"></span>
+                    <span className="preloader-plan-block preloader-plan-block--small"></span>
+                </div>
+
+                <div ref={brandRef} className="preloader-brand">
+                    <div className="preloader-logo-mark">
                         <Image
-                            src="/images/logo.png"
+                            src="/images/Blacklogo.png"
                             alt="Cuts & Grooves"
-                            width={120}
-                            height={120}
+                            width={400}
+                            height={140}
                             className="preloader-logo-img"
                             priority
                         />
-                        <div className="preloader-logo-text">
-                            <span className="preloader-logo-title">Cuts &amp; Grooves</span>
-                            <span className="preloader-logo-subtitle">An Architecture Firm</span>
-                        </div>
+                    </div>
+                    <div className="preloader-logo-text">
+                        <span className="preloader-kicker">Architecture / Interiors / Execution</span>
+                        <span className="preloader-logo-title">Cuts & Grooves</span>
+                        <span className="preloader-logo-subtitle">Spatial Design / Material Detail / Thoughtful Living</span>
                     </div>
                 </div>
-                <div ref={counterRef} className="preloader-counter-large">
-                    0
+
+                <div className="preloader-progress-wrap">
+                    <div className="preloader-progress-meta">
+                        <span>Designing Experience</span>
+                        <span ref={counterRef} className="preloader-counter-large">00%</span>
+                    </div>
+                    <div className="preloader-progress-track">
+                        <span ref={progressRef} className="preloader-progress-bar"></span>
+                        {[0, 1, 2, 3, 4].map((tick) => (
+                            <span key={tick} className="preloader-measure-tick"></span>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

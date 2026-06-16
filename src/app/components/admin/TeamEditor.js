@@ -1,44 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import CloudinaryUpload from '@/app/components/admin/CloudinaryUpload';
+import { Loader, EditorHeader } from './EditorShared';
 
 export default function TeamEditor({ page = 'studio', section = 'team' }) {
-    const [content, setContent] = useState({
-        members: []
-    });
-    const [stagedContent, setStagedContent] = useState({
-        members: []
-    });
+    const [content, setContent] = useState({ members: [] });
+    const [staged, setStaged] = useState({ members: [] });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        fetchContent();
-    }, []);
+    useEffect(() => { fetchContent(); }, []);
 
     const fetchContent = async () => {
         try {
             const res = await fetch(`/api/content?page=${page}&section=${section}`);
-            if (!res.ok) throw new Error('Failed to fetch');
+            if (!res.ok) throw new Error();
             const data = await res.json();
-            const contentMap = {};
-            data.forEach(item => {
-                contentMap[item.key] = item.value;
-            });
-            const loadedContent = {
-                members: contentMap.members || []
-            };
-            setContent(loadedContent);
-            setStagedContent(loadedContent);
-        } catch (err) {
-            console.error('Failed to fetch content:', err);
-        } finally {
-            setLoading(false);
-        }
+            const map = {};
+            data.forEach(i => { map[i.key] = i.value; });
+            const loaded = { members: map.members || [] };
+            setContent(loaded);
+            setStaged(JSON.parse(JSON.stringify(loaded)));
+        } catch { /* silent */ } finally { setLoading(false); }
     };
 
-    const hasChanges = JSON.stringify(content) !== JSON.stringify(stagedContent);
+    const hasChanges = JSON.stringify(content) !== JSON.stringify(staged);
 
     const handleSave = async () => {
         setSaving(true);
@@ -46,134 +33,135 @@ export default function TeamEditor({ page = 'studio', section = 'team' }) {
             await fetch('/api/content', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    page,
-                    section,
-                    key: 'members',
-                    value: stagedContent.members,
-                }),
+                body: JSON.stringify({ page, section, key: 'members', value: staged.members }),
             });
-            setContent(JSON.parse(JSON.stringify(stagedContent)));
-        } catch (err) {
-            console.error(err);
-            alert('Failed to save changes.');
-        } finally {
-            setSaving(false);
-        }
+            setContent(JSON.parse(JSON.stringify(staged)));
+        } catch { alert('Failed to save.'); } finally { setSaving(false); }
     };
 
-    const handleAddItem = () => {
-        const newItem = {
-            name: 'New Member',
-            role: 'Architect',
-            image: ''
-        };
-        setStagedContent({ ...stagedContent, members: [...stagedContent.members, newItem] });
+    const handleKeyDown = useCallback((e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); if (hasChanges && !saving) handleSave(); }
+        if (e.key === 'Escape' && hasChanges) { e.preventDefault(); setStaged(JSON.parse(JSON.stringify(content))); }
+    }, [hasChanges, saving, content]);
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleKeyDown]);
+
+    const addItem = () => setStaged(s => ({ ...s, members: [...s.members, { name: 'New Member', role: 'Architect', image: '' }] }));
+    const removeItem = i => setStaged(s => ({ ...s, members: s.members.filter((_, idx) => idx !== i) }));
+    const updateItem = (i, field, val) => {
+        const items = [...staged.members];
+        items[i] = { ...items[i], [field]: val };
+        setStaged(s => ({ ...s, members: items }));
     };
 
-    const handleRemoveItem = (index) => {
-        const newItems = stagedContent.members.filter((_, i) => i !== index);
-        setStagedContent({ ...stagedContent, members: newItems });
-    };
-
-    const handleUpdateItem = (index, field, value) => {
-        const newItems = [...stagedContent.members];
-        newItems[index] = { ...newItems[index], [field]: value };
-        setStagedContent({ ...stagedContent, members: newItems });
-    };
-
-    if (loading) return <div className="p-8 opacity-30 uppercase text-[10px] tracking-widest">Loading Team...</div>;
+    if (loading) return <Loader label="Team" />;
 
     return (
-        <div className="space-y-12">
-            <div className="flex justify-between items-end border-bottom border-gray-100 pb-8">
-                <div>
-                    <h2 className="text-3xl font-light uppercase tracking-tight">Team Members</h2>
-                    <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-2">Manage the studio roster</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            <EditorHeader
+                kicker="Team Section"
+                title="Team Members"
+                description={`${staged.members.length} member${staged.members.length !== 1 ? 's' : ''} · names, roles & portraits`}
+                hasChanges={hasChanges}
+                saving={saving}
+                onReset={() => setStaged(JSON.parse(JSON.stringify(content)))}
+                onSave={handleSave}
+                saveLabel="Save Team"
+            />
+
+            {/* Status Card */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Members</span>
+                    <strong style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--admin-text)' }}>{staged.members.length}</strong>
                 </div>
-                <div className="flex gap-4">
-                    {hasChanges && (
-                        <button
-                            onClick={() => setStagedContent(JSON.parse(JSON.stringify(content)))}
-                            className="px-6 py-2 text-[10px] uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-colors"
-                        >
-                            Reset
-                        </button>
-                    )}
-                    <button
-                        onClick={handleSave}
-                        disabled={!hasChanges || saving}
-                        className={`px-8 py-2 text-[10px] uppercase tracking-widest transition-all ${hasChanges && !saving ? 'bg-black text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
-                    >
-                        {saving ? 'Saving...' : 'Save Team'}
-                    </button>
+                <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>With Portraits</span>
+                    <strong style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--admin-text)' }}>{staged.members.filter(m => m.image).length}</strong>
+                </div>
+                <div style={{ padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--admin-accent)', display: 'block', marginBottom: '6px' }}>Status</span>
+                    <strong style={{ fontSize: '1rem', fontWeight: '700', color: hasChanges ? 'var(--admin-accent)' : '#22c55e' }}>{hasChanges ? 'Unsaved' : 'Saved'}</strong>
                 </div>
             </div>
 
-            <div className="space-y-16">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-300 italic">Roster Ledger</h3>
-                    <button
-                        onClick={handleAddItem}
-                        className="text-[10px] uppercase tracking-widest font-bold text-[#A67C52] hover:text-black transition-colors flex items-center gap-2"
-                    >
-                        <span className="text-lg">+</span> Recruit New Member
-                    </button>
+            {/* Toolbar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: '#fff', borderRadius: '14px', border: '1px solid var(--admin-border)' }}>
+                <div>
+                    <span className="admin-kicker" style={{ marginBottom: 0 }}>Roster Ledger</span>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--admin-muted)' }}>{staged.members.length} member{staged.members.length !== 1 ? 's' : ''}</p>
                 </div>
+                <button type="button" onClick={addItem} style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '10px 20px', borderRadius: '999px', border: 'none', background: 'var(--admin-text)', color: '#fff', cursor: 'pointer', fontSize: '12px', fontWeight: '800', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
+                    Add Member
+                </button>
+            </div>
 
-                <div className="grid grid-cols-1 gap-12 max-w-5xl">
-                    {stagedContent.members.map((member, index) => (
-                        <div key={index} className="bg-white border border-gray-100 p-8 rounded-3xl shadow-sm space-y-8 relative group">
-                            <button
-                                onClick={() => handleRemoveItem(index)}
-                                className="absolute top-6 right-6 text-gray-200 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 text-[10px] uppercase tracking-widest font-bold"
-                            >
-                                Remove
-                            </button>
+            {staged.members.length === 0 && (
+                <div style={{ padding: '48px', background: '#fff', borderRadius: '16px', border: '1px dashed var(--admin-border)', textAlign: 'center', color: 'var(--admin-muted)', fontSize: '13px' }}>
+                    No team members yet. Click &quot;Add Member&quot; to create one.
+                </div>
+            )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-12">
-                                <div className="space-y-4">
-                                    <div className="relative aspect-[1/1] bg-gray-50 rounded-2xl overflow-hidden border border-gray-50">
-                                        {member.image ? (
-                                            <img src={member.image} className="w-full h-full object-cover" alt={member.name} />
-                                        ) : (
-                                            <div className="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-widest text-gray-300">No Photo</div>
-                                        )}
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm p-2">
-                                            <CloudinaryUpload
-                                                folder="studio"
-                                                onUploadSuccess={(url) => handleUpdateItem(index, 'image', url)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
+            {staged.members.map((member, i) => (
+                <div key={i} style={{ background: '#fff', borderRadius: '18px', border: '1px solid var(--admin-border)', boxShadow: '0 8px 28px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+                    {/* Card header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 22px', borderBottom: '1px solid var(--admin-border)', background: 'rgba(250,249,246,0.6)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--admin-accent)', display: 'grid', placeItems: 'center', color: '#fff', fontSize: '11px', fontWeight: '800' }}>
+                                {i + 1}
+                            </div>
+                            <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-text)' }}>{member.name || 'Unnamed Member'}</span>
+                        </div>
+                        <button type="button" onClick={() => removeItem(i)} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 14px', borderRadius: '8px', border: '1px solid rgba(192,57,43,0.25)', background: 'rgba(192,57,43,0.04)', color: '#c0392b', cursor: 'pointer', fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M19 6l-1 14H6L5 6M9 6V4h6v2" /></svg>
+                            Remove
+                        </button>
+                    </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] uppercase tracking-widest font-bold text-gray-400">Full Name</label>
-                                        <input
-                                            type="text"
-                                            className="w-full bg-transparent border-bottom border-gray-100 py-2 text-xl font-light focus:border-black outline-none transition-all"
-                                            value={member.name}
-                                            onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
-                                        />
+                    {/* Card body */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '24px', padding: '24px' }}>
+                        {/* Image */}
+                        <div>
+                            <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-muted)', display: 'block', marginBottom: '10px' }}>Portrait</span>
+                            <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', aspectRatio: '1/1', background: '#f4f3ef', border: '1px solid var(--admin-border)' }}>
+                                {member.image
+                                    ? <img src={member.image} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    : <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
+                                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] uppercase tracking-widest font-bold text-gray-400">Role / Title</label>
-                                        <input
-                                            type="text"
-                                            className="w-full bg-transparent border-bottom border-gray-100 py-2 text-xl font-light focus:border-black outline-none transition-all italic text-gray-400"
-                                            value={member.role}
-                                            onChange={(e) => handleUpdateItem(index, 'role', e.target.value)}
-                                        />
-                                    </div>
+                                }
+                                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }}
+                                    onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                                    onMouseLeave={e => e.currentTarget.style.opacity = 0}
+                                >
+                                    <CloudinaryUpload folder="studio" onUploadSuccess={url => updateItem(i, 'image', url)} />
                                 </div>
                             </div>
+                            {member.image && (
+                                <button type="button" onClick={() => updateItem(i, 'image', '')} style={{ display: 'block', width: '100%', marginTop: '8px', padding: '8px', borderRadius: '10px', border: '1px solid rgba(192,57,43,0.25)', background: 'rgba(192,57,43,0.04)', color: '#c0392b', cursor: 'pointer', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center' }}>
+                                    Remove
+                                </button>
+                            )}
                         </div>
-                    ))}
+
+                        {/* Fields */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '7px', fontSize: '12px', fontWeight: '800', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Full Name</label>
+                                <input type="text" value={member.name} onChange={e => updateItem(i, 'name', e.target.value)} style={{ width: '100%', height: '44px', padding: '0 14px', border: '1px solid var(--admin-border)', borderRadius: '12px', background: '#fafaf8', fontSize: '14px', outline: 'none', fontFamily: 'inherit', color: 'var(--admin-text)' }} placeholder="Priya Kapoor" />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '7px', fontSize: '12px', fontWeight: '800', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Role / Title</label>
+                                <input type="text" value={member.role} onChange={e => updateItem(i, 'role', e.target.value)} style={{ width: '100%', height: '44px', padding: '0 14px', border: '1px solid var(--admin-border)', borderRadius: '12px', background: '#fafaf8', fontSize: '14px', outline: 'none', fontFamily: 'inherit', color: 'var(--admin-text)' }} placeholder="Associate Director" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            ))}
         </div>
     );
 }

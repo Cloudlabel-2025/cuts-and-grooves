@@ -8,44 +8,46 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 const defaultScatteredImages = [
-    // Layer 1: Background
-    { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80', x: '5%', y: '10%', w: '18vw', h: '30vh', speed: 0.15, z: 1 },
-    { src: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=600&q=80', x: '80%', y: '15%', w: '15vw', h: '25vh', speed: 0.2, z: 1 },
+    // Layer 1: Background (far spread, covering edges)
+    { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80', x: '2%', y: '2%', w: '20vw', h: '28vh', speed: 0.15, z: 1 },
+    { src: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=600&q=80', x: '78%', y: '3%', w: '18vw', h: '24vh', speed: 0.2, z: 1 },
+    { src: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=600&q=80', x: '38%', y: '0%', w: '16vw', h: '22vh', speed: 0.18, z: 1 },
 
-    // Layer 2: Mid
-    { src: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80', x: '15%', y: '60%', w: '20vw', h: '28vh', speed: 0.4, z: 5 },
-    { src: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=600&q=80', x: '70%', y: '50%', w: '16vw', h: '32vh', speed: 0.5, z: 5 },
+    // Layer 2: Mid (upper half)
+    { src: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80', x: '10%', y: '20%', w: '22vw', h: '30vh', speed: 0.4, z: 5 },
+    { src: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=600&q=80', x: '65%', y: '22%', w: '20vw', h: '28vh', speed: 0.45, z: 5 },
+    { src: 'https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=800&q=80', x: '45%', y: '18%', w: '15vw', h: '20vh', speed: 0.5, z: 4 },
 
-    // Layer 3: Foreground
-    { src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80', x: '-5%', y: '40%', w: '22vw', h: '35vh', speed: 1.0, z: 15 },
-    { src: 'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?auto=format&fit=crop&w=800&q=80', x: '85%', y: '70%', w: '25vw', h: '40vh', speed: 0.9, z: 15 },
-    { src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80', x: '25%', y: '90%', w: '10vw', h: '14vh', speed: 0.8, z: 12 },
+    // Layer 3: Mid (lower half)
+    { src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80', x: '3%', y: '55%', w: '24vw', h: '32vh', speed: 0.8, z: 10 },
+    { src: 'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?auto=format&fit=crop&w=800&q=80', x: '72%', y: '58%', w: '26vw', h: '36vh', speed: 0.85, z: 10 },
+    { src: 'https://images.unsplash.com/photo-1565182999561-18d7dc61c393?auto=format&fit=crop&w=600&q=80', x: '30%', y: '52%', w: '18vw', h: '24vh', speed: 0.6, z: 6 },
 
-    // Denser Scatter
-    { src: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=600&q=80', x: '10%', y: '-10%', w: '14vw', h: '20vh', speed: 0.6, z: 3 },
-    { src: 'https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=800&q=80', x: '60%', y: '-5%', w: '13vw', h: '19vh', speed: 0.7, z: 4 },
-    { src: 'https://images.unsplash.com/photo-1565182999561-18d7dc61c393?auto=format&fit=crop&w=600&q=80', x: '90%', y: '40%', w: '14vw', h: '22vh', speed: 0.5, z: 2 },
-    { src: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80', x: '35%', y: '110%', w: '16vw', h: '24vh', speed: 1.1, z: 14 },
-    { src: 'https://images.unsplash.com/photo-1631679706909-1844bbd07221?auto=format&fit=crop&w=400&q=80', x: '5%', y: '80%', w: '12vw', h: '16vh', speed: 0.4, z: 6 },
-    { src: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80', x: '50%', y: '70%', w: '9vw', h: '12vh', speed: 0.25, z: 2 },
-    { src: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=600&q=80', x: '75%', y: '95%', w: '14vw', h: '18vh', speed: 0.85, z: 13 },
+    // Layer 4: Foreground (bottom and accents)
+    { src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80', x: '18%', y: '78%', w: '16vw', h: '20vh', speed: 1.0, z: 15 },
+    { src: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80', x: '55%', y: '82%', w: '20vw', h: '26vh', speed: 1.1, z: 14 },
+    { src: 'https://images.unsplash.com/photo-1631679706909-1844bbd07221?auto=format&fit=crop&w=400&q=80', x: '85%', y: '75%', w: '14vw', h: '18vh', speed: 0.9, z: 12 },
+    { src: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80', x: '48%', y: '40%', w: '12vw', h: '16vh', speed: 0.35, z: 3 },
+    { src: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=600&q=80', x: '92%', y: '40%', w: '16vw', h: '20vh', speed: 0.7, z: 8 },
 ];
 
 const defaultMobileScatteredImages = [
-    { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80', x: '5%', y: '10%', w: '40vw', h: '20vh', speed: 0.15, z: 1 },
-    { src: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=600&q=80', x: '55%', y: '15%', w: '35vw', h: '15vh', speed: 0.2, z: 1 },
-    { src: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80', x: '10%', y: '45%', w: '45vw', h: '20vh', speed: 0.4, z: 5 },
-    { src: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=600&q=80', x: '50%', y: '65%', w: '35vw', h: '25vh', speed: 0.5, z: 5 },
-    { src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80', x: '-10%', y: '30%', w: '50vw', h: '25vh', speed: 1.0, z: 15 },
-    { src: 'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?auto=format&fit=crop&w=800&q=80', x: '60%', y: '75%', w: '45vw', h: '30vh', speed: 0.9, z: 15 },
+    { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80', x: '0%', y: '0%', w: '50vw', h: '22vh', speed: 0.15, z: 1 },
+    { src: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=600&q=80', x: '50%', y: '2%', w: '48vw', h: '18vh', speed: 0.2, z: 1 },
+    { src: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80', x: '5%', y: '25%', w: '55vw', h: '22vh', speed: 0.4, z: 5 },
+    { src: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=600&q=80', x: '55%', y: '28%', w: '45vw', h: '20vh', speed: 0.45, z: 5 },
+    { src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80', x: '-5%', y: '52%', w: '55vw', h: '26vh', speed: 0.8, z: 10 },
+    { src: 'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?auto=format&fit=crop&w=800&q=80', x: '52%', y: '55%', w: '50vw', h: '28vh', speed: 0.85, z: 10 },
+    { src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80', x: '10%', y: '78%', w: '45vw', h: '20vh', speed: 1.0, z: 15 },
+    { src: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80', x: '50%', y: '80%', w: '50vw', h: '22vh', speed: 1.1, z: 14 },
 ];
 
 const defaultTransitionImage = '/images/All-works-01.jpg';
 
 const defaultVisionItems = [
-    { title: 'Design integrity', desc: 'At the core of every structure lies intention.We integrate advanced research and evolving technology with a distinctly human sensibility — because innovation without intuition is incomplete.Our process challenges convention, tests boundaries, and explores possibilities beyond the expected. Each solution is thoughtfully engineered, creatively envisioned, and uncompromising in execution.' },
-    { title: 'Innovation', desc: 'We combine rigorous research, advanced technology, and refined craftsmanship to redefine what’s possible. Yet we believe true innovation is not purely technical — it is human.Every breakthrough we pursue is guided by insight, experience, and an uncompromising pursuit of better solutions. We challenge limits, rethink conventions, and transform complexity into clarity.Because progress is not about change for the sake of it — it is about building smarter, stronger, and ahead of time.' },
-    { title: 'Enhanced Living', desc: 'Well-being is not an afterthought — it is the foundation. We design spaces that elevate everyday life, where light, proportion, material, and flow work in harmony. Every environment is thoughtfully crafted to encourage connection, comfort, and clarity. Our approach goes beyond structure. We create living experiences — spaces that nurture balance, inspire interaction, and enhance the rhythm of modern life.' }
+    { title: 'Design Integrity', desc: 'Every great structure begins with intent. We bring together thoughtful research, evolving technology, and a deep understanding of human experience — because the best design serves both the mind and the spirit. Our process challenges convention, tests boundaries, and pursues ideas beyond the expected. Each solution is carefully considered, creatively realised, and built to endure.' },
+    { title: 'Innovation', desc: 'True innovation lives at the intersection of research, craft, and intuition. We explore new possibilities without losing sight of what makes a space feel right — light, proportion, material, and flow. Every idea is shaped by experience and refined through collaboration. Progress, for us, is not change for its own sake. It is about building smarter, stronger, and more meaningfully.' },
+    { title: 'Enhanced Living', desc: 'Well-being is not an afterthought — it is where we begin. We design spaces that elevate everyday life, where light falls softly, materials speak honestly, and every room feels like it belongs. Our environments are crafted to encourage connection, comfort, and clarity. We do not just build structures. We create places to live, grow, and return to.' }
 ];
 
 export default function AllWorkScatter({ projects, content }) {
@@ -86,7 +88,7 @@ export default function AllWorkScatter({ projects, content }) {
     const labelVisionRef = useRef(null);
     const titlesStripRef = useRef(null);
     const descRef = useRef(null);
-    const descTextRef = useRef(null);
+    const descTextRefs = useRef([]);
     const titleRefs = useRef([]);
 
     const [isReady, setIsReady] = useState(false);
@@ -144,30 +146,24 @@ export default function AllWorkScatter({ projects, content }) {
 
             const isMobile = window.innerWidth < 1024;
 
-            // --- PHASE 1: SCATTER PARALLAX & TEXT ZOOM (0 -> 1.0) ---
+            // --- PHASE 1: SCATTER PARALLAX & ZOOM (0 -> 1.2) ---
 
-            // Initial Scale
-            tl.to(textRef.current, { scale: 1.15, duration: 0.5, ease: 'power1.inOut' }, 0);
-
-            // Parallax
+            // Parallax + Zoom images as they move up
             imagesRef.current.forEach((img, i) => {
                 if (!img) return;
                 const speed = scatteredImages[i].speed;
                 const movementY = -(window.innerHeight * 1.5 * speed);
-                tl.to(img, { y: movementY, ease: 'none', duration: 1 }, 0);
+                const scaleUp = 1 + (speed * 0.6);
+                tl.to(img, { y: movementY, scale: scaleUp, ease: 'none', duration: 1.2 }, 0);
             });
 
-            // Fade Out Scattered Images
-            tl.to(imagesRef.current, { opacity: 0, display: 'none', duration: 0.2, stagger: { amount: 0.1, from: "random" } }, 0.6);
+            // Fade Out Scattered Images (late, after they've zoomed)
+            tl.to(imagesRef.current, { opacity: 0, display: 'none', duration: 0.15, stagger: { amount: 0.05, from: "random" } }, 1.0);
 
             // PORTAL TRANSITION SETUP
             const oRect = oSpanRef.current.getBoundingClientRect();
             const pinRect = pinRef.current.getBoundingClientRect();
             const textRect = textRef.current.getBoundingClientRect();
-
-            const ox = oRect.left + oRect.width / 2 - textRect.left;
-            const oy = oRect.top + oRect.height / 2 - textRect.top;
-            gsap.set(textRef.current, { transformOrigin: `${ox}px ${oy}px` });
 
             const centerX = oRect.left + oRect.width / 2 - pinRect.left;
             const centerY = oRect.top + oRect.height / 2 - pinRect.top;
@@ -177,41 +173,40 @@ export default function AllWorkScatter({ projects, content }) {
                 left: centerX, top: centerY, xPercent: -50, yPercent: -50, width: startSize, height: startSize, borderRadius: '50%',
             });
 
-            // ANIMATION: Portal Text Zoom & Image Expand (Significantly slowed down)
-            // Start: 0.5. Duration: 2.0. End: 2.5
-            tl.to(independentPortalRef.current, { opacity: 1, duration: 0.1 }, 0.5);
-            tl.to(textRef.current, { scale: 300, duration: 2.0, ease: 'power2.in' }, 0.6); // Start zoom just after visibility
+            // ANIMATION: Portal Image Expand (quick, overlapping with images)
+            tl.to(independentPortalRef.current, { opacity: 1, duration: 0.1 }, 0.7);
             tl.to(independentPortalRef.current, {
-                top: 0, left: 0, xPercent: 0, yPercent: 0, width: '100vw', height: '100vh', borderRadius: '0%', duration: 2.0, ease: 'power2.in',
-            }, 0.6);
+                top: 0, left: 0, xPercent: 0, yPercent: 0, width: '100vw', height: '100vh', borderRadius: '0%', duration: 0.6, ease: 'power2.inOut',
+            }, 0.7);
 
-            tl.to([leftTextRef.current, rightTextRef.current, countRef.current], { opacity: 0, duration: 0.1 }, 1.5); // Fade text earlier mid-zoom
-            tl.to(oSpanRef.current, { color: 'transparent', duration: 0.05 }, 1.6);
+            tl.to([leftTextRef.current, rightTextRef.current, countRef.current], { opacity: 0, duration: 0.1 }, 1.0);
+            tl.to(oSpanRef.current, { color: 'transparent', duration: 0.05 }, 1.1);
 
 
-            // --- PHASE 2: VISION LAYOUT BUILD (Starts at 3.0 -> End 4.0 approx)---
+            // --- PHASE 2: VISION LAYOUT BUILD (Starts at 1.5) ---
 
             // 1. Reveal Layout Container
-            tl.to(visionUIContainerRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.1 }, 3.0);
+            tl.to(visionUIContainerRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.2 }, 1.5);
 
             // 2. Animate Horizontal Line (Independent)
-            tl.fromTo(lineRef.current, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.5, ease: 'power3.inOut' }, 3.1);
+            tl.fromTo(lineRef.current, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.5, ease: 'power3.inOut' }, 1.6);
 
             // 3. Fade In Labels (03, VISION)
-            tl.fromTo([label03Ref.current, labelVisionRef.current], { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.3 }, 3.3);
+            tl.fromTo([label03Ref.current, labelVisionRef.current], { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.3 }, 1.7);
 
             // 4. Fade In Titles Strip
-            tl.fromTo(titlesStripRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, 3.4);
+            tl.fromTo(titlesStripRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, 1.8);
 
-            // 5. Fade In Description
-            tl.fromTo(descRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, 3.5);
+            // 5. Fade In Description (Design Integrity)
+            gsap.set(descTextRefs.current[0], { y: 20 });
+            tl.to(descTextRefs.current[0], { opacity: 1, y: 0, duration: 0.4 }, 1.9);
 
-            // --- PHASE 3: HORIZONTAL SCROLL & VERTICAL LINE GROWTH (Starts at 4.5 -> End) ---
+            // --- PHASE 3: HORIZONTAL SCROLL & VERTICAL LINE GROWTH ---
 
-            // Start Delay: Add "read time" (3.5 -> 4.5 pause)
-            tl.to({}, { duration: 1.0 }, 3.5);
+            // Start Delay: Add "read time"
+            tl.to({}, { duration: 1.0 }, 2.3);
 
-            const scrollStart = 4.5;
+            const scrollStart = 3.3;
             const stepDuration = 2.5;
             const scrollEnd = scrollStart + stepDuration * 2 + 0.5; // Two moves + pause
 
@@ -232,10 +227,9 @@ export default function AllWorkScatter({ projects, content }) {
             tl.to(titleRefs.current[0], { color: 'rgba(255,255,255,0.3)', duration: 1.5, ease: 'power1.inOut' }, scrollStart);
             tl.to(titleRefs.current[1], { color: '#ffffff', duration: 1.5, ease: 'power1.inOut' }, scrollStart + 0.5);
 
-            // Description Swap
-            tl.to(descTextRef.current, { opacity: 0, duration: 0.3 }, scrollStart + 0.2);
-            tl.call(() => { if (descTextRef.current) descTextRef.current.innerText = visionItems[1].desc; }, null, scrollStart + 0.6);
-            tl.to(descTextRef.current, { opacity: 1, duration: 0.3 }, scrollStart + 0.7);
+            // Description Swap to Innovation
+            tl.to(descTextRefs.current[0], { opacity: 0, duration: 0.3 }, scrollStart + 0.2);
+            tl.to(descTextRefs.current[1], { opacity: 1, duration: 0.3 }, scrollStart + 0.7);
 
 
             // Step 2: Move to "Enhanced Living"
@@ -251,10 +245,9 @@ export default function AllWorkScatter({ projects, content }) {
             tl.to(titleRefs.current[1], { color: 'rgba(255,255,255,0.3)', duration: 1.5, ease: 'power1.inOut' }, step2Start);
             tl.to(titleRefs.current[2], { color: '#ffffff', duration: 1.5, ease: 'power1.inOut' }, step2Start + 0.5);
 
-            // Description Swap
-            tl.to(descTextRef.current, { opacity: 0, duration: 0.3 }, step2Start + 0.2);
-            tl.call(() => { if (descTextRef.current) descTextRef.current.innerText = visionItems[2].desc; }, null, step2Start + 0.6);
-            tl.to(descTextRef.current, { opacity: 1, duration: 0.3 }, step2Start + 0.7);
+            // Description Swap to Enhanced Living
+            tl.to(descTextRefs.current[1], { opacity: 0, duration: 0.3 }, step2Start + 0.2);
+            tl.to(descTextRefs.current[2], { opacity: 1, duration: 0.3 }, step2Start + 0.7);
 
             // Final Hold
             tl.to({}, { duration: 1.0 });
@@ -320,6 +313,7 @@ export default function AllWorkScatter({ projects, content }) {
                             <img
                                 src={img.src}
                                 alt="Project"
+                                loading="lazy"
                                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '4px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}
                             />
                         </div>
@@ -437,29 +431,36 @@ export default function AllWorkScatter({ projects, content }) {
                         </div>
                     </div>
 
-                    {/* Description Paragraph (Below Line, Right Aligned) */}
+                    {/* Description Paragraphs (Below Line, Right Aligned) */}
                     <div
                         ref={descRef}
                         style={{
                             position: 'absolute',
-                            top: mounted && window.innerWidth < 768 ? '65%' : '55%',
-                            right: mounted && window.innerWidth < 768 ? '4vw' : '15vw',
-                            left: mounted && window.innerWidth < 768 ? '4vw' : 'auto',
-                            width: mounted && window.innerWidth < 768 ? 'auto' : 'clamp(300px, 30vw, 500px)',
+                            top: mounted && isMobile ? '65%' : '55%',
+                            right: mounted && isMobile ? '4vw' : '15vw',
+                            left: mounted && isMobile ? '4vw' : 'auto',
+                            width: mounted && isMobile ? 'auto' : 'clamp(300px, 30vw, 500px)',
                             textAlign: 'left'
                         }}
                     >
-                        <p
-                            ref={descTextRef}
-                            style={{
-                                fontSize: 'clamp(1rem, 1.2vw, 1.4rem)',
-                                lineHeight: 1.5,
-                                fontFamily: 'var(--font-body)',
-                                fontWeight: 300
-                            }}
-                        >
-                            {content?.subtext || visionItems[0].desc}
-                        </p>
+                        {visionItems.map((item, i) => (
+                                <p
+                                key={i}
+                                ref={el => descTextRefs.current[i] = el}
+                                style={{
+                                    fontSize: 'clamp(1rem, 1.2vw, 1.4rem)',
+                                    lineHeight: 1.5,
+                                    fontFamily: 'var(--font-body)',
+                                    fontWeight: 300,
+                                    opacity: 0,
+                                    margin: 0,
+                                    position: i === 0 ? 'relative' : 'absolute',
+                                    top: 0, left: 0, right: 0
+                                }}
+                            >
+                                {item.desc}
+                            </p>
+                        ))}
                     </div>
 
                 </div>

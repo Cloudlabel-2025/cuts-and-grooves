@@ -1,6 +1,7 @@
 'use client';
 
 import { use } from 'react';
+import Link from 'next/link';
 import HeroEditor from '@/app/components/admin/HeroEditor';
 import VisualCanvasEditor from '@/app/components/admin/VisualCanvasEditor';
 import ProjectManagement from '@/app/components/admin/ProjectManagement';
@@ -13,71 +14,84 @@ import TeamEditor from '@/app/components/admin/TeamEditor';
 import VisionEditor from '@/app/components/admin/VisionEditor';
 import AwardsEditor from '@/app/components/admin/AwardsEditor';
 import CareersEditor from '@/app/components/admin/CareersEditor';
-import Link from 'next/link';
 
 export default function DynamicSectionEditor({ params }) {
     const { page, section } = use(params);
 
-    // For now, we use HeroEditor for all 'hero' sections across all pages.
-    // For Home Hero, we use the new Visual Canvas Editor.
-    const isHero = section.toLowerCase().includes('hero');
+    const isHero     = section.toLowerCase().includes('hero');
     const isHomeHero = page === 'home' && isHero;
+    const pageLabel  = page.charAt(0).toUpperCase() + page.slice(1);
 
     return (
-        <div className="space-y-12 animate-in fade-in duration-700">
-            <div className="flex items-center space-x-6 text-[10px] uppercase font-bold tracking-[0.4em]">
-                <Link href={`/admin/pages/${page}`} className="text-gray-400 hover:text-[#A67C52] transition-colors">
-                    {page}
-                </Link>
-                <span className="text-gray-200">/</span>
-                <span className="text-black">{section}</span>
+        <>
+            <div className="admin-editor-page space-y-12">
+                {isHomeHero ? (
+                    <VisualCanvasEditor page={page} section={section} />
+                ) : isHero ? (
+                    <HeroEditor page={page} section={section} />
+                ) : page === 'projects' && section === 'grid' ? (
+                    <ProjectManagement />
+                ) : page === 'process' && section === 'narrative' ? (
+                    <ProcessNarrativeEditor />
+                ) : page === 'process' && section === 'sustainability' ? (
+                    <SustainabilityEditor />
+                ) : page === 'process' && section === 'initiatives' ? (
+                    <InitiativesEditor />
+                ) : page === 'process' && section === 'accreditations' ? (
+                    <AccreditationsEditor />
+                ) : page === 'studio' && section === 'narrative' ? (
+                    <StudioNarrativeEditor />
+                ) : page === 'studio' && section === 'team' ? (
+                    <TeamEditor />
+                ) : page === 'studio' && section === 'vision' ? (
+                    <VisionEditor />
+                ) : page === 'studio' && section === 'awards' ? (
+                    <AwardsEditor />
+                ) : page === 'studio' && section === 'careers' ? (
+                    <CareersEditor />
+                ) : null}
             </div>
 
-            {isHomeHero ? (
-                <VisualCanvasEditor page={page} section={section} />
-            ) : isHero ? (
-                <HeroEditor page={page} section={section} />
-            ) : page === 'projects' && section === 'grid' ? (
-                <ProjectManagement />
-            ) : page === 'process' && section === 'narrative' ? (
-                <ProcessNarrativeEditor />
-            ) : page === 'process' && section === 'sustainability' ? (
-                <SustainabilityEditor />
-            ) : page === 'process' && section === 'initiatives' ? (
-                <InitiativesEditor />
-            ) : page === 'process' && section === 'accreditations' ? (
-                <AccreditationsEditor />
-            ) : page === 'studio' && section === 'narrative' ? (
-                <StudioNarrativeEditor />
-            ) : page === 'studio' && section === 'team' ? (
-                <TeamEditor />
-            ) : page === 'studio' && section === 'vision' ? (
-                <VisionEditor />
-            ) : page === 'studio' && section === 'awards' ? (
-                <AwardsEditor />
-            ) : page === 'studio' && section === 'careers' ? (
-                <CareersEditor />
-            ) : (
-                <div className="bg-white border border-gray-100 rounded-[3.5rem] p-24 text-center space-y-10 shadow-[0_50px_150px_-50px_rgba(0,0,0,0.05)] border-white">
-                    <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-4xl opacity-20 grayscale">⚒</div>
-                    <div className="space-y-4">
-                        <h3 className="text-sm uppercase tracking-[0.5em] font-bold text-black italic">Editor in Development</h3>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-[0.3em] max-w-sm mx-auto leading-relaxed">
-                            The specialized interface for the <span className="text-[#A67C52] font-bold">{section}</span> segment is currently being architecturalized.
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            <div className="fixed bottom-12 right-12 z-50">
+            {/* Back to {pageLabel} — floated at bottom-center */}
+            <div style={{
+                position: 'fixed',
+                bottom: '32px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 9999,
+                display: 'flex',
+                justifyContent: 'center',
+                pointerEvents: 'none',
+            }}>
                 <Link
                     href={`/admin/pages/${page}`}
-                    className="flex items-center space-x-4 bg-white/80 backdrop-blur-xl border border-gray-100 px-8 py-4 rounded-2xl shadow-2xl hover:bg-black hover:text-white transition-all duration-500 group"
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 22px',
+                        borderRadius: '999px',
+                        border: '1px solid var(--admin-border)',
+                        background: 'rgba(255,255,255,0.92)',
+                        backdropFilter: 'blur(12px)',
+                        color: 'var(--admin-text)',
+                        textDecoration: 'none',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        letterSpacing: '0.06em',
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.1)',
+                        pointerEvents: 'auto',
+                        transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.1)'; }}
                 >
-                    <span className="text-lg group-hover:-translate-x-1 transition-transform">←</span>
-                    <span className="text-[10px] uppercase tracking-[0.4em] font-bold">Return to Surface</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                    Back to {pageLabel}
                 </Link>
             </div>
-        </div>
+        </>
     );
 }

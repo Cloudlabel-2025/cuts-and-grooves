@@ -4,9 +4,9 @@ import Link from 'next/link';
 
 const PAGES = [
     { name: 'Home', path: '/' },
-    { name: 'Portfolio', path: '/projects' },
-    { name: 'Process', path: '/process' },
-    { name: 'Studio', path: '/studio' },
+    { name: 'Our Work', path: '/projects' },
+    { name: 'Our Approach', path: '/process' },
+    { name: 'About Us', path: '/studio' },
     { name: 'Contact', path: '/contact' },
 ];
 
@@ -19,23 +19,24 @@ export default function PageNavigation({ currentPath }) {
         <div className="page-nav-wrapper">
             <div className="page-nav-container">
                 {prev && (
-                    <Link href={prev.path} className="page-nav-btn">
-                        <span className="page-nav-chevron">‹</span>
-                        <span>Back to {prev.name}</span>
+                    <Link href={prev.path} className="page-nav-btn page-nav-prev">
+                        <span className="page-nav-arrow">&larr;</span>
+                        <span className="page-nav-label">{prev.name}</span>
                     </Link>
                 )}
 
                 {next && (
                     <Link href={next.path} className="page-nav-btn page-nav-next">
-                        <span>Go to {next.name}</span>
-                        <span className="page-nav-chevron">›</span>
+                        <span className="page-nav-label">{next.name}</span>
+                        <span className="page-nav-arrow">&rarr;</span>
                     </Link>
                 )}
             </div>
 
             <style jsx>{`
                 .page-nav-wrapper {
-                    padding: 60px 4%;
+                    padding: 80px 4% 60px;
+                    border-top: 1px solid rgba(0, 0, 0, 0.08);
                 }
                 .page-nav-container {
                     max-width: 1400px;
@@ -44,51 +45,75 @@ export default function PageNavigation({ currentPath }) {
                     justify-content: space-between;
                     align-items: center;
                     gap: 16px;
-                    flex-wrap: wrap;
                 }
                 .page-nav-btn {
                     display: inline-flex;
                     align-items: center;
-                    gap: 10px;
-                    padding: 16px 32px;
-                    background-color: #000;
-                    color: #fff;
-                    border-radius: 12px;
+                    gap: 12px;
+                    padding: 16px 0;
+                    background: none;
+                    color: #000;
                     text-decoration: none;
-                    font-size: 14px;
+                    font-family: var(--font-heading);
+                    font-size: 0.85rem;
                     font-weight: 500;
-                    letter-spacing: 0.01em;
-                    transition: all 0.3s ease;
+                    letter-spacing: 0.08em;
+                    text-transform: uppercase;
+                    transition: opacity 0.3s ease;
                     cursor: pointer;
+                    position: relative;
+                }
+                .page-nav-btn::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 10px;
+                    left: 0;
+                    width: 100%;
+                    height: 1px;
+                    background: #000;
+                    transform: scaleX(0);
+                    transform-origin: right;
+                    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .page-nav-btn:hover::after {
+                    transform: scaleX(1);
+                    transform-origin: left;
                 }
                 .page-nav-btn:hover {
-                    background-color: #222;
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+                    opacity: 0.7;
                 }
                 .page-nav-next {
                     margin-left: auto;
                 }
-                .page-nav-chevron {
-                    font-size: 18px;
+                .page-nav-arrow {
+                    font-size: 1.1rem;
                     font-weight: 300;
                     line-height: 1;
+                    transition: transform 0.3s ease;
+                }
+                .page-nav-prev:hover .page-nav-arrow {
+                    transform: translateX(-4px);
+                }
+                .page-nav-next:hover .page-nav-arrow {
+                    transform: translateX(4px);
+                }
+                .page-nav-label {
+                    font-family: var(--font-heading);
                 }
                 @media (max-width: 768px) {
                     .page-nav-wrapper {
-                        padding: 40px 4%;
+                        padding: 60px 4% 40px;
                     }
                     .page-nav-container {
-                        flex-direction: column;
-                        align-items: stretch;
+                        flex-direction: row;
+                        justify-content: space-between;
                     }
                     .page-nav-btn {
-                        justify-content: center;
-                        padding: 14px 24px;
-                        font-size: 13px;
+                        font-size: 0.75rem;
+                        gap: 8px;
                     }
                     .page-nav-next {
-                        margin-left: 0;
+                        margin-left: auto;
                     }
                 }
             `}</style>

@@ -17,8 +17,14 @@ function SmoothScroll({ children }) {
 
         gsap.ticker.add(update);
 
+        // Expose Lenis instance globally for components like Footer scroll-to-top
+        if (lenisRef.current?.lenis) {
+            window.__lenis = lenisRef.current.lenis;
+        }
+
         return () => {
             gsap.ticker.remove(update);
+            delete window.__lenis;
         };
     }, []);
 
