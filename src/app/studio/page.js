@@ -187,7 +187,7 @@ export default function StudioPage() {
     const careersHeading = careers.heading;
 
     return (
-        <main ref={containerRef} className="studio-page bg-white text-black pt-48" data-nav-theme="light">
+        <main ref={containerRef} className="studio-page bg-white text-black pt-12" data-nav-theme="light">
 
             <style jsx>{`
                 @media (max-width: 768px) {

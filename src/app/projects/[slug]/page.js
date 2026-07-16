@@ -191,8 +191,9 @@ export default function ProjectDetail() {
                     gap: '40px',
                     position: 'relative'
                 }}
+                className="project-detail-meta"
             >
-                <div className="project-meta" style={{ gridColumn: 'span 4' }}>
+                    <div className="project-meta" style={{ gridColumn: 'span 4' }}>
                     <div className="meta-item" style={{ marginBottom: '40px' }}>
                         <span style={{ fontSize: '0.8rem', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Project Year</span>
                         <p style={{ fontSize: '1.5rem', marginTop: '8px' }}>{project.year}</p>
@@ -215,7 +216,7 @@ export default function ProjectDetail() {
                 data-nav-theme="light"
                 style={{ padding: '0 4% 80px' }}
             >
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4vw', alignItems: 'start' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4vw', alignItems: 'start' }} className="gallery-storytelling-grid">
                     {project.gallery && project.gallery.map((item, i) => {
                         const imgUrl = typeof item === 'string' ? item : item.url;
                         const desc = typeof item === 'string' ? '' : item.description;

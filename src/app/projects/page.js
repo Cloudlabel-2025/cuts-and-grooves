@@ -155,7 +155,7 @@ export default function Projects() {
             <header
                 data-nav-theme="light"
                 style={{
-                    padding: '160px 4% 60px'
+                    padding: '40px 4% 60px'
                 }}
             >
                 <div style={{ overflow: 'hidden' }}>

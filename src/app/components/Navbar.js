@@ -9,23 +9,49 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function Navbar() {
+export default function Navbar({ preloaderLoaded, hasScrolled, heroRevealed }) {
     const pathname = usePathname();
     const navRef = useRef(null);
+    const topRowRef = useRef(null);
+    const brandTextRef = useRef(null);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [prevPathname, setPrevPathname] = useState(pathname);
+    const [isDark, setIsDark] = useState(() => {
+        return pathname?.includes('/projects') || pathname?.includes('/process') || pathname?.includes('/studio') || pathname?.includes('/contact');
+    });
 
-    const [isDark, setIsDark] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const drawerRef = useRef(null);
 
-    useEffect(() => {
+    // Sync state if pathname changes in render
+    if (pathname !== prevPathname) {
+        setPrevPathname(pathname);
         setIsDark(pathname?.includes('/projects') || pathname?.includes('/process') || pathname?.includes('/studio') || pathname?.includes('/contact'));
-    }, [pathname]);
+    }
 
-    // Entrance animation
+    // Scroll listener: local scrolled state (only after hero is revealed)
     useEffect(() => {
+        if (!preloaderLoaded || !heroRevealed) return;
+
+        const handleScroll = () => {
+            if (window.scrollY > 80) {
+                setScrolled(true);
+            } else {
+                setScrolled(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [preloaderLoaded, heroRevealed]);
+
+    // Entrance animation for nav items (fires after preloader on non-home, or after reveal on home)
+    useEffect(() => {
+        if (!preloaderLoaded) return;
+
         const ctx = gsap.context(() => {
             gsap.fromTo(
-                '.nav-item',
+                '.nav-bottom-row .nav-item',
                 { opacity: 0, y: -20 },
                 {
                     opacity: 1,
@@ -33,18 +59,44 @@ export default function Navbar() {
                     duration: 0.8,
                     stagger: 0.1,
                     ease: 'power3.out',
-                    delay: 3.2,
                 }
             );
         }, navRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [preloaderLoaded]);
+
+    // ─── HERO REVEAL ANIMATION ───
+    // When heroRevealed fires: brand bar slides up, small logo fades in
+    useEffect(() => {
+        if (!heroRevealed || !topRowRef.current) return;
+
+        const tl = gsap.timeline();
+
+        // 1. Slide the brand bar upward off screen
+        tl.to(topRowRef.current, {
+            yPercent: -100,
+            duration: 0.85,
+            ease: 'power3.inOut',
+        }, 0);
+
+        // 2. Fade out the massive text slightly ahead of the bar sliding out
+        if (brandTextRef.current) {
+            tl.to(brandTextRef.current, {
+                opacity: 0,
+                duration: 0.4,
+                ease: 'power2.in',
+            }, 0);
+        }
+
+        // 3. After bar is gone, snap height to 0 to avoid layout gap
+        tl.set(topRowRef.current, { display: 'none' }, 0.85);
+
+    }, [heroRevealed]);
 
     // Scroll-based color switch: white on dark hero → black on white sections
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Slight delay to ensure DOM is ready after navigation
             setTimeout(() => {
                 const sections = document.querySelectorAll('[data-nav-theme]');
 
@@ -52,15 +104,14 @@ export default function Navbar() {
                     const theme = section.getAttribute('data-nav-theme');
                     ScrollTrigger.create({
                         trigger: section,
-                        start: 'top 50px', // When the section enters the navbar area
-                        end: 'bottom 50px', // When it leaves
+                        start: 'top 50px',
+                        end: 'bottom 50px',
                         onToggle: (self) => {
                             if (self.isActive) setIsDark(theme === 'light');
                         },
                         onRefresh: (self) => {
                             if (self.isActive) setIsDark(theme === 'light');
                         },
-                        // Fallback for enter/leave
                         onEnter: () => setIsDark(theme === 'light'),
                         onEnterBack: () => setIsDark(theme === 'light'),
                     });
@@ -123,85 +174,67 @@ export default function Navbar() {
         return () => ctx.revert();
     }, [menuOpen]);
 
+    const navbarClass = `navbar ${isDark && !menuOpen ? 'navbar--dark' : ''} ${!preloaderLoaded ? 'navbar--loading' : ''} ${scrolled ? 'navbar--scrolled' : ''} ${hasScrolled ? 'navbar--collapsed-permanent' : ''}`.trim();
+
     return (
         <>
-            <nav ref={navRef} className={`navbar ${isDark && !menuOpen ? 'navbar--dark' : ''}`}>
-                {/* ─── Left: Brand ─── */}
-                <Link href="/" className="nav-brand nav-item">
-                    <Image
-                        src="/images/Blacklogo.png"
-                        alt="Cuts & Grooves"
-                        width={400}
-                        height={140}
-                        style={{
-                            width: 'auto',
-                            height: 'clamp(52px, 6vw, 90px)',
-                            filter: 'none',
-                            display: 'block',
-                        }}
-                        priority
-                    />
-                </Link>
-
-                {/* ─── Center-left: Nav links (comma separated) ─── */}
-                <div className="nav-links nav-item">
-                    <Link href="/projects" className="nav-link">Our Work</Link>
-                    <span className="nav-comma">,</span>
-                    <Link href="/process" className="nav-link">Our Approach</Link>
-                    <span className="nav-comma">,</span>
-                    <Link href="/studio" className="nav-link">About Us</Link>
-                </div>
-
-                {/* ─── Right: Contact ─── */}
-                <div className="nav-right nav-item">
-                    <Link href="/contact" style={{
-                        fontFamily: 'var(--font-heading)',
-                        fontSize: 'clamp(0.75rem, 1vw, 0.85rem)',
-                        fontWeight: 500,
-                        color: isDark ? '#fff' : '#000',
-                        backgroundColor: isDark ? '#000' : 'transparent',
-                        border: isDark ? 'none' : '1px solid #000',
-                        textDecoration: 'none',
-                        padding: '10px 24px',
-                        borderRadius: '100px',
-                        letterSpacing: '0.06em',
-                        textTransform: 'uppercase',
-                        transition: 'all 0.3s ease',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        lineHeight: 1,
-                    }}
-                        onMouseEnter={e => {
-                            if (isDark) {
-                                e.currentTarget.style.backgroundColor = '#1a1a1a';
-                            } else {
-                                e.currentTarget.style.backgroundColor = '#000';
-                                e.currentTarget.style.color = '#fff';
-                            }
-                        }}
-                        onMouseLeave={e => {
-                            if (isDark) {
-                                e.currentTarget.style.backgroundColor = '#000';
-                            } else {
-                                e.currentTarget.style.backgroundColor = 'transparent';
-                                e.currentTarget.style.color = '#000';
-                            }
-                        }}
-                    >
-                        Contact
+            <nav ref={navRef} className={navbarClass}>
+                {/* ─── Top Row: Massive Brand Text — pinned state after preloader ─── */}
+                <div 
+                    ref={topRowRef} 
+                    className="nav-top-row"
+                    style={{ display: preloaderLoaded ? 'flex' : 'none' }}
+                >
+                    <Link ref={brandTextRef} href="/" className="nav-center-brand-text">
+                        Cuts & Grooves
                     </Link>
                 </div>
 
-                {/* ─── Hamburger (mobile) ─── */}
-                <button
-                    className={`nav-hamburger nav-item ${menuOpen ? 'active' : ''}`}
-                    onClick={() => setMenuOpen(!menuOpen)}
-                    aria-label="Toggle menu"
-                    suppressHydrationWarning={true}
-                >
-                    <span></span>
-                    <span></span>
-                </button>
+                {/* ─── Bottom Row: Navigation Items ─── */}
+                <div className="nav-bottom-row">
+                    {/* ─── Left: Brand Logo ─── */}
+                    <Link href="/" className="nav-brand nav-item">
+                        <Image
+                            src="/images/Blacklogo.png"
+                            alt="Cuts & Grooves"
+                            width={400}
+                            height={140}
+                            style={{
+                                width: 'auto',
+                                height: 'clamp(52px, 6vw, 90px)',
+                                display: 'block',
+                            }}
+                            priority
+                        />
+                    </Link>
+
+                    {/* ─── Center-left: Nav Links ─── */}
+                    <div className="nav-links nav-item">
+                        <Link href="/projects" className="nav-link">Our Work</Link>
+                        <span className="nav-comma">,</span>
+                        <Link href="/process" className="nav-link">Our Approach</Link>
+                        <span className="nav-comma">,</span>
+                        <Link href="/studio" className="nav-link">About Us</Link>
+                    </div>
+
+                    {/* ─── Right: Contact ─── */}
+                    <div className="nav-right nav-item">
+                        <Link href="/contact" className="nav-link">
+                            Contact
+                        </Link>
+                    </div>
+
+                    {/* ─── Hamburger (mobile) ─── */}
+                    <button
+                        className={`nav-hamburger nav-item ${menuOpen ? 'active' : ''}`}
+                        onClick={() => setMenuOpen(!menuOpen)}
+                        aria-label="Toggle menu"
+                        suppressHydrationWarning={true}
+                    >
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
             </nav>
 
             {/* Fullscreen drawer menu */}

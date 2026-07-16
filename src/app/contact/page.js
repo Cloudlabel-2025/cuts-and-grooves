@@ -107,7 +107,7 @@ export default function ContactPage() {
     const mapIframe = content?.details?.mapIframe || DEFAULT_CONTENT.details.mapIframe;
 
     return (
-        <main ref={containerRef} className="contact-page bg-white text-black min-h-screen pb-[80px] px-[4%]" data-nav-theme="light" style={{ paddingTop: '240px' }}>
+        <main ref={containerRef} className="contact-page bg-white text-black min-h-screen pb-[80px] px-[4%]" data-nav-theme="light" style={{ paddingTop: '40px' }}>
             <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '80px' }} className="contact-grid">
 
                 {/* LEFT COLUMN: HERO TEXT */}

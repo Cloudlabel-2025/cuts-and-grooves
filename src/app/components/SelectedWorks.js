@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import gsap from 'gsap';
@@ -8,120 +8,149 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
+function getResponsiveClipPath(w) {
+    if (w < 480) return 'inset(8% 10% 8% 10%)';
+    if (w < 768) return 'inset(10% 12% 10% 12%)';
+    if (w < 1024) return 'inset(15% 20% 15% 20%)';
+    return 'inset(25% 30% 25% 30%)';
+}
+
+function getBracketOffset(w) {
+    if (w < 768) return 12;
+    if (w < 1024) return 16;
+    return 20;
+}
+
 export default function SelectedWorks({ projects: initialProjects }) {
-    const listRef = useRef(null);
     const containerRef = useRef(null);
-    const projects = initialProjects || [];
+    const projects = useMemo(() => initialProjects || [], [initialProjects]);
 
     const heading = "Featured Projects";
 
-    useEffect(() => {
-        const ctx = gsap.context(() => {
-            // 1. Cinematic Section Entrance (Heading)
-            const entranceTl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: '.works-header-side',
-                    start: 'top 85%',
-                    toggleActions: 'play none none none',
-                },
+    const initAnimations = useCallback(() => {
+        const clampPath = getResponsiveClipPath(window.innerWidth);
+        const bracketOffset = getBracketOffset(window.innerWidth);
+
+        // 1. Cinematic Section Entrance (Heading)
+        const entranceTl = gsap.timeline({
+            scrollTrigger: {
+                trigger: '.works-header-side',
+                start: 'top 85%',
+                toggleActions: 'play none none none',
+            },
+        });
+
+        entranceTl
+            .from('.works-heading', {
+                y: 50,
+                opacity: 0,
+                duration: 1.2,
+                ease: 'power3.out',
             });
 
-            entranceTl
-                .from('.works-heading', {
-                    y: 50,
-                    opacity: 0,
-                    duration: 1.2,
-                    ease: 'power3.out',
-                });
+        // 2. Continuous Wave Animation (Small -> Full -> Small)
+        const cards = gsap.utils.toArray('.work-card');
 
-            // 2. Continuous Wave Animation (Small -> Full -> Small)
-            const cards = gsap.utils.toArray('.work-card');
+        cards.forEach((card) => {
+            const inner = card.querySelector('.work-image-container');
+            const title = card.querySelector('.work-title');
+            const bracketLeft = title.querySelector('.bracket-left');
+            const bracketRight = title.querySelector('.bracket-right');
 
-            cards.forEach((card, i) => {
-                const inner = card.querySelector('.work-image-container');
-                const title = card.querySelector('.work-title');
-                const bracketLeft = title.querySelector('.bracket-left');
-                const bracketRight = title.querySelector('.bracket-right');
+            gsap.set(title, { opacity: 1, y: 0 });
 
-                // Ensure initial state
-                gsap.set(title, { opacity: 1, y: 0 });
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: card,
+                    start: 'top bottom',
+                    end: 'bottom top',
+                    scrub: 1,
+                }
+            });
 
-                // MAIN SCROLL TIMELINE (Linked to card's transit through viewport)
-                const isMobile = window.innerWidth < 1024;
-
-                const tl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: card,
-                        start: 'top bottom', // Enters viewport
-                        end: 'bottom top',   // Leaves viewport
-                        scrub: 1,            // Smooth scrub
-                    }
-                });
-
-                // PHASE 1: EXPAND (0% -> 50% scroll ie. Bottom -> Center)
-                tl.fromTo(
+            tl.fromTo(
+                inner,
+                {
+                    clipPath: clampPath,
+                    filter: 'brightness(0.6)'
+                },
+                {
+                    clipPath: 'inset(0% 0% 0% 0%)',
+                    filter: 'brightness(1)',
+                    duration: 1,
+                    ease: 'power1.out'
+                }
+            )
+                .to(
                     inner,
                     {
-                        clipPath: isMobile ? 'inset(15% 15% 15% 15%)' : 'inset(25% 30% 25% 30%)',
-                        filter: 'brightness(0.6)'
-                    },
-                    {
-                        clipPath: 'inset(0% 0% 0% 0%)',
-                        filter: 'brightness(1)',
+                        clipPath: clampPath,
+                        filter: 'brightness(0.6)',
                         duration: 1,
-                        ease: 'power1.out'
+                        ease: 'power1.in'
                     }
-                )
-                    // PHASE 2: SHRINK (50% -> 100% scroll ie. Center -> Top)
-                    .to(
-                        inner,
-                        {
-                            clipPath: isMobile ? 'inset(15% 15% 15% 15%)' : 'inset(25% 30% 25% 30%)',
-                            filter: 'brightness(0.6)',
-                            duration: 1,
-                            ease: 'power1.in'
-                        }
-                    );
+                );
 
-                // TITLE BRACKETS (Independent Fast Animation)
-                const titleTl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: card,
-                        start: 'top bottom',
-                        end: 'bottom top',
-                        scrub: 1,
-                    }
-                });
-
-                // Expand Brackets Even Slower (0-50% of scroll timeline)
-                titleTl.fromTo(
-                    [bracketLeft, bracketRight],
-                    { x: 0 },
-                    {
-                        x: (i) => i === 0 ? -20 : 20, // Small, subtle expansion
-                        duration: 1,
-                        ease: 'power2.out'
-                    }
-                )
-                    // HOLD at width (50-60% of scroll)
-                    .to(
-                        [bracketLeft, bracketRight],
-                        { duration: 0.2 }
-                    )
-                    // Shrink Brackets (60-100% of scroll)
-                    .to(
-                        [bracketLeft, bracketRight],
-                        {
-                            x: 0,
-                            duration: 0.8,
-                            ease: 'power2.inOut'
-                        }
-                    );
+            const titleTl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: card,
+                    start: 'top bottom',
+                    end: 'bottom top',
+                    scrub: 1,
+                }
             });
+
+            titleTl.fromTo(
+                [bracketLeft, bracketRight],
+                { x: 0 },
+                {
+                    x: (i) => i === 0 ? -bracketOffset : bracketOffset,
+                    duration: 1,
+                    ease: 'power2.out'
+                }
+            )
+                .to(
+                    [bracketLeft, bracketRight],
+                    { duration: 0.2 }
+                )
+                .to(
+                    [bracketLeft, bracketRight],
+                    {
+                        x: 0,
+                        duration: 0.8,
+                        ease: 'power2.inOut'
+                    }
+                );
+        });
+    }, []);
+
+    useEffect(() => {
+        const ctx = gsap.context(() => {
+            initAnimations();
         }, containerRef);
 
-        return () => ctx.revert();
-    }, [projects]);
+        const handleResize = () => {
+            ctx.revert();
+            ScrollTrigger.getAll().forEach(st => st.kill());
+            gsap.context(() => {
+                initAnimations();
+            }, containerRef);
+        };
+
+        let resizeTimer;
+        const debouncedResize = () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(handleResize, 300);
+        };
+
+        window.addEventListener('resize', debouncedResize);
+
+        return () => {
+            ctx.revert();
+            window.removeEventListener('resize', debouncedResize);
+            clearTimeout(resizeTimer);
+        };
+    }, [projects, initAnimations]);
 
     return (
         <section ref={containerRef} id="works" className="works-section" data-nav-theme="light">

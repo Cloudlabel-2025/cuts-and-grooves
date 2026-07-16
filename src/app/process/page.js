@@ -157,7 +157,7 @@ export default function ProcessPage() {
             <section
                 className="process-narrative-section"
                 data-nav-theme="light"
-                style={{ paddingTop: '160px' }}
+                style={{ paddingTop: '40px' }}
             >
                 <div style={{ maxWidth: '1400px' }}>
                     <h2 className="narrative-paragraph" style={{

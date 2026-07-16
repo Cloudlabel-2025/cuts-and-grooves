@@ -32,14 +32,14 @@ const defaultScatteredImages = [
 ];
 
 const defaultMobileScatteredImages = [
-    { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80', x: '0%', y: '0%', w: '50vw', h: '22vh', speed: 0.15, z: 1 },
-    { src: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=600&q=80', x: '50%', y: '2%', w: '48vw', h: '18vh', speed: 0.2, z: 1 },
-    { src: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80', x: '5%', y: '25%', w: '55vw', h: '22vh', speed: 0.4, z: 5 },
-    { src: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=600&q=80', x: '55%', y: '28%', w: '45vw', h: '20vh', speed: 0.45, z: 5 },
-    { src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80', x: '-5%', y: '52%', w: '55vw', h: '26vh', speed: 0.8, z: 10 },
-    { src: 'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?auto=format&fit=crop&w=800&q=80', x: '52%', y: '55%', w: '50vw', h: '28vh', speed: 0.85, z: 10 },
-    { src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80', x: '10%', y: '78%', w: '45vw', h: '20vh', speed: 1.0, z: 15 },
-    { src: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80', x: '50%', y: '80%', w: '50vw', h: '22vh', speed: 1.1, z: 14 },
+    { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80', x: '-2%', y: '1%', w: '48vw', h: '18vh', speed: 0.15, z: 1 },
+    { src: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=600&q=80', x: '52%', y: '3%', w: '46vw', h: '16vh', speed: 0.2, z: 1 },
+    { src: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80', x: '3%', y: '22%', w: '45vw', h: '18vh', speed: 0.4, z: 5 },
+    { src: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=600&q=80', x: '52%', y: '24%', w: '45vw', h: '17vh', speed: 0.45, z: 5 },
+    { src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80', x: '2%', y: '44%', w: '46vw', h: '18vh', speed: 0.8, z: 10 },
+    { src: 'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?auto=format&fit=crop&w=800&q=80', x: '52%', y: '45%', w: '46vw', h: '19vh', speed: 0.85, z: 10 },
+    { src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80', x: '-2%', y: '68%', w: '48vw', h: '18vh', speed: 1.0, z: 15 },
+    { src: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80', x: '50%', y: '70%', w: '48vw', h: '18vh', speed: 1.1, z: 14 },
 ];
 
 const defaultTransitionImage = '/images/All-works-01.jpg';
@@ -94,11 +94,15 @@ export default function AllWorkScatter({ projects, content }) {
     const [isReady, setIsReady] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [sectionHeight, setSectionHeight] = useState('1200vh');
 
     useEffect(() => {
         setMounted(true);
         const checkMobile = () => {
-            setIsMobile(window.innerWidth < 1024);
+            const w = window.innerWidth;
+            setIsMobile(w < 1024);
+            if (w < 1024) setSectionHeight('100vh');
+            else setSectionHeight('1200vh');
         };
         checkMobile();
         window.addEventListener('resize', checkMobile);
@@ -113,16 +117,23 @@ export default function AllWorkScatter({ projects, content }) {
     useEffect(() => {
         if (!isReady) return;
 
-        // CALCULATE PRECISE WIDTHS FOR SCROLL
+        const isMobileAnim = window.innerWidth < 1024;
+
+        // Kill any stale ScrollTriggers for this container before re-creating
+        ScrollTrigger.getAll().forEach(st => {
+            if (st.trigger === containerRef.current) {
+                st.kill();
+            }
+        });
+
         const calculateScrollDistances = () => {
-            // Default fallback
             let move1 = window.innerWidth * 0.6;
             let move2 = window.innerWidth * 1.1;
 
             if (titleRefs.current[0] && titleRefs.current[1]) {
                 const w1 = titleRefs.current[0].offsetWidth;
                 const w2 = titleRefs.current[1].offsetWidth;
-                const gap = window.innerWidth * 0.04; // 4vw gap in pixels
+                const gap = window.innerWidth * 0.04;
 
                 move1 = w1 + gap;
                 move2 = move1 + w2 + gap;
@@ -133,133 +144,102 @@ export default function AllWorkScatter({ projects, content }) {
         const { move1, move2 } = calculateScrollDistances();
 
         const ctx = gsap.context(() => {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top top',
-                    end: 'bottom bottom',
-                    scrub: 1,
-                    pin: '#all-work-pin-container',
-                    invalidateOnRefresh: true,
-                }
-            });
+            if (isMobileAnim) {
+                // Mobile: no scroll animation — static vision items rendered via JSX
+            } else {
+                // Desktop: full pinned animation
+                const activeImages = scatteredImages;
 
-            const isMobile = window.innerWidth < 1024;
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top top',
+                        end: 'bottom bottom',
+                        scrub: 1,
+                        pin: '#all-work-pin-container',
+                        invalidateOnRefresh: true,
+                    }
+                });
 
-            // --- PHASE 1: SCATTER PARALLAX & ZOOM (0 -> 1.2) ---
+                const validImages = imagesRef.current.filter(Boolean);
 
-            // Parallax + Zoom images as they move up
-            imagesRef.current.forEach((img, i) => {
-                if (!img) return;
-                const speed = scatteredImages[i].speed;
-                const movementY = -(window.innerHeight * 1.5 * speed);
-                const scaleUp = 1 + (speed * 0.6);
-                tl.to(img, { y: movementY, scale: scaleUp, ease: 'none', duration: 1.2 }, 0);
-            });
+                validImages.forEach((img, i) => {
+                    const imgData = activeImages[i];
+                    if (!imgData) return;
+                    const speed = imgData.speed;
+                    const movementY = -(window.innerHeight * 1.5 * speed);
+                    const scaleUp = 1 + (speed * 0.6);
+                    tl.to(img, { y: movementY, scale: scaleUp, ease: 'none', duration: 1.2 }, 0);
+                });
 
-            // Fade Out Scattered Images (late, after they've zoomed)
-            tl.to(imagesRef.current, { opacity: 0, display: 'none', duration: 0.15, stagger: { amount: 0.05, from: "random" } }, 1.0);
+                tl.to(validImages, { opacity: 0, display: 'none', duration: 0.15, stagger: { amount: 0.05, from: "random" } }, 1.0);
 
-            // PORTAL TRANSITION SETUP
-            const oRect = oSpanRef.current.getBoundingClientRect();
-            const pinRect = pinRef.current.getBoundingClientRect();
-            const textRect = textRef.current.getBoundingClientRect();
+                const oRect = oSpanRef.current.getBoundingClientRect();
+                const pinRect = pinRef.current.getBoundingClientRect();
 
-            const centerX = oRect.left + oRect.width / 2 - pinRect.left;
-            const centerY = oRect.top + oRect.height / 2 - pinRect.top;
-            const startSize = '12vmin';
+                const centerX = oRect.left + oRect.width / 2 - pinRect.left;
+                const centerY = oRect.top + oRect.height / 2 - pinRect.top;
+                const startSize = '12vmin';
 
-            gsap.set(independentPortalRef.current, {
-                left: centerX, top: centerY, xPercent: -50, yPercent: -50, width: startSize, height: startSize, borderRadius: '50%',
-            });
+                gsap.set(independentPortalRef.current, {
+                    left: centerX, top: centerY, xPercent: -50, yPercent: -50, width: startSize, height: startSize, borderRadius: '50%',
+                });
 
-            // ANIMATION: Portal Image Expand (quick, overlapping with images)
-            tl.to(independentPortalRef.current, { opacity: 1, duration: 0.1 }, 0.7);
-            tl.to(independentPortalRef.current, {
-                top: 0, left: 0, xPercent: 0, yPercent: 0, width: '100vw', height: '100vh', borderRadius: '0%', duration: 0.6, ease: 'power2.inOut',
-            }, 0.7);
+                tl.to(independentPortalRef.current, { opacity: 1, duration: 0.1 }, 0.7);
+                tl.to(independentPortalRef.current, {
+                    top: 0, left: 0, xPercent: 0, yPercent: 0, width: '100vw', height: '100vh', borderRadius: '0%', duration: 0.6, ease: 'power2.inOut',
+                }, 0.7);
 
-            tl.to([leftTextRef.current, rightTextRef.current, countRef.current], { opacity: 0, duration: 0.1 }, 1.0);
-            tl.to(oSpanRef.current, { color: 'transparent', duration: 0.05 }, 1.1);
+                tl.to([leftTextRef.current, rightTextRef.current, countRef.current], { opacity: 0, duration: 0.1 }, 1.0);
+                tl.to(oSpanRef.current, { color: 'transparent', duration: 0.05 }, 1.1);
 
+                tl.to(visionUIContainerRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.2 }, 1.5);
+                tl.fromTo(lineRef.current, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.5, ease: 'power3.inOut' }, 1.6);
+                tl.fromTo([label03Ref.current, labelVisionRef.current], { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.3 }, 1.7);
+                tl.fromTo(titlesStripRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, 1.8);
+                gsap.set(descTextRefs.current[0], { y: 20 });
+                tl.to(descTextRefs.current[0], { opacity: 1, y: 0, duration: 0.4 }, 1.9);
 
-            // --- PHASE 2: VISION LAYOUT BUILD (Starts at 1.5) ---
+                tl.to({}, { duration: 1.0 }, 2.3);
 
-            // 1. Reveal Layout Container
-            tl.to(visionUIContainerRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.2 }, 1.5);
+                const scrollStart = 3.3;
+                const stepDuration = 2.5;
+                const scrollEnd = scrollStart + stepDuration * 2 + 0.5;
 
-            // 2. Animate Horizontal Line (Independent)
-            tl.fromTo(lineRef.current, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.5, ease: 'power3.inOut' }, 1.6);
+                tl.fromTo(verticalLineRef.current,
+                    { height: '0vh', opacity: 0 },
+                    { height: '100vh', opacity: 0.5, duration: (scrollEnd - scrollStart), ease: 'none' },
+                    scrollStart
+                );
 
-            // 3. Fade In Labels (03, VISION)
-            tl.fromTo([label03Ref.current, labelVisionRef.current], { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.3 }, 1.7);
+                tl.to(titlesStripRef.current, { x: -move1, duration: stepDuration, ease: 'power1.inOut' }, scrollStart);
+                tl.to(titleRefs.current[0], { color: 'rgba(255,255,255,0.3)', duration: 1.5, ease: 'power1.inOut' }, scrollStart);
+                tl.to(titleRefs.current[1], { color: '#ffffff', duration: 1.5, ease: 'power1.inOut' }, scrollStart + 0.5);
+                tl.to(descTextRefs.current[0], { opacity: 0, duration: 0.3 }, scrollStart + 0.2);
+                tl.to(descTextRefs.current[1], { opacity: 1, duration: 0.3 }, scrollStart + 0.7);
 
-            // 4. Fade In Titles Strip
-            tl.fromTo(titlesStripRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, 1.8);
+                tl.to({}, { duration: 0.5 }, scrollStart + stepDuration);
 
-            // 5. Fade In Description (Design Integrity)
-            gsap.set(descTextRefs.current[0], { y: 20 });
-            tl.to(descTextRefs.current[0], { opacity: 1, y: 0, duration: 0.4 }, 1.9);
+                const step2Start = scrollStart + stepDuration + 0.5;
 
-            // --- PHASE 3: HORIZONTAL SCROLL & VERTICAL LINE GROWTH ---
+                tl.to(titlesStripRef.current, { x: -move2, duration: stepDuration, ease: 'power1.inOut' }, step2Start);
+                tl.to(titleRefs.current[1], { color: 'rgba(255,255,255,0.3)', duration: 1.5, ease: 'power1.inOut' }, step2Start);
+                tl.to(titleRefs.current[2], { color: '#ffffff', duration: 1.5, ease: 'power1.inOut' }, step2Start + 0.5);
+                tl.to(descTextRefs.current[1], { opacity: 0, duration: 0.3 }, step2Start + 0.2);
+                tl.to(descTextRefs.current[2], { opacity: 1, duration: 0.3 }, step2Start + 0.7);
 
-            // Start Delay: Add "read time"
-            tl.to({}, { duration: 1.0 }, 2.3);
-
-            const scrollStart = 3.3;
-            const stepDuration = 2.5;
-            const scrollEnd = scrollStart + stepDuration * 2 + 0.5; // Two moves + pause
-
-            // ** VERTICAL LINE ANIMATION (SYNCED WITH SCROLL) **
-            // Starts at scrollStart, Ends at scrollEnd
-            tl.fromTo(verticalLineRef.current,
-                { height: '0vh', opacity: 0 },
-                { height: '100vh', opacity: 0.5, duration: (scrollEnd - scrollStart), ease: 'none' },
-                scrollStart
-            );
-
-            // --- SCROLL SEQUENCE ---
-
-            // Step 1: Move to "Innovation"
-            tl.to(titlesStripRef.current, { x: -move1, duration: stepDuration, ease: 'power1.inOut' }, scrollStart);
-
-            // Color Swaps
-            tl.to(titleRefs.current[0], { color: 'rgba(255,255,255,0.3)', duration: 1.5, ease: 'power1.inOut' }, scrollStart);
-            tl.to(titleRefs.current[1], { color: '#ffffff', duration: 1.5, ease: 'power1.inOut' }, scrollStart + 0.5);
-
-            // Description Swap to Innovation
-            tl.to(descTextRefs.current[0], { opacity: 0, duration: 0.3 }, scrollStart + 0.2);
-            tl.to(descTextRefs.current[1], { opacity: 1, duration: 0.3 }, scrollStart + 0.7);
-
-
-            // Step 2: Move to "Enhanced Living"
-            // Pause: scrollStart + stepDuration -> + 0.5
-            tl.to({}, { duration: 0.5 }, scrollStart + stepDuration);
-
-            const step2Start = scrollStart + stepDuration + 0.5;
-
-            // Move
-            tl.to(titlesStripRef.current, { x: -move2, duration: stepDuration, ease: 'power1.inOut' }, step2Start);
-
-            // Color Swaps
-            tl.to(titleRefs.current[1], { color: 'rgba(255,255,255,0.3)', duration: 1.5, ease: 'power1.inOut' }, step2Start);
-            tl.to(titleRefs.current[2], { color: '#ffffff', duration: 1.5, ease: 'power1.inOut' }, step2Start + 0.5);
-
-            // Description Swap to Enhanced Living
-            tl.to(descTextRefs.current[1], { opacity: 0, duration: 0.3 }, step2Start + 0.2);
-            tl.to(descTextRefs.current[2], { opacity: 1, duration: 0.3 }, step2Start + 0.7);
-
-            // Final Hold
-            tl.to({}, { duration: 1.0 });
-
+                tl.to({}, { duration: 1.0 });
+            }
         }, containerRef);
 
-        return () => ctx.revert();
-    }, [isReady]);
+        return () => {
+            ctx.revert();
+        };
+    }, [isReady, isMobile]);
 
     const textPartStyle = {
         fontFamily: 'var(--font-heading)',
-        fontSize: 'clamp(3rem, 6vw, 6rem)',
+        fontSize: 'clamp(2.2rem, 6vw, 6rem)',
         fontWeight: 400,
         letterSpacing: '-0.02em',
         lineHeight: 1,
@@ -272,12 +252,12 @@ export default function AllWorkScatter({ projects, content }) {
         <section
             ref={containerRef}
             data-nav-theme="light"
+            className="allwork-section"
             style={{
                 position: 'relative',
-                height: '1200vh',
+                height: sectionHeight,
                 width: '100%',
                 backgroundColor: '#ffffff',
-                overflow: 'hidden'
             }}
         >
             <div
@@ -296,11 +276,12 @@ export default function AllWorkScatter({ projects, content }) {
                 }}
             >
                 {/* 1. Scattered Images Layer */}
-                <div className="absolute inset-0 pointer-events-none">
+                <div className="allwork-scatter-layer absolute inset-0 pointer-events-none">
+                    {(() => { imagesRef.current = []; return null; })()}
                     {(mounted && isMobile ? mobileScatteredImages : scatteredImages).map((img, i) => (
                         <div
                             key={i}
-                            ref={el => imagesRef.current[i] = el}
+                            ref={el => { if (el) imagesRef.current[i] = el; }}
                             style={{
                                 position: 'absolute',
                                 left: img.x,
@@ -323,8 +304,8 @@ export default function AllWorkScatter({ projects, content }) {
                 {/* 2. Text Layer (All Work) */}
                 <div
                     ref={textRef}
-                    className="portal-text-container"
-                    style={{ zIndex: 20, position: 'relative', textAlign: 'center', pointerEvents: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}
+                    className="allwork-heading-layer portal-text-container"
+                    style={{ zIndex: 20, position: 'relative', textAlign: 'center', pointerEvents: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '90vw' }}
                 >
                     <Link href="/projects" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'baseline', gap: '0px' }}>
                         {(() => {
@@ -345,13 +326,14 @@ export default function AllWorkScatter({ projects, content }) {
                             }
                             return <span style={textPartStyle}>{heading}</span>;
                         })()}
-                        <sup ref={countRef} style={{ fontSize: '1.5rem', fontWeight: 300, marginLeft: '8px', zIndex: 2 }}>({count})</sup>
+                        <sup ref={countRef} className="allwork-count" style={{ fontSize: 'clamp(0.8rem, 1.5vw, 1.5rem)', fontWeight: 300, marginLeft: '8px', zIndex: 2 }}>({count})</sup>
                     </Link>
                 </div>
 
                 {/* 3. INDEPENDENT PORTAL IMAGE (Background) */}
                 <div
                     ref={independentPortalRef}
+                    className="allwork-portal-layer"
                     style={{
                         position: 'absolute', overflow: 'hidden', zIndex: 10, opacity: 0, backgroundColor: '#fff',
                         display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -364,6 +346,7 @@ export default function AllWorkScatter({ projects, content }) {
                 {/* 4. VISION UI OVERLAY (Reference Design) */}
                 <div
                     ref={visionUIContainerRef}
+                    className="allwork-vision-layer"
                     style={{
                         position: 'absolute', top: 0, left: 0, width: '100%', height: '100vh', zIndex: 30,
                         opacity: 0, pointerEvents: 'none',
@@ -372,7 +355,7 @@ export default function AllWorkScatter({ projects, content }) {
                     }}
                 >
                     {/* Horizontal Line Container (FLEX LAYOUT for GAPS) */}
-                    <div style={{ position: 'absolute', top: '50%', left: '0', width: '100%', padding: '0 4vw', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div className="allwork-line-row" style={{ position: 'absolute', top: '50%', left: '0', width: '100%', padding: '0 4vw', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
                         {/* 03 */}
                         <span ref={label03Ref} style={{ fontSize: '1.2rem', fontFamily: 'var(--font-body)', fontWeight: 300 }}>03</span>
@@ -388,16 +371,19 @@ export default function AllWorkScatter({ projects, content }) {
                     {/* CHANGED: Anchor to BOTTOM. Animation will naturally go UP. */}
                     <div
                         ref={verticalLineRef}
+                        className="allwork-vertical-line"
                         style={{
-                            position: 'absolute', bottom: '0', right: '8vw', // Aligned near 'VISION', Set BOTTOM
-                            width: '1px', height: '0', // Start height 0
+                            position: 'absolute', bottom: '0', right: '8vw',
+                            width: '1px', height: '0',
                             backgroundColor: 'rgba(0,0,0,0.6)',
                             zIndex: 35
                         }}
                     />
 
                     {/* Titles Strip (Strictly Positioned ABOVE line) */}
+                    {!isMobile && (
                     <div
+                        className="allwork-titles-wrapper"
                         style={{ position: 'absolute', top: '35%', left: '0', width: '100%', overflow: 'hidden' }}
                     >
                         <div
@@ -416,8 +402,9 @@ export default function AllWorkScatter({ projects, content }) {
                                 <h2
                                     key={i}
                                     ref={el => titleRefs.current[i] = el}
+                                    className="allwork-vision-title"
                                     style={{
-                                        fontSize: 'clamp(3.5rem, 6vw, 6rem)',
+                                        fontSize: 'clamp(2rem, 6vw, 6rem)',
                                         fontFamily: 'var(--font-heading)',
                                         fontWeight: 400,
                                         letterSpacing: '-0.02em',
@@ -430,13 +417,16 @@ export default function AllWorkScatter({ projects, content }) {
                             ))}
                         </div>
                     </div>
+                    )}
 
                     {/* Description Paragraphs (Below Line, Right Aligned) */}
+                    {!isMobile && (
                     <div
                         ref={descRef}
+                        className="allwork-desc-container"
                         style={{
                             position: 'absolute',
-                            top: mounted && isMobile ? '65%' : '55%',
+                            top: mounted && isMobile ? '60%' : '55%',
                             right: mounted && isMobile ? '4vw' : '15vw',
                             left: mounted && isMobile ? '4vw' : 'auto',
                             width: mounted && isMobile ? 'auto' : 'clamp(300px, 30vw, 500px)',
@@ -447,12 +437,13 @@ export default function AllWorkScatter({ projects, content }) {
                                 <p
                                 key={i}
                                 ref={el => descTextRefs.current[i] = el}
+                                className={`allwork-desc-text ${i === 0 ? 'allwork-desc-first' : ''}`}
                                 style={{
-                                    fontSize: 'clamp(1rem, 1.2vw, 1.4rem)',
+                                    fontSize: 'clamp(0.8rem, 1.2vw, 1.4rem)',
                                     lineHeight: 1.5,
                                     fontFamily: 'var(--font-body)',
                                     fontWeight: 300,
-                                    opacity: 0,
+                                    opacity: i === 0 ? 1 : 0,
                                     margin: 0,
                                     position: i === 0 ? 'relative' : 'absolute',
                                     top: 0, left: 0, right: 0
@@ -462,7 +453,18 @@ export default function AllWorkScatter({ projects, content }) {
                             </p>
                         ))}
                     </div>
+                    )}
 
+                    {mounted && isMobile && (
+                        <div className="allwork-mobile-vision">
+                            {visionItems.map((item, i) => (
+                                <div key={i} className="allwork-mobile-vision-item">
+                                    <h2 className="allwork-mobile-vision-title">{item.title}</h2>
+                                    <p className="allwork-mobile-vision-desc">{item.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </section>

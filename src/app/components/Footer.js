@@ -22,12 +22,7 @@ export default function Footer({ content }) {
     };
 
     const scrollToTop = () => {
-        const lenis = window.__lenis;
-        if (lenis) {
-            lenis.scrollTo(0, { duration: 1.5 });
-        } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const linkStyle = {
@@ -51,7 +46,7 @@ export default function Footer({ content }) {
     };
 
     return (
-        <footer style={{
+        <footer className="footer-root" style={{
             width: '100%',
             backgroundColor: '#ffffff',
             color: '#000',
@@ -66,14 +61,14 @@ export default function Footer({ content }) {
             }}>
 
                 {/* CTA */}
-                <div style={{
+                <div className="footer-cta" style={{
                     marginBottom: 40,
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'flex-end',
                     gap: 40,
                 }}>
-                    <p style={{
+                    <p className="footer-cta-text" style={{
                         fontFamily: 'var(--font-heading)',
                         fontSize: 'clamp(1.1rem, 2.2vw, 1.6rem)',
                         fontWeight: 300,
@@ -115,7 +110,7 @@ export default function Footer({ content }) {
                 </div>
 
                 {/* GRID */}
-                <div style={{
+                <div className="footer-grid" style={{
                     display: 'grid',
                     gridTemplateColumns: '1.2fr 1.5fr 1fr 1.3fr',
                     gap: 32,
@@ -172,7 +167,7 @@ export default function Footer({ content }) {
                     </div>
 
                     {/* Newsletter */}
-                    <div>
+                    <div className="footer-newsletter">
                         <span style={labelStyle}>Newsletter</span>
                         <form onSubmit={handleSubmit} style={{
                             display: 'flex',
@@ -223,7 +218,7 @@ export default function Footer({ content }) {
                 </div>
 
                 {/* BOTTOM BAR */}
-                <div style={{
+                <div className="footer-bottom" style={{
                     display: 'flex',
                     flexWrap: 'wrap',
                     justifyContent: 'space-between',

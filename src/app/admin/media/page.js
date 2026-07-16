@@ -61,14 +61,11 @@ export default function MediaLibrary() {
     const uploadFile = async (entry) => {
         const formData = new FormData();
         formData.append('file', entry.file);
-        formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'ml_default');
         formData.append('folder', 'media');
-
-        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
+            xhr.open('POST', '/api/cloudinary/upload');
 
             xhr.upload.onprogress = (e) => {
                 if (e.lengthComputable) {
