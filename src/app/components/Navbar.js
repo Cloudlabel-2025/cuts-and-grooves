@@ -3,17 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function Navbar({ preloaderLoaded, hasScrolled, heroRevealed }) {
+export default function Navbar({ preloaderLoaded, hasScrolled, heroRevealed, introStackVisible = false }) {
     const pathname = usePathname();
     const navRef = useRef(null);
-    const topRowRef = useRef(null);
-    const brandTextRef = useRef(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const [prevPathname, setPrevPathname] = useState(pathname);
     const [isDark, setIsDark] = useState(() => {
@@ -68,32 +65,6 @@ export default function Navbar({ preloaderLoaded, hasScrolled, heroRevealed }) {
 
     // ─── HERO REVEAL ANIMATION ───
     // When heroRevealed fires: brand bar slides up, small logo fades in
-    useEffect(() => {
-        if (!heroRevealed || !topRowRef.current) return;
-
-        const tl = gsap.timeline();
-
-        // 1. Slide the brand bar upward off screen
-        tl.to(topRowRef.current, {
-            yPercent: -100,
-            duration: 0.85,
-            ease: 'power3.inOut',
-        }, 0);
-
-        // 2. Fade out the massive text slightly ahead of the bar sliding out
-        if (brandTextRef.current) {
-            tl.to(brandTextRef.current, {
-                opacity: 0,
-                duration: 0.4,
-                ease: 'power2.in',
-            }, 0);
-        }
-
-        // 3. After bar is gone, snap height to 0 to avoid layout gap
-        tl.set(topRowRef.current, { display: 'none' }, 0.85);
-
-    }, [heroRevealed]);
-
     // Scroll-based color switch: white on dark hero → black on white sections
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -174,50 +145,34 @@ export default function Navbar({ preloaderLoaded, hasScrolled, heroRevealed }) {
         return () => ctx.revert();
     }, [menuOpen]);
 
-    const navbarClass = `navbar ${isDark && !menuOpen ? 'navbar--dark' : ''} ${!preloaderLoaded ? 'navbar--loading' : ''} ${scrolled ? 'navbar--scrolled' : ''} ${hasScrolled ? 'navbar--collapsed-permanent' : ''}`.trim();
+    const navbarClass = `navbar ${isDark && !menuOpen ? 'navbar--dark' : ''} ${introStackVisible ? 'navbar--intro-stack' : ''} ${!preloaderLoaded ? 'navbar--loading' : ''} ${scrolled ? 'navbar--scrolled' : ''} ${hasScrolled ? 'navbar--collapsed-permanent' : ''}`.trim();
 
     return (
         <>
             <nav ref={navRef} className={navbarClass}>
                 {/* ─── Top Row: Massive Brand Text — pinned state after preloader ─── */}
-                <div 
-                    ref={topRowRef} 
-                    className="nav-top-row"
-                    style={{ display: preloaderLoaded ? 'flex' : 'none' }}
-                >
-                    <Link ref={brandTextRef} href="/" className="nav-center-brand-text">
-                        Cuts & Grooves
-                    </Link>
-                </div>
-
                 {/* ─── Bottom Row: Navigation Items ─── */}
                 <div className="nav-bottom-row">
                     {/* ─── Left: Brand Logo ─── */}
                     <Link href="/" className="nav-brand nav-item">
-                        <Image
-                            src="/images/Blacklogo.png"
-                            alt="Cuts & Grooves"
-                            width={400}
-                            height={140}
-                            style={{
-                                width: 'auto',
-                                height: 'clamp(52px, 6vw, 90px)',
-                                display: 'block',
-                            }}
-                            priority
-                        />
+                        CUTS &amp; GROOVES
                     </Link>
 
                     {/* ─── Center-left: Nav Links ─── */}
                     <div className="nav-links nav-item">
-                        <Link href="/projects" className="nav-link">Our Work</Link>
+                        <Link href="/projects" className="nav-link">Work</Link>
                         <span className="nav-comma">,</span>
-                        <Link href="/process" className="nav-link">Our Approach</Link>
+                        <Link href="/process" className="nav-link">Process</Link>
                         <span className="nav-comma">,</span>
-                        <Link href="/studio" className="nav-link">About Us</Link>
+                        <Link href="/studio" className="nav-link">Studio</Link>
                     </div>
 
                     {/* ─── Right: Contact ─── */}
+                    <div className="nav-location nav-item">
+                        <span className="nav-time">07:50 AM</span>
+                        <span>South Yarra, AUS</span>
+                    </div>
+
                     <div className="nav-right nav-item">
                         <Link href="/contact" className="nav-link">
                             Contact

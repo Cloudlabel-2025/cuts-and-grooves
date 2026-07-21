@@ -80,7 +80,7 @@ export default function HeroSection({ content }) {
                 xPercent: 0,
                 yPercent: 0,
                 borderRadius: '0px',
-                duration: 1.1,
+                duration: 1.45,
                 ease: 'power4.inOut',
             }, 0);
 
